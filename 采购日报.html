@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>供应链日报</title>
+    <link rel="icon" href="favicon.ico">
+    <link rel="stylesheet" href="css/index.css">
+    <script type="text/javascript" src="venv/scripts/xlsx.core.min.js"></script>
+    <script type="text/javascript" src="venv/scripts/index.js"></script>
+    <script type="text/javascript" src="venv/scripts/echarts.min.js"></script>
+    <script type="text/javascript" src="venv/scripts/echarts-liquidfill.js"></script>
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <script src="venv/scripts/jquery.min.js"></script>
+    <script src="venv/scripts/bootstrap.min.js"></script>
+    <script src="venv/scripts/echarts-liquidfill.js"></script>
+</head>
+<body style="background-color: #10aeb5" data-spy="scroll" data-target="#myScrollspy">
+<!-- >
+#######################表头############################
+<-->
+<div class="container" style="width: 100%;height:40px;background-color: #d7d7d7;display: flex;">
+    <p style="line-height: 40px;margin-left: 20px;font-weight: bold;font-size: 16px;">易佰网络-供应链综合管理部</p>
+    <a href="#" style="line-height: 40px;margin-left: 20px;font-size: 16px;color: #000;">采购数据</a>
+    <a href="仓库日报.html" style="line-height: 40px;margin-left: 20px;font-size: 16px;color: #000;">仓库数据</a>
+    <a style="line-height: 40px;margin-left: 20px;font-size: 16px;color: #000;">物流数据</a>
+    <a style="line-height: 40px;margin-left: 20px;font-size: 16px;color: #000;">开发数据</a>
+    <input type="file" id="inputLine" style="line-height: 40px;margin-left: 100px;font-size: 16px;color: #000;"
+               accept="application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+               onchange="excelToECharts(this)" onclick="this.value=''">
+</div>
+<div class="container" style="width: 1000px;height:250px;position: relative">
+    <img src="image/数据图.png" style="width: 40%;margin-left: 55%;position: absolute">
+    <img src="image/公司LOGO.png" style="width: 12%;position: absolute">
+    <img src="image/数据图1.png" style="width: 10%;margin-left: 30%;margin-top:2%;position: absolute">
+    <img src="image/数据图2.png" style="width: 10%;margin-left: 40%;margin-top:15%;position: absolute">
+    <p style="color: white;font-size: 25px;position: absolute;margin-top: 13%">供应链综合管理部</p>
+    <p style="color: white;font-size: 32px;position: absolute;margin-top: 17%">数据组运营日报表</p>
+    <div style="position: absolute;width: 26%;height: 28px;margin-top: 21.5%;border-radius: 8px 8px 8px 8px;background: #1b7991">
+        <p style="color: white;font-size: 18px;text-align: center">时间节点：2021年3月12日</p>
+    </div>
+</div>
+<!-- >
+#######################################################
+#######################数据############################
+<-->
+<div style="margin:0 auto;width: 1000px;height:3000px;margin-top:10px;border: 1px solid #000;border-radius: 10px 10px 10px 10px;background-color: white">
+    <!-- >****************************采购板块****************************<-->
+    <div style="width: 100%;height: 3000px;">
+        <div style="width: 100%;height: 50px;border-bottom: 1px solid #d7d7d7">
+            <p class="title1">采购运营数据</p>
+        </div>
+        <div style="width: 100%;height: 280px;border-bottom: 1px solid #d7d7d7;position: relative">
+            <div class="title1_1">异常数据</div>
+            <span class="title1_2">数据更新至2021.03.13</span>
+            <div class="div_flex" style="margin-top: 1%">
+                <div class="div_flex_1">
+                    <div style="font-size: 22px;font-weight: bold;margin-top: 2%">异常总数</div>
+                    <div id="d1" style="font-size: 20px;font-weight: bold;margin-top: 2%;color: #ff4358">8888</div>
+                    <div>昨日
+                        <span>+10</span></div>
+                </div>
+                <div class="div_flex_1">
+                    <div style="font-size: 22px;font-weight: bold;margin-top: 2%">来货异常</div>
+                    <div style="font-size: 20px;font-weight: bold;margin-top: 2%;color: #ff7532">5000</div>
+                    <div>昨日
+                        <span>+10</span></div>
+                </div>
+                <div class="div_flex_1">
+                    <div style="font-size: 22px;font-weight: bold;margin-top: 2%">少数少款</div>
+                    <div style="font-size: 20px;font-weight: bold;margin-top: 2%;color: #ff7532">2888</div>
+                    <div>昨日
+                        <span>+10</span></div>
+                </div>
+                <div class="div_flex_1">
+                    <div style="font-size: 22px;font-weight: bold;margin-top: 2%">多货异常</div>
+                    <div style="font-size: 20px;font-weight: bold;margin-top: 2%;color: #ff7532">1000</div>
+                    <div>昨日
+                        <span>+10</span></div>
+                </div>
+            </div>
+            <div class="div_flex" style="margin-top: 1%">
+                <div class="div_flex_1">
+                    <div style="font-size: 22px;font-weight: bold;margin-top: 2%">已处理</div>
+                    <div style="font-size: 20px;font-weight: bold;margin-top: 2%;color: #ff4358">8888</div>
+                    <div>昨日
+                        <span>+10</span></div>
+                </div>
+                <div class="div_flex_1">
+                    <div style="font-size: 22px;font-weight: bold;margin-top: 2%">未处理</div>
+                    <div style="font-size: 20px;font-weight: bold;margin-top: 2%;color: #ff7532">5000</div>
+                    <div>昨日
+                        <span>+10</span></div>
+                </div>
+                <div class="div_flex_1">
+                    <div style="font-size: 22px;font-weight: bold;margin-top: 2%">处理中</div>
+                    <div style="font-size: 20px;font-weight: bold;margin-top: 2%;color: #ff7532">2888</div>
+                    <div>昨日
+                        <span>+10</span></div>
+                </div>
+                <div class="div_flex_1">
+                    <div style="font-size: 22px;font-weight: bold;margin-top: 2%">完结率</div>
+                    <div style="font-size: 20px;font-weight: bold;margin-top: 2%;color: #ff7532">50.52%</div>
+                    <div>昨日
+                        <span>+0.6%</span></div>
+                </div>
+
+            </div>
+        </div>
+        <div id="yc_main" style="margin: 2% auto;border: 1px solid #d7d7d7;width: 90%;height: 450px;border-radius: 8px 8px 8px 8px"></div>
+        <div class="title1_1">异常类型</div>
+        <span class="title1_2">呈现七日数据，数据更新至2021.03.13</span>
+        <div style="width: 94%;height: 400px;margin: 0 auto;border-bottom: 1px solid #d7d7d7">
+            <table class="yc_table">
+                <thead>
+                <tr>
+                    <th style="text-align: left;padding-left:.5rem;background: #f5f6f7;border-right: .0625rem solid #fff;">日期/类型</th>
+                    <th>包装不良</th>
+                    <th>产品不良</th>
+                    <th>配件不良</th>
+                    <th>资料不良</th>
+                    <th>来货不符</th>
+                    <th>未知类型</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr style="background-color: #f5f6f7;">
+                    <td class="yc_table_time">3月13日</td>
+                    <td>20</td>
+                    <td>36</td>
+                    <td>34</td>
+                    <td>28</td>
+                    <td>42</td>
+                    <td>46</td>
+                </tr>
+                <tr style="background-color: #f5f6f7;">
+                    <td class="yc_table_time">3月12日</td>
+                    <td>20</td>
+                    <td>36</td>
+                    <td>34</td>
+                    <td>28</td>
+                    <td>42</td>
+                    <td>46</td>
+                </tr>
+                <tr style="background-color: #f5f6f7;">
+                    <td class="yc_table_time">3月11日</td>
+                    <td>20</td>
+                    <td>36</td>
+                    <td>34</td>
+                    <td>28</td>
+                    <td>42</td>
+                    <td>46</td>
+                </tr>
+                <tr style="background-color: #f5f6f7;">
+                    <td class="yc_table_time">3月10日</td>
+                    <td>20</td>
+                    <td>36</td>
+                    <td>34</td>
+                    <td>28</td>
+                    <td>42</td>
+                    <td>46</td>
+                </tr>
+                <tr style="background-color: #f5f6f7;">
+                    <td class="yc_table_time">3月9日</td>
+                    <td>20</td>
+                    <td>36</td>
+                    <td>34</td>
+                    <td>28</td>
+                    <td>42</td>
+                    <td>46</td>
+                </tr>
+                <tr style="background-color: #f5f6f7;">
+                    <td class="yc_table_time">3月8日</td>
+                    <td>20</td>
+                    <td>36</td>
+                    <td>34</td>
+                    <td>28</td>
+                    <td>42</td>
+                    <td>46</td>
+                </tr>
+                <tr style="background-color: #f5f6f7;">
+                    <td class="yc_table_time">3月7日</td>
+                    <td>20</td>
+                    <td>36</td>
+                    <td>34</td>
+                    <td>28</td>
+                    <td>42</td>
+                    <td>46</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="title1_1" style="margin-top: 2%">采购处理时效</div>
+            <span class="title1_2">数据更新至2021.03.13</span>
+
+        <div class="div_flex" style="margin-top: 1%;">
+            <div class="div_flex_1">
+                <div style="font-size: 22px;margin-top: 2%">正常入库</div>
+                    <div style="font-size: 22px;font-weight: bold;margin-top: 1%;color: #ff7532">42</div>
+                    <div>昨日
+                        <span>+10</span></div>
+            </div>
+            <div class="div_flex_1">
+                <div style="font-size: 22px;margin-top: 2%">退货</div>
+                    <div style="font-size: 22px;font-weight: bold;margin-top: 1%;color: #ff7532">18</div>
+                    <div>昨日
+                        <span>+10</span></div>
+            </div>
+            <div class="div_flex_1">
+                <div style="font-size: 22px;margin-top: 2%">退款</div>
+                    <div style="font-size: 22px;font-weight: bold;margin-top: 1%;color: #ff7532">18</div>
+                    <div>昨日
+                        <span>+1</span></div>
+            </div>
+            <div class="div_flex_1">
+                <div style="font-size: 22px;margin-top: 2%">不作处理</div>
+                    <div style="font-size: 22px;font-weight: bold;margin-top: 1%;color: #ff7532">26</div>
+                    <div>昨日
+                        <span>+5</span></div>
+            </div>
+            <div class="div_flex_1">
+                <div style="font-size: 22px;margin-top: 2%">总时效</div>
+                    <div style="font-size: 22px;font-weight: bold;margin-top: 1%;color: #ff7532">45</div>
+                    <div>昨日
+                        <span>+5</span></div>
+            </div>
+        </div>
+        <div id="yc_sx" style="margin: 0.5% auto;border: 1px solid #d7d7d7;width: 90%;height: 450px;border-radius: 8px 8px 8px 8px"></div>
+
+        <div class="title1_1" style="margin-top: 3%;">采购下单数据</div>
+            <span class="title1_2">数据更新至2021.03.13</span>
+        <div class="div_flex" style="margin-top: 1%;">
+            <div class="div_flex_1">
+                <div style="font-size: 22px;margin-top: 2%">采购下单量</div>
+                    <div style="font-size: 22px;font-weight: bold;margin-top: 1%;color: #ff7532">165320</div>
+                    <div>昨日
+                        <span>+10</span></div>
+            </div>
+            <div class="div_flex_1">
+                <div style="font-size: 22px;margin-top: 2%">计划推单量</div>
+                    <div style="font-size: 22px;font-weight: bold;margin-top: 1%;color: #ff7532">185320</div>
+                    <div>昨日
+                        <span>+10</span></div>
+            </div>
+            <div class="div_flex_1">
+                <div style="font-size: 22px;margin-top: 2%">采购下单率</div>
+                    <div style="font-size: 22px;font-weight: bold;margin-top: 1%;color: #ff7532">68.33%</div>
+                    <div>昨日
+                        <span>+12%</span></div>
+            </div>
+        </div>
+        <div id="xd_main" style="margin: 2% auto;border: 1px solid #d7d7d7;width: 90%;height: 450px;border-radius: 8px 8px 8px 8px"></div>
+        <div style="width: 94%;height: 400px;margin: 0 auto;">
+            <table class="yc_table">
+                <thead>
+                <tr>
+                    <th style="text-align: left;padding-left:.5rem;background: #f5f6f7;border-right: .0625rem solid #fff;">日期/类型</th>
+                    <th>采购下单量</th>
+                    <th>计划推单量</th>
+                    <th>采购在途量</th>
+                    <th>采购到货量</th>
+                    <th>采购入库量</th>
+                    <th>采购作废量</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr style="background-color: #f5f6f7;">
+                    <td class="yc_table_time">3月13日</td>
+                    <td>20</td>
+                    <td>36</td>
+                    <td>34</td>
+                    <td>28</td>
+                    <td>42</td>
+                    <td>46</td>
+                </tr>
+                <tr style="background-color: #f5f6f7;">
+                    <td class="yc_table_time">3月12日</td>
+                    <td>20</td>
+                    <td>36</td>
+                    <td>34</td>
+                    <td>28</td>
+                    <td>42</td>
+                    <td>46</td>
+                </tr>
+                <tr style="background-color: #f5f6f7;">
+                    <td class="yc_table_time">3月11日</td>
+                    <td>20</td>
+                    <td>36</td>
+                    <td>34</td>
+                    <td>28</td>
+                    <td>42</td>
+                    <td>46</td>
+                </tr>
+                <tr style="background-color: #f5f6f7;">
+                    <td class="yc_table_time">3月10日</td>
+                    <td>20</td>
+                    <td>36</td>
+                    <td>34</td>
+                    <td>28</td>
+                    <td>42</td>
+                    <td>46</td>
+                </tr>
+                <tr style="background-color: #f5f6f7;">
+                    <td class="yc_table_time">3月9日</td>
+                    <td>20</td>
+                    <td>36</td>
+                    <td>34</td>
+                    <td>28</td>
+                    <td>42</td>
+                    <td>46</td>
+                </tr>
+                <tr style="background-color: #f5f6f7;">
+                    <td class="yc_table_time">3月8日</td>
+                    <td>20</td>
+                    <td>36</td>
+                    <td>34</td>
+                    <td>28</td>
+                    <td>42</td>
+                    <td>46</td>
+                </tr>
+                <tr style="background-color: #f5f6f7;">
+                    <td class="yc_table_time">3月7日</td>
+                    <td>20</td>
+                    <td>36</td>
+                    <td>34</td>
+                    <td>28</td>
+                    <td>42</td>
+                    <td>46</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<script type="text/javascript">
+    var yc_1 =echarts.init(document.getElementById('yc_main'))
+    var yc_2 =echarts.init(document.getElementById('yc_sx'))
+    var xd_1 =echarts.init(document.getElementById('xd_main'))
+    var yc_1_option = {
+        title:{
+            text:'七日异常数据趋势',
+             subtext: '单位：条'
+        },
+        grid:{
+            top:'20%',
+            bottom:'10%'
+        },
+        legend:{
+            data:['异常总数','异常率'],
+            top:'5%'
+        },
+        xAxis:{
+            data:[1,2,3,4,5,6,7],
+            splitLine:{
+                show:false
+            }
+        },
+        yAxis:[{
+            splitLine:{
+                show:false
+            }
+        },{
+            splitLine:{
+                show:false
+            }
+        }],
+        series:[{
+            type:'bar',
+            name:'异常总数',
+            itemStyle:{
+                color:'#0087ff'
+            },
+            barWidth:30,
+            data:[3000,3200,4200,3500,4600,5200,4100]
+        },{
+            yAxisIndex: 1,
+            type:'line',
+            name:'异常率',
+            smooth: true,
+            data:[0.07,0.076,0.06,0.065,0.069,0.053,0.057]
+        }]
+    }
+    var yc_2_option = {
+        title:{
+            text:'七日异常处理时效趋势',
+             subtext: '单位：小时'
+        },
+        grid:{
+            top:'20%',
+            bottom:'10%'
+        },
+        legend:{
+            data:['正常入库','退货','退款','不作处理','总时效'],
+            top:'5%'
+        },
+        xAxis:{
+            data:[1,2,3,4,5,6,7],
+            splitLine:{
+                show:false
+            }
+        },
+        yAxis:[{
+            splitLine:{
+                show:false
+            }
+        }],
+        series:[{
+            type:'bar',
+            name:'正常入库',
+            itemStyle:{
+                color:'#0087ff'
+            },
+            barWidth:10,
+            data:[20,32,42,35,46,52,41]
+        },{
+            type:'bar',
+            name:'退货',
+            barWidth:10,
+            data:[27,36,36,35,49,53,47]
+        }
+        ,{
+            type:'bar',
+            name:'退款',
+            barWidth:10,
+            data:[29,26,36,39,29,33,47]
+        }
+        ,{
+            type:'bar',
+            name:'不作处理',
+            barWidth:10,
+            data:[18,26,22,29,39,25,27]
+        }
+        ,{
+            type:'line',
+            name:'总时效',
+            smooth: true,
+            data:[42,46,42,49,49,55,37]
+        }]
+    }
+    xdl=[130000,132000,142000,135000,146000,153310,165320]
+    tdl=[180000,172000,162000,165000,176000,163310,185320]
+    xdl_l=[]
+    for(i=0;i<xdl.length;i++){
+        xdl_l.push((xdl[i]/tdl[i]).toFixed(2))
+    }
+    var xd_1_option = {
+        title:{
+            text:'七日下单数据趋势',
+             subtext: '单位：单'
+        },
+        grid:{
+            top:'20%',
+            bottom:'10%'
+        },
+        legend:{
+            data:['采购下单量','计划推单量','下单率'],
+            top:'5%'
+        },
+        xAxis:{
+            data:[1,2,3,4,5,6,7],
+            splitLine:{
+                show:false
+            }
+        },
+        yAxis:[{
+            splitLine:{
+                show:false
+            }
+        },{
+            splitLine:{
+                show:false
+            }
+        }],
+        series:[{
+            type:'bar',
+            name:'采购下单量',
+            itemStyle:{
+                color:'#0087ff'
+            },
+            barWidth:20,
+            data:xdl
+        },{
+            type:'bar',
+            name:'计划推单量',
+            itemStyle:{
+                color:'#ff4358'
+            },
+            barWidth:20,
+            data:tdl
+        },{
+            yAxisIndex: 1,
+            type:'line',
+            name:'下单率',
+            smooth: true,
+            data:xdl_l
+        }]
+    }
+    yc_1.setOption(yc_1_option);
+    xd_1.setOption(xd_1_option);
+    yc_2.setOption(yc_2_option);
+</script>
+</body>
+</html>

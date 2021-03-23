@@ -1,0 +1,137 @@
+html, body {
+    height: 100%;
+    margin: 0;
+}
+
+/*图表的样式*/
+#ECharts_main {
+    width: 70%;
+    height: 70%;
+    border: 1px solid #666666;
+    margin: 5px auto;
+    padding: 10px 0;
+    position: relative;
+}
+
+#select_tip {
+    width: 300px;
+    height: 70px;
+    font-size: 3em;
+    font-weight: 700;
+    color: #aaaaaa;
+    border: 3px dotted;
+    text-align: center;
+    margin: auto;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+
+#header {
+    width: 70%;
+    height: 100px;
+    margin: 0px auto;
+}
+
+#footer {
+    width: 70%;
+    margin: 0px auto;
+}
+
+h1 {
+    margin: 0px;
+    padding: 10px 0px;
+}
+
+.fileinput-button {
+    position: relative;
+    display: inline-block;
+    overflow: hidden;
+    border: 1px solid #eaeaea;
+    padding: 7px 30px;
+    border-radius: 4px;
+    color: #000000;
+    font-weight: bold;
+}
+
+.fileinput-button input {
+    position: absolute;
+    right: 0;
+    top: 0;
+    opacity: 0;
+    -ms-filter: 'alpha(opacity=0)';
+    font-size: 200px;
+}
+
+.fileinput-button :hover {
+    cursor: pointer;
+}
+.div_main{
+    position: relative;
+    margin-left:10%;
+    margin-right: 10%;
+    width: 80%;
+    height: 3000px;
+    border: 1px solid #000;
+}
+.title1{
+    font-size: 24px;
+    font-weight: bold;
+    line-height: 50px;
+    margin-left: 3%;
+}
+.head_title{
+    line-height: 40px;
+    margin-left: 20px;
+    font-weight: bold;
+    font-size: 16px;
+}
+.title1_1{
+    font-size: 20px;
+    font-weight:bold;
+    margin-left: 3%
+}
+.title1_2{
+    font-size: 14px;
+    margin-left: 3%;
+    color: #8e8e8e;
+}
+.div_flex{
+    display: flex;
+    height: 100px;
+    width: 100%;
+}
+.div_flex_1{
+    height: 100px;
+    width: 25%;
+    text-align: center;
+    flex-grow: 1;
+    flex-shrink: 1;
+    flex-basis: 25%
+}.div_flex_1 div{
+    height: 30%;
+    text-align: center;
+}
+ .yc_table{
+     width: 100%;
+     margin-top: .625rem;
+     text-align: center;
+     border-spacing: 0 0.5rem;
+     border-collapse:separate;
+ } .yc_table th{
+     text-align: center;
+     background: #f5f6f7;
+     border-right: .0625rem solid #fff;
+ }.yc_table_time{
+    background-color: #00bec9;
+    color: #fff;
+    font-weight: 700;
+    border-top-left-radius: 3px;
+    border-bottom-left-radius: 3px;
+      }
+  .yc_table tr{
+     height: 4rem;
+     background-color: #f5f6f7;
+ }
