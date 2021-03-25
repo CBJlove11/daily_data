@@ -5,14 +5,14 @@
     <title>供应链日报</title>
     <link rel="icon" href="favicon.ico">
     <link rel="stylesheet" href="../static/css/index.css">
-    <script type="text/javascript" src="venv/scripts/xlsx.core.min.js"></script>
-    <script type="text/javascript" src="venv/scripts/index.js"></script>
-    <script type="text/javascript" src="venv/scripts/echarts.min.js"></script>
-    <script type="text/javascript" src="venv/scripts/echarts-liquidfill.js"></script>
+    <script type="text/javascript" src="static/js/xlsx.core.min.js"></script>
+    <script type="text/javascript" src="static/js/index.js"></script>
+    <script type="text/javascript" src="static/js/echarts.min.js"></script>
+    <script type="text/javascript" src="static/js/echarts-liquidfill.js"></script>
     <link rel="stylesheet" href="../static/css/bootstrap.min.css">
-    <script src="venv/scripts/jquery.min.js"></script>
-    <script src="venv/scripts/bootstrap.min.js"></script>
-    <script src="venv/scripts/echarts-liquidfill.js"></script>
+    <script src="static/js/jquery.min.js"></script>
+    <script src="static/js/bootstrap.min.js"></script>
+    <script src="static/js/echarts-liquidfill.js"></script>
 </head>
 <body style="background-color: #10aeb5" data-spy="scroll" data-target="#myScrollspy">
 <!-- >
@@ -31,9 +31,9 @@
     <img src="../static/image/数据图1.png" style="width: 10%;margin-left: 30%;margin-top:2%;position: absolute">
     <img src="../static/image/数据图2.png" style="width: 10%;margin-left: 40%;margin-top:15%;position: absolute">
     <p style="color: white;font-size: 25px;position: absolute;margin-top: 13%">供应链综合管理部</p>
-    <p style="color: white;font-size: 32px;position: absolute;margin-top: 17%">数据组运营日报表</p>
+    <p style="color: white;font-size: 32px;position: absolute;margin-top: 17%">仓储中心运营日报表</p>
     <div style="position: absolute;width: 26%;height: 28px;margin-top: 21.5%;border-radius: 8px 8px 8px 8px;background: #1b7991">
-        <p style="color: white;font-size: 18px;text-align: center">时间节点：2021年3月12日</p>
+        <p id="title_time" style="color: white;font-size: 18px;text-align: center">时间节点：2021年3月12日</p>
     </div>
 </div>
 <!-- >
@@ -48,7 +48,7 @@
         </div>
         <div style="width: 100%;height: 160px;border-bottom: 1px solid #d7d7d7;position: relative">
             <div class="title1_1">出入库数据</div>
-            <span class="title1_2">数据更新至2021.03.13</span>
+            <span id="title_time2" class="title1_2">数据更新至2021.03.13</span>
             <div class="div_flex" style="margin-top: 1%">
                 <div class="div_flex_1">
                     <div style="font-size: 22px;font-weight: bold;margin-top: 2%">入库件数</div>
@@ -76,7 +76,7 @@
                 </div>
             </div>
         </div>
-        <div id="cc_main" style="margin: 2% auto;border: 1px solid #d7d7d7;width: 90%;height: 450px;border-radius: 8px 8px 8px 8px"></div>
+        <div id="main_yy" style="margin: 2% auto;border: 1px solid #d7d7d7;width: 90%;height: 450px;border-radius: 8px 8px 8px 8px"></div>
         <div style="width: 94%;height: 400px;margin: 0 auto;">
             <table class="yc_table">
                 <thead>
@@ -145,59 +145,662 @@
 </div>
 
 <script type="text/javascript">
-    var cc_1 =echarts.init(document.getElementById('cc_main'))
-    var cc_1_option = {
-        title:{
-            text:'七日异常处理时效趋势',
-             subtext: '单位：小时'
-        },
-        grid:{
-            top:'20%',
-            bottom:'10%'
-        },
-        legend:{
-            data:['入库件数','小包出库件数','FBA出库件数','订单量'],
-            top:'5%'
-        },
-        xAxis:{
-            data:[1,2,3,4,5,6,7],
-            splitLine:{
-                show:false
-            }
-        },
-        yAxis:[{
-            splitLine:{
-                show:false
-            }
-        }],
-        series:[{
-            type:'bar',
-            name:'入库件数',
-            itemStyle:{
-                color:'#0087ff'
-            },
-            barWidth:10,
-            data:[20,32,42,35,46,52,41]
-        },{
-            type:'bar',
-            name:'小包出库件数',
-            barWidth:10,
-            data:[27,36,36,35,49,53,47]
-        }
-        ,{
-            type:'bar',
-            name:'FBA出库件数',
-            barWidth:10,
-            data:[29,26,36,39,29,33,47]
-        }
-        ,{
-            type:'line',
-            name:'订单量',
-            smooth: true,
-            data:[42,46,42,49,49,55,37]
-        }]
+    var tph_data ={
+        hm_tph_date:[] ,
+        hm_uph:[] ,
+        hm_tph:[],
+        tx_tph_date:[] ,
+        tx_uph:[] ,
+        tx_tph:[]
+
     }
-    cc_1.setOption(cc_1_option);
+    var dcl_data = {
+        dcl_1:[],
+        dcl_2:[],
+        dcl_3:[],
+        dcl_4:[]
+
+    }
+    var ry_data ={
+        hm_total:[],
+        tx_total:[],
+        hm_total2:[],
+        tx_total2:[]
+    }
+    var jy_data = {
+            hm_jy_XB_totoal:[],
+            hm_jy_FB_totoal:[],
+            tx_jy_XB_totoal:[],
+            tx_jy_FB_totoal:[],
+            hm_jy_DB_totoal:[],
+            tx_jy_DB_totoal:[],
+            hm_jy_XB_totoal_color:[],
+            hm_jy_FB_totoal_color:[],
+            tx_jy_XB_totoal_color:[],
+            tx_jy_FB_totoal_color:[],
+            hm_jy_DB_totoal_color:[],
+            tx_jy_DB_totoal_color:[]
+        }
+    var zl_data = {
+        hm_zl_cost : [],
+        hm_zl_time : [],
+        tx_zl_cost : [],
+        tx_zl_time : []
+    }
+    var sx_data = {
+        tx_sx_in :[],
+        tx_sx_out :[],
+        tx_sx_fba :[],
+        hm_sx_in :[],
+        hm_sx_out :[],
+        hm_sx_fba :[],
+        tx_sx_date:[],
+        hm_sx_date:[]
+    }
+    var rk_data = {
+        hm_rk_in :[],
+        hm_rk_out :[],
+        hm_rk_ld :[],
+        tx_rk_in :[],
+        tx_rk_out :[],
+        tx_rk_ld :[]
+    }
+    var zt_data =  {
+        zt_date:[],
+        zt_1:[],
+        zt_2:[],
+        zt_3:[],
+        zt_4:[],
+        zt_5:[]
+    }
+    var db_data  ={
+        db_in:[],
+        db_out:[],
+        db_total:[] ,
+        db_date:[]
+
+    }
+    var dcl2_data={
+        dcl2_in:[],
+        dcl2_out:[],
+        dcl2_fba:[]
+    }
+    function getData() {
+        $.ajax({
+            url: '/test3',
+            data: {},
+            type: 'POST',
+            async: false,
+            dataType: 'json',
+            success: function (data) {
+
+                jy_data.hm_jy_XB_totoal = data.hm_jy_XB_totoal
+                jy_data.hm_jy_FB_totoal = data.hm_jy_FB_totoal
+                jy_data.tx_jy_XB_totoal = data.tx_jy_XB_totoal
+                jy_data.tx_jy_FB_totoal = data.tx_jy_FB_totoal
+                jy_data.hm_jy_DB_totoal = data.hm_jy_DB_totoal
+                jy_data.tx_jy_DB_totoal = data.tx_jy_DB_totoal
+                jy_data.hm_jy_XB_totoal_color = data.hm_jy_XB_totoal_color
+                jy_data.hm_jy_FB_totoal_color = data.hm_jy_FB_totoal_color
+                jy_data.tx_jy_XB_totoal_color = data.tx_jy_XB_totoal_color
+                jy_data.tx_jy_FB_totoal_color = data.tx_jy_FB_totoal_color
+                jy_data.hm_jy_DB_totoal_color = data.hm_jy_DB_totoal_color
+                jy_data.tx_jy_DB_totoal_color = data.tx_jy_DB_totoal_color
+                zl_data.hm_zl_cost = data.hm_zl_cost
+                zl_data.hm_zl_time = data.hm_zl_time
+                zl_data.tx_zl_cost = data.tx_zl_cost
+                zl_data.tx_zl_time = data.tx_zl_time
+                sx_data.tx_sx_date = data.tx_sx_date
+                sx_data.hm_sx_date = data.hm_sx_date
+                sx_data.tx_sx_in = data.tx_sx_in
+                sx_data.tx_sx_out = data.tx_sx_out
+                sx_data.tx_sx_fba = data.tx_sx_fba
+                sx_data.hm_sx_in = data.hm_sx_in
+                sx_data.hm_sx_out = data.hm_sx_out
+                sx_data.hm_sx_fba = data.hm_sx_fba
+                rk_data.hm_rk_in = data.hm_rk_in
+                rk_data.hm_rk_out = data.hm_rk_out
+                rk_data.hm_rk_ld = data.hm_rk_ld
+                rk_data.tx_rk_in = data.tx_rk_in
+                rk_data.tx_rk_out = data.tx_rk_out
+                rk_data.tx_rk_ld = data.tx_rk_ld
+                tph_data.hm_tph = data.hm_tph
+                tph_data.hm_tph_date = data.hm_tph_date
+                tph_data.hm_uph = data.hm_uph
+                tph_data.tx_tph = data.tx_tph
+                tph_data.tx_tph_date = data.tx_tph_date
+                tph_data.tx_uph = data.tx_uph
+                ry_data.hm_total = data.hm_total
+                ry_data.tx_total = data.tx_total
+                ry_data.hm_total2 = data.hm_change
+                ry_data.tx_total2 = data.tx_change
+                zt_data.zt_date  = data.zt_date
+                zt_data.zt_1  = data.zt_1
+                zt_data.zt_2  = data.zt_2
+                zt_data.zt_3  = data.zt_3
+                zt_data.zt_4  = data.zt_4
+                zt_data.zt_5  = data.zt_5
+                dcl_data.dcl_1 = data.dcl_1
+                dcl_data.dcl_2 = data.dcl_2
+                dcl_data.dcl_3 = data.dcl_3
+                dcl_data.dcl_4 = data.dcl_4
+                db_data.db_in=data.db_in
+                db_data.db_out=data.db_out
+                db_data.db_total=data.db_total
+                db_data.db_date= data.db_date
+                dcl2_data.dcl2_in=data.dcl2_in
+                dcl2_data.dcl2_out=data.dcl2_out
+                dcl2_data.dcl2_fba=data.dcl2_fba
+                                console.log(zt_1)
+
+            }
+        });
+    }
+    function myCharts() {
+    var myCharts_yy = echarts.init(document.getElementById('main_yy'))
+    myCharts_yy.setOption(option_yy)
+
+        }
+    var option_yy = {
+
+    title: [{
+                    text: '虎门仓',
+                    x: 250,
+                    top:10,
+                    textStyle: {
+                        fontSize: 25
+                    } },{text: '塘厦仓',
+                    x: 750,
+                    top:10,
+                    textStyle: {
+                        fontSize: 25
+                    } }],
+
+    tooltip: {
+        trigger: 'axis',
+        axisPointer: {
+            type: 'cross',
+            crossStyle: {
+                color: '#999'
+            }
+        }
+    },
+
+    toolbox: {
+        feature: {
+            dataView: {show: true, readOnly: false},
+            magicType: {show: true, type: ['line', 'bar']},
+            restore: {show: true},
+            saveAsImage: {show: true}
+        }   ,
+           show : true,                                 //是否显示工具栏组件
+    orient:"horizontal",                        //工具栏 icon 的布局朝向'horizontal' 'vertical'
+    itemSize:15,                                 //工具栏 icon 的大小
+    itemGap:10,                                  //工具栏 icon 每项之间的间隔
+    showTitle:true,                             //是否在鼠标 hover 的时候显示每个工具 icon 的标题
+    feature : {
+        mark : {                                 // '辅助线开关'
+            show: true
+        },
+        dataView : {                            //数据视图工具，可以展现当前图表所用的数据，编辑后可以动态更新
+            show: true,                         //是否显示该工具。
+            title:"数据视图",
+            readOnly: false,                    //是否不可编辑（只读）
+            lang: ['数据视图', '关闭', '刷新'],  //数据视图上有三个话术，默认是['数据视图', '关闭', '刷新']
+            backgroundColor:"#fff",             //数据视图浮层背景色。
+            textareaColor:"#fff",               //数据视图浮层文本输入区背景色
+            textareaBorderColor:"#333",         //数据视图浮层文本输入区边框颜色
+            textColor:"#000",                    //文本颜色。
+            buttonColor:"#c23531",              //按钮颜色。
+            buttonTextColor:"#fff",             //按钮文本颜色。
+        },
+        magicType: {                            //动态类型切换
+            show: true,
+            title:"切换",                       //各个类型的标题文本，可以分别配置。
+            type: ['line', 'bar','tiled'],              //启用的动态类型，包括'line'（切换为折线图）, 'bar'（切换为柱状图）, 'stack'（切换为堆叠模式）, 'tiled'（切换为平铺模式）
+        },
+        restore : {                             //配置项还原。
+            show: true,                         //是否显示该工具。
+            title:"还原",
+        },
+        saveAsImage : {                         //保存为图片。
+            show: true,                         //是否显示该工具。
+            type:"png",                         //保存的图片格式。支持 'png' 和 'jpeg'。
+            name:"pic1",                        //保存的文件名称，默认使用 title.text 作为名称
+            backgroundColor:"#ffffff",        //保存的图片背景色，默认使用 backgroundColor，如果backgroundColor不存在的话会取白色
+            title:"保存为图片",
+            pixelRatio:1                        //保存图片的分辨率比例，默认跟容器相同大小，如果需要保存更高分辨率的，可以设置为大于 1 的值，例如 2
+        },
+        dataZoom :{                             //数据区域缩放。目前只支持直角坐标系的缩放
+            show: true,                         //是否显示该工具。
+            title:"缩放",                       //缩放和还原的标题文本
+            xAxisIndex:0,                       //指定哪些 xAxis 被控制。如果缺省则控制所有的x轴。如果设置为 false 则不控制任何x轴。如果设置成 3 则控制 axisIndex 为 3 的x轴。如果设置为 [0, 3] 则控制 axisIndex 为 0 和 3 的x轴
+            yAxisIndex:false,                   //指定哪些 yAxis 被控制。如果缺省则控制所有的y轴。如果设置为 false 则不控制任何y轴。如果设置成 3 则控制 axisIndex 为 3 的y轴。如果设置为 [0, 3] 则控制 axisIndex 为 0 和 3 的y轴
+        },
+    },
+    zlevel:0,                                   //所属图形的Canvas分层，zlevel 大的 Canvas 会放在 zlevel 小的 Canvas 的上面
+    z:2,                                         //所属组件的z分层，z值小的图形会被z值大的图形覆盖
+    left:"center",                              //组件离容器左侧的距离,'left', 'center', 'right','20%'
+    top:"top",                                   //组件离容器上侧的距离,'top', 'middle', 'bottom','20%'
+    right:"auto",                               //组件离容器右侧的距离,'20%'
+    bottom:"auto",                              //组件离容器下侧的距离,'20%'
+    width:"auto",                               //图例宽度
+    height:"auto"
+    },
+    legend: {
+        data: ['FBA出库量','小包出库量', '入库件量', '小包订单数'] ,
+        bottom:10,
+                            textStyle: {
+                        fontSize: 20
+                    }
+    },
+    xAxis: [
+        {
+            data: [zt_data.zt_date[0],
+                zt_data.zt_date[1],
+                zt_data.zt_date[2],
+                zt_data.zt_date[3],
+                zt_data.zt_date[4],
+                zt_data.zt_date[5],
+                zt_data.zt_date[6],
+
+
+
+            ],
+            axisPointer: {
+                type: 'shadow'
+            },
+             splitLine:{show: false}   ,
+            axisLine:{
+                show:false
+            },
+            axisTick:{
+                show:false
+            }
+        ,gridIndex: 0},
+                               {
+            data: [zt_data.zt_date[0],
+                zt_data.zt_date[1],
+                zt_data.zt_date[2],
+                zt_data.zt_date[3],
+                zt_data.zt_date[4],
+                zt_data.zt_date[5],
+                zt_data.zt_date[6],
+
+            ],
+            axisPointer: {
+                type: 'shadow'
+            },
+             splitLine:{show: false}   ,
+            axisLine:{
+                show:false
+            },
+            axisTick:{
+                show:false
+            }
+        ,gridIndex: 1}
+
+
+
+
+
+    ],
+
+    yAxis: [
+                {
+            type: 'value',
+            name: '件数',
+            min: 0,
+            max:zt_data.zt_1[14],
+            // {#interval: 5,#}
+            axisLabel: {
+                formatter: function(value){
+                    return (value/10000).toFixed(0)+'万'
+              }
+            }  ,splitLine:{show: false} ,splitArea : {show : false} ,gridIndex: 0
+        },
+        {
+            type: 'value',
+            name: '件数',
+            min: 0,
+            max:zt_data.zt_1[15],
+            // {#interval: 5,#}
+            axisLabel: {
+                formatter: function(value){
+                    return (value/10000).toFixed(0)+'万'
+              }
+            }  ,splitLine:{show: false} ,splitArea : {show : false}   ,gridIndex: 1
+        },
+        {
+            type: 'value',
+
+            min: -zt_data.zt_1[16],
+            max: zt_data.zt_1[16],
+            // {#interval: 50,#}
+            axisLabel: {   show:false,
+                formatter: '{value}'+'W'
+            },
+            splitLine:{show: false} ,splitArea : {show : false}  ,gridIndex: 0
+        }
+            ,
+          {
+            type: 'value',
+
+            min: -zt_data.zt_1[17],
+            max: zt_data.zt_1[17],
+            // {#interval: 50,#}
+            axisLabel: {   show:false,
+                formatter: '{value}'+'W'
+            },
+            splitLine:{show: false} ,splitArea : {show : false}  ,gridIndex: 1
+        }
+
+
+    ],
+
+                    grid: [
+                                {right:'53%',x:'4%'},
+                        {left: '53%',x2:'4%'}
+
+    ],
+    series: [
+        {
+            name: 'FBA出库量',
+            type: 'bar',
+            stack:'1',
+            data: [zt_data.zt_4[0],
+                zt_data.zt_4[1],
+                   zt_data.zt_4[2],
+                    zt_data.zt_4[3],
+                    zt_data.zt_4[4],
+                zt_data.zt_4[5]     ,
+                                zt_data.zt_4[6]
+
+            ],
+
+              label:{
+                normal:{
+                    show:true,
+                    color:'#000'
+                }
+            },
+            itemStyle:{
+                normal:{
+                    color:'#C23531'
+                }
+            } ,gridIndex: 0
+        },
+        {
+            name: '小包出库量',
+            type: 'bar',
+            stack:'1',
+
+
+            data: [zt_data.zt_2[0],
+                zt_data.zt_2[1],
+                   zt_data.zt_2[2],
+                    zt_data.zt_2[3],
+                    zt_data.zt_2[4],
+                    zt_data.zt_2[5],
+                    zt_data.zt_2[6]
+
+
+            ] ,
+
+
+            label:{
+                normal:{
+                    show:true
+                }
+            },
+                        itemStyle:{
+                normal:{
+                    color:'#2F4554'
+                }
+            } ,gridIndex: 0
+        },
+
+        {
+            name: '入库件量',
+            type: 'bar',
+            stack:'1',
+
+
+            data: [zt_data.zt_1[0],
+                zt_data.zt_1[1],
+                   zt_data.zt_1[2],
+                    zt_data.zt_1[3],
+                    zt_data.zt_1[4],
+                    zt_data.zt_1[5],
+                    zt_data.zt_1[6]
+
+            ],
+            label:{
+                normal:{
+                    show:true
+                }
+            },
+                    itemStyle:{
+                normal:{
+                    color:'#6AB0B8'
+                }
+            },gridIndex: 0
+        },
+
+        {
+            name: '小包订单数',
+            type: 'line',
+            yAxisIndex: 0,
+            data: [zt_data.zt_3[0],
+                zt_data.zt_3[1],
+                   zt_data.zt_3[2],
+                    zt_data.zt_3[3],
+                    zt_data.zt_3[4]  ,
+                    zt_data.zt_3[5],
+                                    zt_data.zt_3[6]
+
+                    ],
+            label:{
+                normal:{
+                    show:true
+                }
+            } ,gridIndex: 1,yAxisIndex: 2
+        } ,
+
+        {
+            name: 'FBA出库量',
+            type: 'bar',
+            stack:'2',
+
+
+            data: [
+                zt_data.zt_4[7],
+                   zt_data.zt_4[8],
+                    zt_data.zt_4[9],
+                    zt_data.zt_4[10] ,
+                    zt_data.zt_4[11] ,
+                zt_data.zt_4[12],
+                                zt_data.zt_4[13],
+
+
+            ],
+              label:{
+                normal:{
+                    show:true,
+                    color:'#000'
+                }
+
+            },
+            itemStyle:{
+                normal:{
+                    color:'#C23531'
+                }
+            },xAxisIndex: 1, yAxisIndex: 1
+        },
+        {
+            name: '小包出库量',
+            type: 'bar',
+            stack:'2',
+
+
+            data: [
+                    zt_data.zt_2[7],
+                    zt_data.zt_2[8],
+                    zt_data.zt_2[9],
+                    zt_data.zt_2[10],
+                    zt_data.zt_2[11],
+                    zt_data.zt_2[12],
+                    zt_data.zt_2[13],
+
+],
+
+
+            label:{
+                normal:{
+                    show:true
+                }
+            },
+                        itemStyle:{
+                normal:{
+                    color:'#2F4554'
+                }
+            },xAxisIndex: 1, yAxisIndex: 1
+        },
+
+        {
+            name: '入库件量',
+            type: 'bar',
+            stack:'2',
+
+
+            data: [
+                    zt_data.zt_1[7],
+                    zt_data.zt_1[8],
+                    zt_data.zt_1[9] ,
+                    zt_data.zt_1[10] ,
+                    zt_data.zt_1[11] ,
+                    zt_data.zt_1[12],
+                    zt_data.zt_1[13],
+
+            ],
+            label:{
+                normal:{
+                    show:true
+                }
+            },
+                    itemStyle:{
+                normal:{
+                    color:'#6AB0B8'
+                }
+            } ,xAxisIndex: 1, yAxisIndex: 1
+        },
+
+        {
+            name: '小包订单数',
+            type: 'line',
+            yAxisIndex: 0,
+            data: [
+                    zt_data.zt_3[7],
+                    zt_data.zt_3[8],
+                    zt_data.zt_3[9] ,
+                    zt_data.zt_3[10],
+                    zt_data.zt_3[11],
+                    zt_data.zt_3[12],
+                    zt_data.zt_3[13],
+
+
+            ],
+            label:{
+                normal:{
+                    show:true
+                }
+            },xAxisIndex: 1, yAxisIndex: 3
+        }
+
+
+
+    ]
+            }
+
+    var myDate = new Date();
+    ytime =myDate.getFullYear();
+    mtime = myDate.getMonth() + 1;
+    dtime = myDate.getDate();
+    htime = myDate.getHours();
+    document.getElementById('title_time').innerHTML = '时间节点：'+ytime+'年'+ mtime + '月' + dtime + '日';
+    document.getElementById('title_time2').innerHTML = '时间节点：'+ytime+'年'+ mtime + '月' + dtime + '日';
+    getData();
+    myCharts();
+
+
+
+
+
+
+
+
+
+
+
+
+
+    // var cc_1 =echarts.init(document.getElementById('cc_main'))
+    // var cc_1_option = {
+    //     title:{
+    //         text:'七日异常处理时效趋势',
+    //          subtext: '单位：小时'
+    //     },
+    //     grid:{
+    //         top:'20%',
+    //         bottom:'10%'
+    //     },
+    //     legend:{
+    //         data:['入库件数','小包出库件数','FBA出库件数','订单量'],
+    //         top:'5%'
+    //     },
+    //     xAxis:{
+    //         data:[1,2,3,4,5,6,7],
+    //         splitLine:{
+    //             show:false
+    //         }
+    //     },
+    //     yAxis:[{
+    //         splitLine:{
+    //             show:false
+    //         }
+    //     }],
+    //     series:[{
+    //         type:'bar',
+    //         name:'入库件数',
+    //         itemStyle:{
+    //             color:'#0087ff'
+    //         },
+    //         barWidth:10,
+    //         data:[20,32,42,35,46,52,41]
+    //     },{
+    //         type:'bar',
+    //         name:'小包出库件数',
+    //         barWidth:10,
+    //         data:[27,36,36,35,49,53,47]
+    //     }
+    //     ,{
+    //         type:'bar',
+    //         name:'FBA出库件数',
+    //         barWidth:10,
+    //         data:[29,26,36,39,29,33,47]
+    //     }
+    //     ,{
+    //         type:'line',
+    //         name:'订单量',
+    //         smooth: true,
+    //         data:[42,46,42,49,49,55,37]
+    //     }]
+    // }
+    // cc_1.setOption(cc_1_option);
+
+
+
+
 </script>
 </body>
 </html>
