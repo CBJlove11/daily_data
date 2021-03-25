@@ -23,10 +23,8 @@ class DecimalEncoder(json.JSONEncoder):
 @app.route('/')
 def index_cg():
     return render_template("采购日报.html")
-
 @app.route('/仓库日报.html')
 def index_ck():
-    index_jy()
     return render_template('仓库日报.html')
 @app.route('/test3', methods=['POST'])
 def index_jy():
@@ -200,9 +198,9 @@ def index_jy():
 
     hm_total.append(float(ry_13[0] + ry_13[1]))
     hm_total.append(float(ry_14[0] + ry_14[1]))
-
-    tx_total.append(float(ry_1[3]))
+    
     tx_total.append(float(ry_1[2]))
+    tx_total.append(float(ry_1[3]))
     tx_total.append(float(ry_3[3] + ry_3[2]))
     tx_total.append(float(ry_5[3] + ry_5[2]))
     tx_total.append(float(ry_7[3] + ry_7[2]))
@@ -773,31 +771,6 @@ def index_jy():
     cur.close()
     return (j)
 
-
-
-
-
-@app.route('/send_message', methods=['GET'])
-def send_message():
-    global message_get
-    message_get = ""
-
-    message_get = request.args['message']
-    print("收到前端发过来的信息：%s" % message_get)
-    print("收到数据的类型为：" + str(type(message_get)))
-
-    return "收到消息"
-
-
-@app.route('/change_to_json', methods=['GET'])
-def change_to_json():
-
-    global message_get
-    message_json = {
-        "message": message_get
-    }
-
-    return jsonify(message_json)
 
 
 if __name__ == '__main__':

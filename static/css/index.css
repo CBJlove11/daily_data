@@ -103,6 +103,14 @@ h1 {
     height: 100px;
     width: 100%;
 }
+.div_flex_ck{
+    height: 100px;
+    width: 25%;
+    text-align: center;
+    flex-grow: 1;
+    flex-shrink: 1;
+    flex-basis: 25%
+}
 .div_flex_1{
     height: 100px;
     width: 25%;
@@ -143,3 +151,21 @@ h1 {
       color: #00c240;
         font-weight: bold;
   }
+
+.ry_table{
+    font-size: 20px;
+    font-weight: bold;
+    margin-top: 6%;
+}
+.RY_add{
+    font-size: 15px !important;
+    color: #FF0000 !important;
+}
+.RY_reduce{
+    font-size: 15px !important;
+    color: #0F990F !important;
+}
+.RY_zero{
+    font-size: 15px !important;
+    color: #fff !important;
+}
