@@ -135,3 +135,11 @@ h1 {
      height: 4rem;
      background-color: #f5f6f7;
  }
+  .yc_title_a{
+      color: #ff4358;
+      font-weight: bold;
+  }
+    .yc_title_b{
+      color: #00c240;
+        font-weight: bold;
+  }

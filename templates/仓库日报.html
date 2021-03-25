@@ -4,12 +4,12 @@
     <meta charset="UTF-8">
     <title>供应链日报</title>
     <link rel="icon" href="favicon.ico">
-    <link rel="stylesheet" href="css/index.css">
+    <link rel="stylesheet" href="../static/css/index.css">
     <script type="text/javascript" src="venv/scripts/xlsx.core.min.js"></script>
     <script type="text/javascript" src="venv/scripts/index.js"></script>
     <script type="text/javascript" src="venv/scripts/echarts.min.js"></script>
     <script type="text/javascript" src="venv/scripts/echarts-liquidfill.js"></script>
-    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="../static/css/bootstrap.min.css">
     <script src="venv/scripts/jquery.min.js"></script>
     <script src="venv/scripts/bootstrap.min.js"></script>
     <script src="venv/scripts/echarts-liquidfill.js"></script>
@@ -20,16 +20,16 @@
 <-->
 <div class="container" style="width: 100%;height:40px;background-color: #d7d7d7;display: flex;">
     <p style="line-height: 40px;margin-left: 20px;font-weight: bold;font-size: 16px;">易佰网络-供应链综合管理部</p>
-    <a href="采购日报.html" style="line-height: 40px;margin-left: 20px;font-size: 16px;color: #000;">采购数据</a>
+    <a href="{{url_for('index_cg')}}" style="line-height: 40px;margin-left: 20px;font-size: 16px;color: #000;">采购数据</a>
     <a href="#" style="line-height: 40px;margin-left: 20px;font-size: 16px;color: #000;">仓库数据</a>
     <a style="line-height: 40px;margin-left: 20px;font-size: 16px;color: #000;">物流数据</a>
     <a style="line-height: 40px;margin-left: 20px;font-size: 16px;color: #000;">开发数据</a>
 </div>
 <div class="container" style="width: 1000px;height:250px;position: relative">
-    <img src="image/数据图.png" style="width: 40%;margin-left: 55%;position: absolute">
-    <img src="image/公司LOGO.png" style="width: 12%;position: absolute">
-    <img src="image/数据图1.png" style="width: 10%;margin-left: 30%;margin-top:2%;position: absolute">
-    <img src="image/数据图2.png" style="width: 10%;margin-left: 40%;margin-top:15%;position: absolute">
+    <img src="../static/image/数据图.png" style="width: 40%;margin-left: 55%;position: absolute">
+    <img src="../static/image/公司LOGO.png" style="width: 12%;position: absolute">
+    <img src="../static/image/数据图1.png" style="width: 10%;margin-left: 30%;margin-top:2%;position: absolute">
+    <img src="../static/image/数据图2.png" style="width: 10%;margin-left: 40%;margin-top:15%;position: absolute">
     <p style="color: white;font-size: 25px;position: absolute;margin-top: 13%">供应链综合管理部</p>
     <p style="color: white;font-size: 32px;position: absolute;margin-top: 17%">数据组运营日报表</p>
     <div style="position: absolute;width: 26%;height: 28px;margin-top: 21.5%;border-radius: 8px 8px 8px 8px;background: #1b7991">
