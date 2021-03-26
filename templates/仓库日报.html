@@ -40,7 +40,7 @@
 #######################################################
 #######################数据############################
 <-->
-<div style="margin:0 auto;width: 1000px;height:3000px;margin-top:10px;border: 1px solid #000;border-radius: 10px 10px 10px 10px;background-color: white">
+<div style="margin:0 auto;width: 1000px;height:6000px;margin-top:10px;border: 1px solid #000;border-radius: 10px 10px 10px 10px;background-color: white">
     <!-- >****************************仓储板块****************************<-->
     <div style="width: 100%;height: 3000px;">
         <div style="width: 100%;height: 50px;border-bottom: 1px solid #d7d7d7">
@@ -247,8 +247,8 @@
             </div>
         </div>
         <div style="width: 100%;height: 650px;border-bottom: 1px solid #d7d7d7;position: relative">
-            <div class="title1_1">出入库数据</div>
-            <span id="title_time3" class="title1_2">数据更新至2021.03.13</span>
+            <div style="margin-top: 1%" class="title1_1">出入库数据</div>
+            <span style="margin-top: 1%" id="title_time3" class="title1_2">数据更新至2021.03.13</span>
             <div class="div_flex" style="margin-top: 1%">
                 <div class="div_flex_1">
                     <div style="font-size: 22px;font-weight: bold;margin-top: 2%">入库件数</div>
@@ -283,25 +283,25 @@
             <span id="title_time4" style="margin-top: 2.5%" class="title1_2">数据更新至2021.03.13</span>
             <div class="div_flex" style="margin-top: 1%">
                 <div class="div_flex_1">
-                    <div style="font-size: 22px;font-weight: bold;margin-top: 2%">虎门调入(7天)</div>
+                    <div style="font-size: 22px;font-weight: bold;margin-top: 2%">虎门调入单量(周)</div>
                     <div id="db_011" style="font-size: 20px;font-weight: bold;margin-top: 2%;">8888</div>
 <!--                    <div>昨日-->
 <!--                        <span id="db_021">+10</span></div>-->
                 </div>
                 <div class="div_flex_1">
-                    <div style="font-size: 22px;font-weight: bold;margin-top: 2%">虎门调出(7天)</div>
+                    <div style="font-size: 22px;font-weight: bold;margin-top: 2%">虎门调出单量(周)</div>
                     <div  id="db_012" style="font-size: 20px;font-weight: bold;margin-top: 2%;">5000</div>
 <!--                    <div>昨日-->
 <!--                        <span id="db_022">+10</span></div>-->
                 </div>
                 <div class="div_flex_1">
-                    <div style="font-size: 22px;font-weight: bold;margin-top: 2%">塘厦调入(7天)</div>
+                    <div style="font-size: 22px;font-weight: bold;margin-top: 2%">塘厦调入单量(周)</div>
                     <div id="db_013" style="font-size: 20px;font-weight: bold;margin-top: 2%;">2888</div>
 <!--                    <div>昨日-->
 <!--                        <span id="db_023" >+10</span></div>-->
                 </div>
                 <div class="div_flex_1">
-                    <div style="font-size: 22px;font-weight: bold;margin-top: 2%">塘厦调出(7天)</div>
+                    <div style="font-size: 22px;font-weight: bold;margin-top: 2%">塘厦调出单量(周)</div>
                     <div id="db_014" style="font-size: 20px;font-weight: bold;margin-top: 2%;">1000</div>
 <!--                    <div>昨日-->
 <!--                        <span id="db_024" >+10</span></div>-->
@@ -313,33 +313,147 @@
         <div style="width: 100%;height: 500px;border-bottom: 1px solid #d7d7d7;position: relative">
             <div class="title1_1" style="margin-top: 2.5%">业务达成率</div>
             <span id="title_time5" style="margin-top: 2.5%" class="title1_2">数据更新至2021.03.13</span>
+            <div  style="margin: 5% auto;margin-top:10px;width: 95%;height: 100%;#border: 1px solid #000;position: relative">
+                 <table style="border: 1px solid #000;width: 100%;line-height: 2;bottom: 2px;font-size: 16px;position: relative">
+                  <thead style="border: 1px solid #000">
+                    <tr style="height:30px" class="">
+                        <th colspan="7" style="text-align:center;width:100px;height:80%;border: 1px solid #000;font-weight:bolder;background-color: rgba(47,69,84,0.75);color:#fff !important">入库</th>
+                       </tr>
+                <tr class="" style="text-align:center" >
+                            <th colspan="1" class="table5" style="text-align:center;width:100px;background-color: rgba(47,69,84,0.75);color:#fff !important">入库</th>
+                            <th colspan="1" class="table5" style="text-align:center;width:100px;background-color: rgba(47,69,84,0.75);color:#fff !important">入库时长</th>
+                            <th colspan="1" class="table5" style="text-align:center;width:100px;background-color: rgba(47,69,84,0.75);color:#fff !important">贴码时长</th>
+                            <th colspan="1" class="table5" style="text-align:center;width:100px;background-color: rgba(47,69,84,0.75);color:#fff !important">质检时长</th>
+                            <th colspan="1" class="table5" style="text-align:center;width:100px;background-color: rgba(47,69,84,0.75);color:#fff !important">上架时长</th>
+                            <th colspan="1" class="table5" style="text-align:center;width:100px;background-color: rgba(47,69,84,0.75);color:#fff !important">12H</th>
+                            <th colspan="1" class="table5" style="text-align:center;width:100px;background-color: rgba(47,69,84,0.75);color:#fff !important">24H</th>
+               </tr>
+                <tr class="">
+                            <th colspan="1" class="table5" style="text-align:center;width:100px;border: 1px solid #000">虎门仓</th>
+                            <th id="dcl_011" colspan="1" class="table5" style="text-align:center;width:100px;border: 1px solid #000">0</th>
+                            <th id="dcl_012" colspan="1" class="table5" style="text-align:center;width:100px;border: 1px solid #000">0</th>
+                            <th id="dcl_013" colspan="1" class="table5" style="text-align:center;width:100px;border: 1px solid #000">0</th>
+                            <th id="dcl_014" colspan="1" class="table5" style="text-align:center;width:100px;border: 1px solid #000">0</th>
+                            <th id="dcl_015" colspan="1" class="table5" style="text-align:center;width:100px;border: 1px solid #000">0</th>
+                            <th id="dcl_016" colspan="1" class="table5" style="text-align:center;width:100px;border: 1px solid #000">0</th>
+
+                </tr>
+                <tr class="">
+                            <th colspan="1" class="table5" style="text-align:center;width:100px;border: 1px solid #000">塘厦仓</th>
+                            <th id="dcl_021"colspan="1" class="table5" style="text-align:center;width:100px;border: 1px solid #000">0</th>
+                            <th id="dcl_022"colspan="1" class="table5" style="text-align:center;width:100px;border: 1px solid #000">0</th>
+                            <th id="dcl_023" colspan="1" class="table5" style="text-align:center;width:100px;border: 1px solid #000">0</th>
+                            <th id="dcl_024" colspan="1" class="table5" style="text-align:center;width:100px;border: 1px solid #000">0</th>
+                            <th id="dcl_025" colspan="1" class="table5" style="text-align:center;width:100px;border: 1px solid #000">0</th>
+                            <th id="dcl_026" colspan="1" class="table5" style="text-align:center;width:100px;border: 1px solid #000">0</th>
+                </tr>
+                <tr class="">
+                            <th colspan="7" style="text-align:center;width:100px;height:80%;border: 1px solid #000;font-weight:bolder;background-color: rgba(194,53,49,0.75);color:#fff !important">小包出库</th>
+                           </tr>
+                                <tr class="table5">
+                            <th colspan="1" class="table5" style="text-align:center;width:100px;background-color: rgba(194,53,49,0.75);color:#fff !important">小包</th>
+                            <th colspan="1" class="table5" style="text-align:center;width:100px;background-color: rgba(194,53,49,0.75);color:#fff !important">拉单时长</th>
+                            <th colspan="1" class="table5" style="text-align:center;width:100px;background-color: rgba(194,53,49,0.75);color:#fff !important">拣货时长</th>
+                            <th colspan="1" class="table5" style="text-align:center;width:100px;background-color: rgba(194,53,49,0.75);color:#fff !important">打包时长</th>
+                            <th colspan="1" class="table5" style="text-align:center;width:100px;background-color: rgba(194,53,49,0.75);color:#fff !important">出库时长</th>
+                            <th colspan="1" class="table5" style="text-align:center;width:100px;background-color: rgba(194,53,49,0.75);color:#fff !important">12H</th>
+                            <th colspan="1" class="table5" style="text-align:center;width:100px;background-color: rgba(194,53,49,0.75);color:#fff !important">24H</th>
+
+               </tr>
+                <tr class="">
+                            <th colspan="1" class="table5" style="text-align:center;width:100px;border: 1px solid #000">虎门仓</th>
+                            <th id="dcl_031" colspan="1" class="table5" style="text-align:center;width:100px;border: 1px solid #000">0</th>
+                            <th id="dcl_032" colspan="1" class="table5" style="text-align:center;width:100px;border: 1px solid #000">0</th>
+                            <th id="dcl_033" colspan="1" class="table5" style="text-align:center;width:100px;border: 1px solid #000">0</th>
+                            <th id="dcl_034" colspan="1" class="table5" style="text-align:center;width:100px;border: 1px solid #000">0</th>
+                            <th id="dcl_035" colspan="1" class="table5" style="text-align:center;width:100px;border: 1px solid #000">0</th>
+                            <th id="dcl_036" colspan="1" class="table5" style="text-align:center;width:100px;border: 1px solid #000">0</th>
+
+                </tr>
+                <tr class="">
+                            <th colspan="1" class="table5" style="text-align:center;width:100px;border: 1px solid #000">塘厦仓</th>
+                            <th id="dcl_041"colspan="1" class="table5" style="text-align:center;width:100px;border: 1px solid #000">0</th>
+                            <th id="dcl_042"colspan="1" class="table5" style="text-align:center;width:100px;border: 1px solid #000">0</th>
+                            <th id="dcl_043" colspan="1" class="table5" style="text-align:center;width:100px;border: 1px solid #000">0</th>
+                            <th id="dcl_044" colspan="1" class="table5" style="text-align:center;width:100px;border: 1px solid #000">0</th>
+                            <th id="dcl_045" colspan="1" class="table5" style="text-align:center;width:100px;border: 1px solid #000">0</th>
+                            <th id="dcl_046" colspan="1" class="table5" style="text-align:center;width:100px;border: 1px solid #000">0</th>
+                </tr>
+
+                <tr class="">
+                            <th colspan="7" style="text-align:center;width:100px;height:80%;border: 1px solid #000;font-weight:bolder;background-color: rgba(194,53,49,0.75);color:#fff !important">FBA出库</th>
+                           </tr>
+                                <tr class="table5">
+                            <th colspan="1" class="table5" style="text-align:center;width:100px;background-color: rgba(194,53,49,0.75);color:#fff !important">FBA出库</th>
+                            <th colspan="1" class="table5" style="text-align:center;width:100px;background-color: rgba(194,53,49,0.75);color:#fff !important">拉单时长</th>
+                            <th colspan="1" class="table5" style="text-align:center;width:100px;background-color: rgba(194,53,49,0.75);color:#fff !important">拣货时长</th>
+                            <th colspan="1" class="table5" style="text-align:center;width:100px;background-color: rgba(194,53,49,0.75);color:#fff !important">打包时长</th>
+                            <th colspan="1" class="table5" style="text-align:center;width:100px;background-color: rgba(194,53,49,0.75);color:#fff !important">出库时长</th>
+                            <th colspan="1" class="table5" style="text-align:center;width:100px;background-color: rgba(194,53,49,0.75);color:#fff !important">12H</th>
+                            <th colspan="1" class="table5" style="text-align:center;width:100px;background-color: rgba(194,53,49,0.75);color:#fff !important">24H</th>
+
+               </tr>
+                <tr class="">
+                            <th colspan="1" class="table5" style="text-align:center;width:100px;border: 1px solid #000">虎门仓</th>
+                            <th id="dcl_051" colspan="1" class="table5" style="text-align:center;width:100px;border: 1px solid #000">0</th>
+                            <th id="dcl_052" colspan="1" class="table5" style="text-align:center;width:100px;border: 1px solid #000">0</th>
+                            <th id="dcl_053" colspan="1" class="table5" style="text-align:center;width:100px;border: 1px solid #000">0</th>
+                            <th id="dcl_054" colspan="1" class="table5" style="text-align:center;width:100px;border: 1px solid #000">0</th>
+                            <th id="dcl_055" colspan="1" class="table5" style="text-align:center;width:100px;border: 1px solid #000">0</th>
+                            <th id="dcl_056" colspan="1" class="table5" style="text-align:center;width:100px;border: 1px solid #000">0</th>
+
+                </tr>
+                <tr class="">
+                            <th colspan="1" class="table5" style="text-align:center;width:100px;border: 1px solid #000">塘厦仓</th>
+                            <th id="dcl_061"colspan="1" class="table5" style="text-align:center;width:100px;border: 1px solid #000">0</th>
+                            <th id="dcl_062"colspan="1" class="table5" style="text-align:center;width:100px;border: 1px solid #000">0</th>
+                            <th id="dcl_063" colspan="1" class="table5" style="text-align:center;width:100px;border: 1px solid #000">0</th>
+                            <th id="dcl_064" colspan="1" class="table5" style="text-align:center;width:100px;border: 1px solid #000">0</th>
+                            <th id="dcl_065" colspan="1" class="table5" style="text-align:center;width:100px;border: 1px solid #000">0</th>
+                            <th id="dcl_066" colspan="1" class="table5" style="text-align:center;width:100px;border: 1px solid #000">0</th>
+                </tr>
+
+
+                  </thead>
+                 </table>
+            </div>
+
+        </div>
+        <div style="width: 100%;height: 500px;border-bottom: 1px solid #d7d7d7;position: relative">
+            <div class="title1_1" style="margin-top: 2.5%">TPH</div>
+            <span id="title_time6" style="margin-top: 2.5%" class="title1_2">数据更新至2021.03.13</span>
             <div class="div_flex" style="margin-top: 1%">
                 <div class="div_flex_1">
-                    <div style="font-size: 22px;font-weight: bold;margin-top: 2%">虎门调入(7天)</div>
-                    <div id="dcl_011" style="font-size: 20px;font-weight: bold;margin-top: 2%;">8888</div>
-<!--                    <div>昨日-->
-<!--                        <span id="dcl_021">+10</span></div>-->
+                    <div style="font-size: 22px;font-weight: bold;margin-top: 2%">虎门TPH</div>
+                    <div id="tph_011" style="font-size: 20px;font-weight: bold;margin-top: 2%;">8888</div>
+                    <div>昨日
+                        <span id="tph_021">+10</span></div>
                 </div>
                 <div class="div_flex_1">
-                    <div style="font-size: 22px;font-weight: bold;margin-top: 2%">虎门调出(7天)</div>
-                    <div  id="dcl_012" style="font-size: 20px;font-weight: bold;margin-top: 2%;">5000</div>
-<!--                    <div>昨日-->
-<!--                        <span id="dcl_022">+10</span></div>-->
+                    <div style="font-size: 22px;font-weight: bold;margin-top: 2%">虎门UPH</div>
+                    <div  id="tph_012" style="font-size: 20px;font-weight: bold;margin-top: 2%;">5000</div>
+                    <div>昨日
+                        <span id="tph_022">+10</span></div>
                 </div>
                 <div class="div_flex_1">
-                    <div style="font-size: 22px;font-weight: bold;margin-top: 2%">塘厦调入(7天)</div>
-                    <div id="dcl_013" style="font-size: 20px;font-weight: bold;margin-top: 2%;">2888</div>
-<!--                    <div>昨日-->
-<!--                        <span id="dcl_023" >+10</span></div>-->
+                    <div style="font-size: 22px;font-weight: bold;margin-top: 2%">塘厦TPH</div>
+                    <div id="tph_013" style="font-size: 20px;font-weight: bold;margin-top: 2%;">2888</div>
+                    <div>昨日
+                        <span id="tph_023" >+10</span></div>
                 </div>
                 <div class="div_flex_1">
-                    <div style="font-size: 22px;font-weight: bold;margin-top: 2%">塘厦调出(7天)</div>
-                    <div id="dcl_014" style="font-size: 20px;font-weight: bold;margin-top: 2%;">1000</div>
-<!--                    <div>昨日-->
-<!--                        <span id="dcl_024" >+10</span></div>-->
+                    <div style="font-size: 22px;font-weight: bold;margin-top: 2%">塘厦UPH</div>
+                    <div id="tph_014" style="font-size: 20px;font-weight: bold;margin-top: 2%;">1000</div>
+                    <div>昨日
+                        <span id="tph_024" >+10</span></div>
                 </div>
             </div>
-        <div id="" style="margin: 1% auto;#border: 3px solid #d7d7d7;width: 95%;height: 300px;border-radius: 8px 8px 8px 8px"></div>
+            
+        <div id="main_dx" style="margin: 1% auto;#border: 3px solid #d7d7d7;width: 95%;height: 300px;border-radius: 8px 8px 8px 8px"></div>
+
+        </div>
+
+
 
         </div>
 
@@ -564,10 +678,53 @@
         });
     }
     getData();
+    function DCL_data() {
+         console.log(dcl_data.dcl_1[0])
+        document.getElementById('dcl_011').innerHTML = dcl_data.dcl_1[0]
+        document.getElementById('dcl_012').innerHTML = dcl_data.dcl_2[0]
+        document.getElementById('dcl_013').innerHTML = dcl_data.dcl_3[0]
+        document.getElementById('dcl_014').innerHTML = dcl_data.dcl_4[0]
+        document.getElementById('dcl_031').innerHTML = dcl_data.dcl_1[1]
+        document.getElementById('dcl_032').innerHTML = dcl_data.dcl_2[1]
+        document.getElementById('dcl_033').innerHTML = dcl_data.dcl_3[1]
+        document.getElementById('dcl_034').innerHTML = dcl_data.dcl_4[1]
+        document.getElementById('dcl_051').innerHTML = dcl_data.dcl_1[2]
+        document.getElementById('dcl_052').innerHTML = dcl_data.dcl_2[2]
+        document.getElementById('dcl_053').innerHTML = dcl_data.dcl_3[2]
+        document.getElementById('dcl_054').innerHTML = dcl_data.dcl_4[2]
+        document.getElementById('dcl_021').innerHTML = dcl_data.dcl_1[3]
+        document.getElementById('dcl_022').innerHTML = dcl_data.dcl_2[3]
+        document.getElementById('dcl_023').innerHTML = dcl_data.dcl_3[3]
+        document.getElementById('dcl_024').innerHTML = dcl_data.dcl_4[3]
+        document.getElementById('dcl_041').innerHTML = dcl_data.dcl_1[4]
+        document.getElementById('dcl_042').innerHTML = dcl_data.dcl_2[4]
+        document.getElementById('dcl_043').innerHTML = dcl_data.dcl_3[4]
+        document.getElementById('dcl_044').innerHTML = dcl_data.dcl_4[4]
+        document.getElementById('dcl_061').innerHTML = dcl_data.dcl_1[5]
+        document.getElementById('dcl_062').innerHTML = dcl_data.dcl_2[5]
+        document.getElementById('dcl_063').innerHTML = dcl_data.dcl_3[5]
+        document.getElementById('dcl_064').innerHTML = dcl_data.dcl_4[5]
+       }
+    function DCL2_data() {
+        document.getElementById('dcl_015').innerHTML = (dcl2_data.dcl2_in[0]*100).toFixed(1)+'%'
+        document.getElementById('dcl_025').innerHTML = (dcl2_data.dcl2_in[3]*100).toFixed(1)+'%'
+        document.getElementById('dcl_016').innerHTML = (dcl2_data.dcl2_in[6]*100).toFixed(1)+'%'
+        document.getElementById('dcl_026').innerHTML = (dcl2_data.dcl2_in[7]*100).toFixed(1)+'%'
+        document.getElementById('dcl_035').innerHTML = (dcl2_data.dcl2_out[0]*100).toFixed(1)+'%'
+        document.getElementById('dcl_045').innerHTML = (dcl2_data.dcl2_out[3]*100).toFixed(1)+'%'
+        document.getElementById('dcl_036').innerHTML = (dcl2_data.dcl2_out[6]*100).toFixed(1)+'%'
+        document.getElementById('dcl_046').innerHTML = (dcl2_data.dcl2_out[7]*100).toFixed(1)+'%'
+        document.getElementById('dcl_055').innerHTML = (dcl2_data.dcl2_fba[6]*100).toFixed(1)+'%'
+        document.getElementById('dcl_065').innerHTML = (dcl2_data.dcl2_fba[8]*100).toFixed(1)+'%'
+        document.getElementById('dcl_056').innerHTML = (dcl2_data.dcl2_fba[7]*100).toFixed(1)+'%'
+        document.getElementById('dcl_066').innerHTML = (dcl2_data.dcl2_fba[9]*100).toFixed(1)+'%'
 
+       }
     function myCharts() {
     var myCharts_yy = echarts.init(document.getElementById('main_yy'))
     var myCharts_db = echarts.init(document.getElementById('main_db'))
+    var myCharts_dx = echarts.init(document.getElementById('main_dx'))
+    myCharts_dx.setOption(option_dx)
     myCharts_db.setOption(option_db)
     myCharts_yy.setOption(option_yy)
         }
@@ -1357,6 +1514,89 @@
 
     ]
             }
+    var option_dx = {
+        title: {
+            text: '虎门仓',
+            x: 0,
+            textStyle: {
+                fontSize: 20
+            }
+        },
+        grid: {
+            left: '0.1%',
+            right: '0.1%',
+            bottom: '0.1%',
+            containLabel: true
+        },
+        legend: {
+            data: ['TPH', 'UPH'],
+            textStyle: {
+                fontSize: 20
+            }
+        },
+        tooltip: {
+            trigger: 'axis'
+        },
+        xAxis: {
+            data: [tph_data.hm_tph_date[0],
+                tph_data.hm_tph_date[1],
+                tph_data.hm_tph_date[2],
+                tph_data.hm_tph_date[3],
+                tph_data.hm_tph_date[4],
+                tph_data.hm_tph_date[5],
+                tph_data.hm_tph_date[6],
+
+
+            ]
+        },
+        yAxis: {
+            type: 'value',
+            min: tph_data.hm_tph[8],
+            max: tph_data.hm_tph[7]
+        },
+        series: [
+            {
+                name: 'TPH',
+                type: 'line',
+                label: {
+                    normal: {
+                        show: true,
+                        formatter: '{c}'
+                    }
+                },
+                /*data: ['70.31', '78.68', '86.45', '83.79', '81.47', '81.77']    */
+                data: [
+                    {value: tph_data.hm_tph[0], name: tph_data.hm_tph_date[0]},
+                    {value: tph_data.hm_tph[1], name: tph_data.hm_tph_date[1]},
+                    {value: tph_data.hm_tph[2], name: tph_data.hm_tph_date[2]},
+                    {value: tph_data.hm_tph[3], name: tph_data.hm_tph_date[3]},
+                    {value: tph_data.hm_tph[4], name: tph_data.hm_tph_date[4]},
+                    {value: tph_data.hm_tph[5], name: tph_data.hm_tph_date[5]},
+                    {value: tph_data.hm_tph[6], name: tph_data.hm_tph_date[6]},
+                ]
+
+            }, {
+                name: 'UPH',
+                type: 'line',
+                label: {
+                    normal: {
+                        show: true,
+                        formatter: '{c}'
+                    }
+                },
+                data: [
+                    {value: tph_data.hm_uph[0], name: tph_data.hm_tph_date[0]},
+                    {value: tph_data.hm_uph[1], name: tph_data.hm_tph_date[1]},
+                    {value: tph_data.hm_uph[2], name: tph_data.hm_tph_date[2]},
+                    {value: tph_data.hm_uph[3], name: tph_data.hm_tph_date[3]},
+                    {value: tph_data.hm_uph[4], name: tph_data.hm_tph_date[4]},
+                    {value: tph_data.hm_uph[5], name: tph_data.hm_tph_date[5]},
+                    {value: tph_data.hm_uph[6], name: tph_data.hm_tph_date[6]},
+
+                ]
+            }
+        ]
+    };
     function RY2_data(){
         document.getElementById('RY_011').innerHTML = ry_data.hm_total[0]
         document.getElementById('RY_021').innerHTML = ry_data.hm_total[1]
@@ -1421,6 +1661,18 @@
         document.getElementById('db_013').innerHTML = (db_data.db_in[7]+ db_data.db_in[8]+ db_data.db_in[9]+ db_data.db_in[10]+ db_data.db_in[11]+ db_data.db_in[12]+ db_data.db_in[13]).toLocaleString()
         document.getElementById('db_014').innerHTML = (db_data.db_out[7]+ db_data.db_out[8]+ db_data.db_out[9]+ db_data.db_out[10]+ db_data.db_out[11]+ db_data.db_out[12]+ db_data.db_out[13]).toLocaleString()
     }
+    function TPH_DATA(){
+        document.getElementById('tph_011').innerHTML = tph_data.hm_tph[6]
+        document.getElementById('tph_012').innerHTML = tph_data.hm_uph[6]
+        document.getElementById('tph_013').innerHTML = tph_data.tx_tph[6]
+        document.getElementById('tph_014').innerHTML = tph_data.tx_uph[6]
+        document.getElementById('tph_021').innerHTML = (tph_data.hm_tph[6]- tph_data.hm_tph[5]).toFixed(2)
+        document.getElementById('tph_022').innerHTML = (tph_data.hm_uph[6]- tph_data.hm_uph[5]).toFixed(2)
+        document.getElementById('tph_023').innerHTML = (tph_data.tx_tph[6]- tph_data.tx_tph[5]).toFixed(2)
+        document.getElementById('tph_024').innerHTML = (tph_data.tx_uph[6]- tph_data.tx_uph[5]).toFixed(2)
+
+
+    }
     var myDate = new Date();
     ytime =myDate.getFullYear();
     mtime = myDate.getMonth() + 1;
@@ -1431,12 +1683,16 @@
     document.getElementById('title_time3').innerHTML = '时间节点：'+ytime+'年'+ mtime + '月' + (dtime-1) + '日';
     document.getElementById('title_time4').innerHTML = '时间节点：'+ytime+'年'+ mtime + '月' + (dtime-1) + '日';
     document.getElementById('title_time5').innerHTML = '时间节点：'+ytime+'年'+ mtime + '月' + (dtime-1) + '日';
+    document.getElementById('title_time6').innerHTML = '时间节点：'+ytime+'年'+ mtime + '月' + (dtime-1) + '日';
     myCharts();
     RY2_data();
     RK_DATA();
+    DCL_data();
+    DCL2_data();
+    TPH_DATA();
     function text_color() {
         id_arr = ['RY_013','RY_014','RY_023','RY_024','RY_033','RY_034','RY_043','RY_044','RY_053','RY_054','RY_063','RY_064','RY_073','RY_074','RY_083','RY_084','RY_093','RY_094','RY_016'
-        ,'RY_026','RY_036','RY_046','RY_056','RY_066','RY_076','rk_021','rk_022','rk_023','rk_024'
+        ,'RY_026','RY_036','RY_046','RY_056','RY_066','RY_076','rk_021','rk_022','rk_023','rk_024','tph_021','tph_022','tph_023','tph_024'
         ]
         for(i = 0;i<id_arr.length;i++){
             if (document.getElementById(id_arr[i]).innerHTML == 0){

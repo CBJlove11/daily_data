@@ -704,8 +704,6 @@ def index_jy():
         a = 0
         for i in range(len(tx_jy_DB_totoal)):
             tx_jy_DB_totoal_color[i] = '{:.2%}'.format(a)
-    print(zt_date)
-    print(zt_1)
 
     jsonData['dcl2_in'] = dcl2_in
     jsonData['dcl2_out'] = dcl2_out
