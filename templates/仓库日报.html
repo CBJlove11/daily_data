@@ -40,9 +40,9 @@
 #######################################################
 #######################数据############################
 <-->
-<div style="margin:0 auto;width: 1000px;height:3400px;margin-top:10px;border: 1px solid #000;border-radius: 10px 10px 10px 10px;background-color: white">
+<div style="margin:0 auto;width: 1000px;height:4300px;margin-top:10px;border: 1px solid #000;border-radius: 10px 10px 10px 10px;background-color: white">
     <!-- >****************************仓储板块****************************<-->
-    <div style="width: 100%;height: 3300px;">
+    <div style="width: 100%;height: 4000px;">
         <div style="width: 100%;height: 50px;border-bottom: 1px solid #d7d7d7">
             <p class="title1">仓储运营数据</p>
         </div>
@@ -251,6 +251,13 @@
             <span style="margin-top: 1%" id="title_time3" class="title1_2">数据更新至2021.03.13</span>
             <div class="div_flex" style="margin-top: 1%">
                 <div class="div_flex_1">
+                    <div style="font-size: 22px;font-weight: bold;margin-top: 2%">采购下单</div>
+                    <div id="" style="font-size: 20px;font-weight: bold;margin-top: 2%;">8888</div>
+                    <div>昨日
+                        <span id="">+10</span></div>
+                </div>
+
+                <div class="div_flex_1">
                     <div style="font-size: 22px;font-weight: bold;margin-top: 2%">入库件数</div>
                     <div id="rk_011" style="font-size: 20px;font-weight: bold;margin-top: 2%;">8888</div>
                     <div>昨日
@@ -269,7 +276,7 @@
                         <span id="rk_023" >+10</span></div>
                 </div>
                 <div class="div_flex_1">
-                    <div style="font-size: 22px;font-weight: bold;margin-top: 2%">订单量</div>
+                    <div style="font-size: 22px;font-weight: bold;margin-top: 2%">小包订单量</div>
                     <div id="rk_014" style="font-size: 20px;font-weight: bold;margin-top: 2%;">1000</div>
                     <div>昨日
                         <span id="rk_024" >+10</span></div>
@@ -452,7 +459,7 @@
         <div id="main_dx" style="margin: 1% auto;#border: 3px solid #d7d7d7;width: 95%;height: 300px;border-radius: 8px 8px 8px 8px"></div>
 
         </div>
-        <div style="width: 100%;height: 1000px;border-bottom: 1px solid #d7d7d7;position: relative">
+        <div style="width: 100%;height: 480px;border-bottom: 1px solid #d7d7d7;position: relative">
             <div class="title1_1" style="margin-top: 2.5%">业务积压情况</div>
             <span id="title_time7" style="margin-top: 2.5%" class="title1_2">数据更新至2021.03.13</span>
             <div  style="margin: 5% auto;margin-top:10px;width: 95%;height: 100%;#border: 1px solid #000;position: relative">
@@ -579,7 +586,222 @@
                  </table>
             </div>
         </div>
+        <div style="width: 100%;height: 500px;border-bottom: 1px solid #d7d7d7;position: relative">
+            <div class="title1_1" style="margin-top: 2.5%">调拨积压情况/笔数</div>
+            <span id="title_time8" style="margin-top: 2.5%" class="title1_2">数据更新至2021.03.13</span>
+            <!--                            <th colspan="1"class="button_1" style="height:50px;font-size:25px !important">-->
+<!--                            <button id="btn_1" class="button_1" style="background-color:rgb(10,134,175);" onclick="getDC()">导出数据</button>-->
+<!--                              </th>-->
 
+            <div style="position: relative;width: 95%;height: 70%;margin-left: 2.5%;margin-right: 2.5%;">
+
+                <table style="border: 1px solid #000;width: 100%;line-height: 2;bottom: 2px;font-size: 16px;position: relative">
+                    <thead style="border: 1px solid #000">
+                    <tr style="background-color: rgb(10,134,175);color: #fff;font-size: 20px;border: 1px solid #000">
+                            <th colspan="8"class="time_level" style="height:25px;font-size:20px !important;text-align: center">调拨入库时效监控表(虎门仓)</th>
+                    </tr>
+                    <tr class="" style="text-align:center" >
+                                <th colspan="1" class="table5" style="font-size: 16px; text-align:center;width:100px;border: 1px solid #000000;#background-color: rgba(47,69,84,0.75);color:#000 !important">时间段</th>
+                                <th colspan="1" class="table5" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">0-12H</th>
+                                <th colspan="1" class="table5" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">12-24H</th>
+                                <th colspan="1" class="table5" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">24-168H</th>
+                                <th colspan="1" class="table5" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">168-360H</th>
+                                <th colspan="1" class="table5" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">360-720H</th>
+                                <th colspan="1" class="table5" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">720H以上</th>
+                                <th colspan="1" class="table5" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">总数</th>
+                   </tr>
+                    <tr class="" style="text-align:center" >
+                                <th colspan="1" class="table5" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000000;#background-color: rgba(47,69,84,0.75);color:#000 !important">待入库</th>
+                                <th colspan="1" class="table5" id="db_hm_011" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                                <th colspan="1" class="table5" id="db_hm_012" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                                <th colspan="1" class="table5" id="db_hm_013" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                                <th colspan="1" class="table5" id="db_hm_014" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                                <th colspan="1" class="table5" id="db_hm_015" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                                <th colspan="1" class="table5" id="db_hm_016" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                                <th colspan="1" class="table5" id="db_hm_017" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                   </tr>
+                    <tr class="" style="text-align:center" >
+                                <th colspan="1" class="table5" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000000;#background-color: rgba(47,69,84,0.75);color:#000 !important">入库中</th>
+                                <th colspan="1" class="table5" id="db_hm_021" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                                <th colspan="1" class="table5" id="db_hm_022" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                                <th colspan="1" class="table5" id="db_hm_023" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                                <th colspan="1" class="table5" id="db_hm_024" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                                <th colspan="1" class="table5" id="db_hm_025" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                                <th colspan="1" class="table5" id="db_hm_026" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                                <th colspan="1" class="table5" id="db_hm_027" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                   </tr>
+                    <tr style="background-color:rgb(0,48,71);color: #fff;font-size: 20px;border: 1px solid #000">
+                            <th colspan="8"class="time_level" style="height:25px;font-size:20px !important;text-align: center">调拨出库时效监控表(虎门仓)</th>
+                    </tr>
+                    <tr class="" style="text-align:center">
+                                <th colspan="1" class="table5" style="font-size: 16px; text-align:center;width:100px;border: 1px solid #000000;#background-color: rgba(47,69,84,0.75);color:#000 !important">时间段</th>
+                                <th colspan="1" class="table5" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">0-2H</th>
+                                <th colspan="1" class="table5" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">2-4H</th>
+                                <th colspan="1" class="table5" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">4-6H</th>
+                                <th colspan="1" class="table5" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">6-8H</th>
+                                <th colspan="1" class="table5" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">8-12H</th>
+                                <th colspan="1" class="table5" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">12-24H以上</th>
+                                <th colspan="1" class="table5" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">24H以上</th>
+                   </tr>
+                    <tr class="" style="text-align:center" >
+                                <th colspan="1" class="table5" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000000;#background-color: rgba(47,69,84,0.75);color:#000 !important">待拉单</th>
+                                <th colspan="1" class="table5" id="db_hm_031" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                                <th colspan="1" class="table5" id="db_hm_032" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                                <th colspan="1" class="table5" id="db_hm_033" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                                <th colspan="1" class="table5" id="db_hm_034" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                                <th colspan="1" class="table5" id="db_hm_035" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                                <th colspan="1" class="table5" id="db_hm_036" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                                <th colspan="1" class="table5" id="db_hm_037" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                   </tr>
+                    <tr class="" style="text-align:center" >
+                                <th colspan="1" class="table5" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000000;#background-color: rgba(47,69,84,0.75);color:#000 !important">待拣货</th>
+                                <th colspan="1" class="table5" id="db_hm_041" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                                <th colspan="1" class="table5" id="db_hm_042" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                                <th colspan="1" class="table5" id="db_hm_043" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                                <th colspan="1" class="table5" id="db_hm_044" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                                <th colspan="1" class="table5" id="db_hm_045" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                                <th colspan="1" class="table5" id="db_hm_046" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                                <th colspan="1" class="table5" id="db_hm_047" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                   </tr>
+                    <tr class="" style="text-align:center" >
+                                <th colspan="1" class="table5" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000000;#background-color: rgba(47,69,84,0.75);color:#000 !important">待打包</th>
+                                <th colspan="1" class="table5" id="db_hm_051" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                                <th colspan="1" class="table5" id="db_hm_052" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                                <th colspan="1" class="table5" id="db_hm_053" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                                <th colspan="1" class="table5" id="db_hm_054" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                                <th colspan="1" class="table5" id="db_hm_055" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                                <th colspan="1" class="table5" id="db_hm_056" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                                <th colspan="1" class="table5" id="db_hm_057" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                   </tr>
+                    <tr class="" style="text-align:center" >
+                                <th colspan="1" class="table5" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000000;#background-color: rgba(47,69,84,0.75);color:#000 !important">待出库</th>
+                                <th colspan="1" class="table5" id="db_hm_061" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                                <th colspan="1" class="table5" id="db_hm_062" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                                <th colspan="1" class="table5" id="db_hm_063" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                                <th colspan="1" class="table5" id="db_hm_064" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                                <th colspan="1" class="table5" id="db_hm_065" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                                <th colspan="1" class="table5" id="db_hm_066" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                                <th colspan="1" class="table5" id="db_hm_067" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                   </tr>
+                    <tr class="" style="text-align:center" >
+                                <th colspan="1" class="table5" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000000;#background-color: rgba(47,69,84,0.75);color:#000 !important">待交运</th>
+                                <th colspan="1" class="table5" id="db_hm_071" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                                <th colspan="1" class="table5" id="db_hm_072" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                                <th colspan="1" class="table5" id="db_hm_073" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                                <th colspan="1" class="table5" id="db_hm_074" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                                <th colspan="1" class="table5" id="db_hm_075" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                                <th colspan="1" class="table5" id="db_hm_076" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                                <th colspan="1" class="table5" id="db_hm_077" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                   </tr>
+
+
+                    </thead>
+                </table>
+
+                <table style="border: 1px solid #000;width: 100%;line-height: 2;bottom: 2px;font-size: 16px;position: relative">
+                    <thead style="border: 1px solid #000">
+                    <tr style="background-color: rgb(10,134,175);color: #fff;font-size: 20px;border: 1px solid #000">
+                            <th colspan="8"class="time_level" style="height:25px;font-size:20px !important;text-align: center">调拨入库时效监控表(塘厦仓)</th>
+                    </tr>
+                    <tr class="" style="text-align:center" >
+                                <th colspan="1" class="table5" style="font-size: 16px; text-align:center;width:100px;border: 1px solid #000000;#background-color: rgba(47,69,84,0.75);color:#000 !important">时间段</th>
+                                <th colspan="1" class="table5" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">0-12H</th>
+                                <th colspan="1" class="table5" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">12-24H</th>
+                                <th colspan="1" class="table5" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">24-168H</th>
+                                <th colspan="1" class="table5" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">168-360H</th>
+                                <th colspan="1" class="table5" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">360-720H</th>
+                                <th colspan="1" class="table5" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">720H以上</th>
+                                <th colspan="1" class="table5" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">总数</th>
+                   </tr>
+                    <tr class="" style="text-align:center" >
+                                <th colspan="1" class="table5" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000000;#background-color: rgba(47,69,84,0.75);color:#000 !important">待入库</th>
+                                <th colspan="1" class="table5" id="db_tx_011" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                                <th colspan="1" class="table5" id="db_tx_012" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                                <th colspan="1" class="table5" id="db_tx_013" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                                <th colspan="1" class="table5" id="db_tx_014" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                                <th colspan="1" class="table5" id="db_tx_015" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                                <th colspan="1" class="table5" id="db_tx_016" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                                <th colspan="1" class="table5" id="db_tx_017" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                   </tr>
+                    <tr class="" style="text-align:center" >
+                                <th colspan="1" class="table5" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000000;#background-color: rgba(47,69,84,0.75);color:#000 !important">入库中</th>
+                                <th colspan="1" class="table5" id="db_tx_021" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                                <th colspan="1" class="table5" id="db_tx_022" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                                <th colspan="1" class="table5" id="db_tx_023" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                                <th colspan="1" class="table5" id="db_tx_024" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                                <th colspan="1" class="table5" id="db_tx_025" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                                <th colspan="1" class="table5" id="db_tx_026" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                                <th colspan="1" class="table5" id="db_tx_027" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                   </tr>
+                    <tr style="background-color:rgb(0,48,71);color: #fff;font-size: 20px;border: 1px solid #000">
+                            <th colspan="8"class="time_level" style="height:25px;font-size:20px !important;text-align: center">调拨出库时效监控表(塘厦仓)</th>
+                    </tr>
+                    <tr class="" style="text-align:center">
+                                <th colspan="1" class="table5" style="font-size: 16px; text-align:center;width:100px;border: 1px solid #000000;#background-color: rgba(47,69,84,0.75);color:#000 !important">时间段</th>
+                                <th colspan="1" class="table5" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">0-2H</th>
+                                <th colspan="1" class="table5" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">2-4H</th>
+                                <th colspan="1" class="table5" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">4-6H</th>
+                                <th colspan="1" class="table5" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">6-8H</th>
+                                <th colspan="1" class="table5" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">8-12H</th>
+                                <th colspan="1" class="table5" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">12-24H以上</th>
+                                <th colspan="1" class="table5" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">24H以上</th>
+                   </tr>
+                    <tr class="" style="text-align:center" >
+                                <th colspan="1" class="table5" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000000;#background-color: rgba(47,69,84,0.75);color:#000 !important">待拉单</th>
+                                <th colspan="1" class="table5" id="db_tx_031" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                                <th colspan="1" class="table5" id="db_tx_032" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                                <th colspan="1" class="table5" id="db_tx_033" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                                <th colspan="1" class="table5" id="db_tx_034" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                                <th colspan="1" class="table5" id="db_tx_035" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                                <th colspan="1" class="table5" id="db_tx_036" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                                <th colspan="1" class="table5" id="db_tx_037" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                   </tr>
+                    <tr class="" style="text-align:center" >
+                                <th colspan="1" class="table5" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000000;#background-color: rgba(47,69,84,0.75);color:#000 !important">待拣货</th>
+                                <th colspan="1" class="table5" id="db_tx_041" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                                <th colspan="1" class="table5" id="db_tx_042" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                                <th colspan="1" class="table5" id="db_tx_043" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                                <th colspan="1" class="table5" id="db_tx_044" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                                <th colspan="1" class="table5" id="db_tx_045" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                                <th colspan="1" class="table5" id="db_tx_046" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                                <th colspan="1" class="table5" id="db_tx_047" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                   </tr>
+                    <tr class="" style="text-align:center" >
+                                <th colspan="1" class="table5" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000000;#background-color: rgba(47,69,84,0.75);color:#000 !important">待打包</th>
+                                <th colspan="1" class="table5" id="db_tx_051" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                                <th colspan="1" class="table5" id="db_tx_052" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                                <th colspan="1" class="table5" id="db_tx_053" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                                <th colspan="1" class="table5" id="db_tx_054" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                                <th colspan="1" class="table5" id="db_tx_055" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                                <th colspan="1" class="table5" id="db_tx_056" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                                <th colspan="1" class="table5" id="db_tx_057" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                   </tr>
+                    <tr class="" style="text-align:center" >
+                                <th colspan="1" class="table5" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000000;#background-color: rgba(47,69,84,0.75);color:#000 !important">待出库</th>
+                                <th colspan="1" class="table5" id="db_tx_061" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                                <th colspan="1" class="table5" id="db_tx_062" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                                <th colspan="1" class="table5" id="db_tx_063" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                                <th colspan="1" class="table5" id="db_tx_064" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                                <th colspan="1" class="table5" id="db_tx_065" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                                <th colspan="1" class="table5" id="db_tx_066" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                                <th colspan="1" class="table5" id="db_tx_067" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                   </tr>
+                    <tr class="" style="text-align:center" >
+                                <th colspan="1" class="table5" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000000;#background-color: rgba(47,69,84,0.75);color:#000 !important">待交运</th>
+                                <th colspan="1" class="table5" id="db_tx_071" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                                <th colspan="1" class="table5" id="db_tx_072" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                                <th colspan="1" class="table5" id="db_tx_073" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                                <th colspan="1" class="table5" id="db_tx_074" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                                <th colspan="1" class="table5" id="db_tx_075" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                                <th colspan="1" class="table5" id="db_tx_076" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                                <th colspan="1" class="table5" id="db_tx_077" style="font-size: 16px;text-align:center;width:100px;border: 1px solid #000;#background-color: rgba(47,69,84,0.75);color:#000 !important">&nbsp;</th>
+                   </tr>
+
+
+                    </thead>
+                </table>
+            </div>
+        </div>
     </div>
 
 
@@ -1990,7 +2212,7 @@
     document.getElementById('title_time4').innerHTML = '时间节点：'+ytime+'年'+ mtime + '月' + (dtime) + '日';
     document.getElementById('title_time5').innerHTML = '时间节点：'+ytime+'年'+ mtime + '月' + (dtime-1) + '日';
     document.getElementById('title_time6').innerHTML = '时间节点：'+ytime+'年'+ mtime + '月' + (dtime-1) + '日';
-
+    document.getElementById('title_time8').innerHTML = '时间节点：'+ytime+'年'+ mtime + '月' + (dtime-1) + '日';
 
     if(htime >=8){
     document.getElementById('title_time7').innerHTML = '调拨情况-更新时间:'+ mtime + '月' + (dtime) + '日  08:00';
