@@ -20,13 +20,13 @@ class DecimalEncoder(json.JSONEncoder):
             return float(o)
         super(DecimalEncoder, self).default(o)
 
-@app.route('/')
+@app.route('/采购日报.html')
 def index_cg():
     return render_template("采购日报.html")
 @app.route('/仓库日报.html')
 def index_ck():
     return render_template('仓库日报.html')
-@app.route('/test3', methods=['POST'])
+@app.route('/daily1', methods=['POST'])
 def index_jy():
     con = pymysql.connect(host='192.168.86.79', user='wanjunsheng', passwd='df2932141LFDF', db='warehouse', port=3307,
                           charset='utf8')
@@ -765,6 +765,4159 @@ def index_jy():
     jsonData['tx_tph_date'] = tx_tph_date
     jsonData['tx_tph'] = tx_tph
     jsonData['tx_uph'] = tx_uph
+    j = json.dumps(jsonData, cls=DecimalEncoder)
+    cur.close()
+    return (j)
+
+@app.route('/daily2', methods=['POST'])
+def diaobo():
+    con = pymysql.connect(host='192.168.86.79', user='wanjunsheng', passwd='df2932141LFDF', db='warehouse',
+                          port=3307, charset='utf8')
+    cur = con.cursor()
+    sql = 'SELECT	real_warehouse_code,	purchase_order_no,	status,	sku,	purchase_qty,  cast( ROUND( ( unix_timestamp( now( ) ) - unix_timestamp( create_time ) ) / 3600, 2 ) AS DECIMAL ) AS s FROM	ueb_purchase WHERE	is_del = 1 	AND warehouse_type = 1 	AND purchase_type IN ( 3, 4 ) GROUP BY	purchase_order_no ,SKU,real_warehouse_code,status order by s DESC'
+    sql2 = 'select * from (select warehouse_code,order_id,case when pay_time >0 and wait_pull_time >0 and pick_time >0 and  pack_time >0 and outstock_time > 0 and delivery_time = 0  then "DJY"when pay_time >0 and wait_pull_time >0 and pick_time >0 and ((choice_time =0 and pack_time>0) or (choice_time >0 and pack_time >0)) and outstock_time = 0  then "DCK"when pay_time >0 and wait_pull_time >0 and pick_time >0 and pack_time = 0  then "DDB"when pay_time >0 and wait_pull_time >0 and pick_time =0  then "DJH"when pay_time >0 and wait_pull_time =0  then "DLD"ELSE "else" end as `status`,order_product_number,ROUND(( unix_timestamp(now()) - greatest(pay_time,wait_pull_time,pick_time,choice_time,pack_time) ) / 3600, 2 ) AS time from ueb_order_operate_time where order_is_cancel =0 and delivery_time = 0 and order_id like "ALLOT%"  union    select warehouse_code,order_id,"DLD" as `status`,sum(order_product_number) as `order_product_number`,ROUND(( unix_timestamp(now()) - wait_pull_time) / 3600, 2 ) AS time       from ueb_order where order_id like "ALLOT%" and wh_order_status in(1,2)  group by warehouse_code,order_id) a  order by time  DESC'
+
+    warehouse = []
+    order_id = []
+    status = []
+    num = []
+    s = []
+    jsonData = {}
+
+
+    cur.execute(sql)
+    see = cur.fetchall()
+
+    for data in see:
+        warehouse.append(data[0])
+        order_id.append(data[1])
+        status.append(data[2])
+        num.append(data[4])
+        s.append(data[5])
+    cur.execute(sql2)
+    see_ck = cur.fetchall()
+    warehouse_ck = []
+    order_id_ck = []
+    status_ck = []
+    num_ck = []
+    s_ck = []
+
+    for data_ck in see_ck:
+        warehouse_ck.append(data_ck[0])
+        order_id_ck.append(data_ck[1])
+        status_ck.append(data_ck[2])
+        num_ck.append(data_ck[3])
+        s_ck.append(data_ck[4])
+
+    hm_order_id_ck = []
+    hm_status_ck = []
+    hm_num_ck = []
+    hm_s_ck = []
+
+    tx_order_id_ck = []
+    tx_status_ck = []
+    tx_num_ck = []
+    tx_s_ck = []
+
+    for i in range(len(warehouse_ck)):
+        if warehouse_ck[i] == "HM_AA":
+            hm_order_id_ck.append(order_id_ck[i])
+            hm_status_ck.append(status_ck[i])
+            hm_num_ck.append(num_ck[i])
+            hm_s_ck.append(s_ck[i])
+    for i in range(len(warehouse_ck)):
+        if warehouse_ck[i] == "SZ_AA":
+            tx_order_id_ck.append(order_id_ck[i])
+            tx_status_ck.append(status_ck[i])
+            tx_num_ck.append(num_ck[i])
+            tx_s_ck.append(s_ck[i])
+    hm_data_ck = np.dstack((hm_order_id_ck, hm_status_ck, hm_num_ck, hm_s_ck))
+    tx_data_ck = np.dstack((tx_order_id_ck, tx_status_ck, tx_num_ck, tx_s_ck))
+
+    hm_ck_dld_order = []
+    hm_ck_dld_num = []
+    hm_ck_dld_s = []
+    hm_ck_djh_order = []
+    hm_ck_djh_num = []
+    hm_ck_djh_s = []
+    hm_ck_ddb_order = []
+    hm_ck_ddb_num = []
+    hm_ck_ddb_s = []
+    hm_ck_dck_order = []
+    hm_ck_dck_num = []
+    hm_ck_dck_s = []
+    hm_ck_djy_order = []
+    hm_ck_djy_num = []
+    hm_ck_djy_s = []
+    tx_ck_dld_order = []
+    tx_ck_dld_num = []
+    tx_ck_dld_s = []
+    tx_ck_djh_order = []
+    tx_ck_djh_num = []
+    tx_ck_djh_s = []
+    tx_ck_ddb_order = []
+    tx_ck_ddb_num = []
+    tx_ck_ddb_s = []
+    tx_ck_dck_order = []
+    tx_ck_dck_num = []
+    tx_ck_dck_s = []
+    tx_ck_djy_order = []
+    tx_ck_djy_num = []
+    tx_ck_djy_s = []
+    for i in range(len(hm_data_ck[0])):
+        if (hm_data_ck[0][i][1] == "DLD"):
+            hm_ck_dld_order.append(hm_data_ck[0][i][0])
+            hm_ck_dld_num.append(hm_data_ck[0][i][2])
+            hm_ck_dld_s.append(hm_data_ck[0][i][3])
+
+    for i in range(len(hm_data_ck[0])):
+        if (hm_data_ck[0][i][1] == "DJH"):
+            hm_ck_djh_order.append(hm_data_ck[0][i][0])
+            hm_ck_djh_num.append(hm_data_ck[0][i][2])
+            hm_ck_djh_s.append(hm_data_ck[0][i][3])
+
+    for i in range(len(hm_data_ck[0])):
+        if (hm_data_ck[0][i][1] == "DDB"):
+            hm_ck_ddb_order.append(hm_data_ck[0][i][0])
+            hm_ck_ddb_num.append(hm_data_ck[0][i][2])
+            hm_ck_ddb_s.append(hm_data_ck[0][i][3])
+    for i in range(len(hm_data_ck[0])):
+        if (hm_data_ck[0][i][1] == "DCK"):
+            hm_ck_dck_order.append(hm_data_ck[0][i][0])
+            hm_ck_dck_num.append(hm_data_ck[0][i][2])
+            hm_ck_dck_s.append(hm_data_ck[0][i][3])
+    for i in range(len(hm_data_ck[0])):
+        if (hm_data_ck[0][i][1] == "DJY"):
+            hm_ck_djy_order.append(hm_data_ck[0][i][0])
+            hm_ck_djy_num.append(hm_data_ck[0][i][2])
+            hm_ck_djy_s.append(hm_data_ck[0][i][3])
+
+    for i in range(len(tx_data_ck[0])):
+        if (tx_data_ck[0][i][1] == "DLD"):
+            tx_ck_dld_order.append(tx_data_ck[0][i][0])
+            tx_ck_dld_num.append(tx_data_ck[0][i][2])
+            tx_ck_dld_s.append(tx_data_ck[0][i][3])
+
+    for i in range(len(tx_data_ck[0])):
+        if (tx_data_ck[0][i][1] == "DJH"):
+            tx_ck_djh_order.append(tx_data_ck[0][i][0])
+            tx_ck_djh_num.append(tx_data_ck[0][i][2])
+            tx_ck_djh_s.append(tx_data_ck[0][i][3])
+    for i in range(len(tx_data_ck[0])):
+        if (tx_data_ck[0][i][1] == "DDB"):
+            tx_ck_ddb_order.append(tx_data_ck[0][i][0])
+            tx_ck_ddb_num.append(tx_data_ck[0][i][2])
+            tx_ck_ddb_s.append(tx_data_ck[0][i][3])
+    for i in range(len(tx_data_ck[0])):
+        if (tx_data_ck[0][i][1] == "DCK"):
+            tx_ck_dck_order.append(tx_data_ck[0][i][0])
+            tx_ck_dck_num.append(tx_data_ck[0][i][2])
+            tx_ck_dck_s.append(tx_data_ck[0][i][3])
+    for i in range(len(tx_data_ck[0])):
+        if (tx_data_ck[0][i][1] == "DJY"):
+            tx_ck_djy_order.append(tx_data_ck[0][i][0])
+            tx_ck_djy_num.append(tx_data_ck[0][i][2])
+            tx_ck_djy_s.append(tx_data_ck[0][i][3])
+    hm_dld = np.dstack((hm_ck_dld_order, hm_ck_dld_num, hm_ck_dld_s))
+    hm_djh = np.dstack((hm_ck_djh_order, hm_ck_djh_num, hm_ck_djh_s))
+    hm_ddb = np.dstack((hm_ck_ddb_order, hm_ck_ddb_num, hm_ck_ddb_s))
+    hm_dck = np.dstack((hm_ck_dck_order, hm_ck_dck_num, hm_ck_dck_s))
+    hm_djy = np.dstack((hm_ck_djy_order, hm_ck_djy_num, hm_ck_djy_s))
+    tx_dld = np.dstack((tx_ck_dld_order, tx_ck_dld_num, tx_ck_dld_s))
+    tx_djh = np.dstack((tx_ck_djh_order, tx_ck_djh_num, tx_ck_djh_s))
+    tx_ddb = np.dstack((tx_ck_ddb_order, tx_ck_ddb_num, tx_ck_ddb_s))
+    tx_dck = np.dstack((tx_ck_dck_order, tx_ck_dck_num, tx_ck_dck_s))
+    tx_djy = np.dstack((tx_ck_djy_order, tx_ck_djy_num, tx_ck_djy_s))
+    hm_dld_j = [0, 0, 0, 0, 0, 0, 0]
+    hm_dld_b = [0, 0, 0, 0, 0, 0, 0]
+    hm_djh_j = [0, 0, 0, 0, 0, 0, 0]
+    hm_djh_b = [0, 0, 0, 0, 0, 0, 0]
+    hm_ddb_j = [0, 0, 0, 0, 0, 0, 0]
+    hm_ddb_b = [0, 0, 0, 0, 0, 0, 0]
+    hm_dck_j = [0, 0, 0, 0, 0, 0, 0]
+    hm_dck_b = [0, 0, 0, 0, 0, 0, 0]
+    hm_djy_j = [0, 0, 0, 0, 0, 0, 0]
+    hm_djy_b = [0, 0, 0, 0, 0, 0, 0]
+    tx_dld_j = [0, 0, 0, 0, 0, 0, 0]
+    tx_dld_b = [0, 0, 0, 0, 0, 0, 0]
+    tx_djh_j = [0, 0, 0, 0, 0, 0, 0]
+    tx_djh_b = [0, 0, 0, 0, 0, 0, 0]
+    tx_ddb_j = [0, 0, 0, 0, 0, 0, 0]
+    tx_ddb_b = [0, 0, 0, 0, 0, 0, 0]
+    tx_dck_j = [0, 0, 0, 0, 0, 0, 0]
+    tx_dck_b = [0, 0, 0, 0, 0, 0, 0]
+    tx_djy_j = [0, 0, 0, 0, 0, 0, 0]
+    tx_djy_b = [0, 0, 0, 0, 0, 0, 0]
+    for i in range(len(hm_dld[0])):
+        if float(hm_ck_dld_s[i]) > 0 and float(hm_ck_dld_s[i]) < 2:
+            hm_dld_j[0] = hm_dld_j[0] + hm_dld[0][i][1]
+        if float(hm_ck_dld_s[i]) > 2 and float(hm_ck_dld_s[i]) < 4:
+            hm_dld_j[1] = hm_dld_j[1] + hm_dld[0][i][1]
+        if float(hm_ck_dld_s[i]) > 4 and float(hm_ck_dld_s[i]) < 6:
+            hm_dld_j[2] = hm_dld_j[2] + hm_dld[0][i][1]
+        if float(hm_ck_dld_s[i]) > 6 and float(hm_ck_dld_s[i]) < 8:
+            hm_dld_j[3] = hm_dld_j[3] + hm_dld[0][i][1]
+        if float(hm_ck_dld_s[i]) > 8 and float(hm_ck_dld_s[i]) < 12:
+            hm_dld_j[4] = hm_dld_j[4] + hm_dld[0][i][1]
+        if float(hm_ck_dld_s[i]) > 12 and float(hm_ck_dld_s[i]) < 24:
+            hm_dld_j[5] = hm_dld_j[5] + hm_dld[0][i][1]
+        if float(hm_ck_dld_s[i]) > 24:
+            hm_dld_j[6] = hm_dld_j[6] + hm_dld[0][i][1]
+    for i in range(len(hm_dld[0])):
+        if float(hm_ck_dld_s[i]) > 0 and float(hm_ck_dld_s[i]) < 2:
+            hm_dld_b[0] = hm_dld_b[0] + 1
+        if float(hm_ck_dld_s[i]) > 2 and float(hm_ck_dld_s[i]) < 4:
+            hm_dld_b[1] = hm_dld_b[1] + 1
+        if float(hm_ck_dld_s[i]) > 4 and float(hm_ck_dld_s[i]) < 6:
+            hm_dld_b[2] = hm_dld_b[2] + 1
+        if float(hm_ck_dld_s[i]) > 6 and float(hm_ck_dld_s[i]) < 8:
+            hm_dld_b[3] = hm_dld_b[3] + 1
+        if float(hm_ck_dld_s[i]) > 8 and float(hm_ck_dld_s[i]) < 12:
+            hm_dld_b[4] = hm_dld_b[4] + 1
+        if float(hm_ck_dld_s[i]) > 12 and float(hm_ck_dld_s[i]) < 24:
+            hm_dld_b[5] = hm_dld_b[5] + 1
+        if float(hm_ck_dld_s[i]) > 24:
+            hm_dld_b[6] = hm_dld_b[6] + 1
+
+    for i in range(len(hm_djh[0])):
+        if float(hm_ck_djh_s[i]) > 0 and float(hm_ck_djh_s[i]) < 2:
+            hm_djh_j[0] = hm_djh_j[0] + hm_djh[0][i][1]
+        if float(hm_ck_djh_s[i]) > 2 and float(hm_ck_djh_s[i]) < 4:
+            hm_djh_j[1] = hm_djh_j[1] + hm_djh[0][i][1]
+        if float(hm_ck_djh_s[i]) > 4 and float(hm_ck_djh_s[i]) < 6:
+            hm_djh_j[2] = hm_djh_j[2] + hm_djh[0][i][1]
+        if float(hm_ck_djh_s[i]) > 6 and float(hm_ck_djh_s[i]) < 8:
+            hm_djh_j[3] = hm_djh_j[3] + hm_djh[0][i][1]
+        if float(hm_ck_djh_s[i]) > 8 and float(hm_ck_djh_s[i]) < 12:
+            hm_djh_j[4] = hm_djh_j[4] + hm_djh[0][i][1]
+        if float(hm_ck_djh_s[i]) > 12 and float(hm_ck_djh_s[i]) < 24:
+            hm_djh_j[5] = hm_djh_j[5] + hm_djh[0][i][1]
+        if float(hm_ck_djh_s[i]) > 24:
+            hm_djh_j[6] = hm_djh_j[6] + hm_djh[0][i][1]
+    for i in range(len(hm_djh[0])):
+        if float(hm_ck_djh_s[i]) > 0 and float(hm_ck_djh_s[i]) < 2:
+            hm_djh_b[0] = hm_djh_b[0] + 1
+        if float(hm_ck_djh_s[i]) > 2 and float(hm_ck_djh_s[i]) < 4:
+            hm_djh_b[1] = hm_djh_b[1] + 1
+        if float(hm_ck_djh_s[i]) > 4 and float(hm_ck_djh_s[i]) < 6:
+            hm_djh_b[2] = hm_djh_b[2] + 1
+        if float(hm_ck_djh_s[i]) > 6 and float(hm_ck_djh_s[i]) < 8:
+            hm_djh_b[3] = hm_djh_b[3] + 1
+        if float(hm_ck_djh_s[i]) > 8 and float(hm_ck_djh_s[i]) < 12:
+            hm_djh_b[4] = hm_djh_b[4] + 1
+        if float(hm_ck_djh_s[i]) > 12 and float(hm_ck_djh_s[i]) < 24:
+            hm_djh_b[5] = hm_djh_b[5] + 1
+        if float(hm_ck_djh_s[i]) > 24:
+            hm_djh_b[6] = hm_djh_b[6] + 1
+
+    for i in range(len(hm_ddb[0])):
+        if float(hm_ck_ddb_s[i]) > 0 and float(hm_ck_ddb_s[i]) < 2:
+            hm_ddb_j[0] = hm_ddb_j[0] + hm_ddb[0][i][1]
+        if float(hm_ck_ddb_s[i]) > 2 and float(hm_ck_ddb_s[i]) < 4:
+            hm_ddb_j[1] = hm_ddb_j[1] + hm_ddb[0][i][1]
+        if float(hm_ck_ddb_s[i]) > 4 and float(hm_ck_ddb_s[i]) < 6:
+            hm_ddb_j[2] = hm_ddb_j[2] + hm_ddb[0][i][1]
+        if float(hm_ck_ddb_s[i]) > 6 and float(hm_ck_ddb_s[i]) < 8:
+            hm_ddb_j[3] = hm_ddb_j[3] + hm_ddb[0][i][1]
+        if float(hm_ck_ddb_s[i]) > 8 and float(hm_ck_ddb_s[i]) < 12:
+            hm_ddb_j[4] = hm_ddb_j[4] + hm_ddb[0][i][1]
+        if float(hm_ck_ddb_s[i]) > 12 and float(hm_ck_ddb_s[i]) < 24:
+            hm_ddb_j[5] = hm_ddb_j[5] + hm_ddb[0][i][1]
+        if float(hm_ck_ddb_s[i]) > 24:
+            hm_ddb_j[6] = hm_ddb_j[6] + hm_ddb[0][i][1]
+    for i in range(len(hm_ddb[0])):
+        if float(hm_ck_ddb_s[i]) > 0 and float(hm_ck_ddb_s[i]) < 2:
+            hm_ddb_b[0] = hm_ddb_b[0] + 1
+        if float(hm_ck_ddb_s[i]) > 2 and float(hm_ck_ddb_s[i]) < 4:
+            hm_ddb_b[1] = hm_ddb_b[1] + 1
+        if float(hm_ck_ddb_s[i]) > 4 and float(hm_ck_ddb_s[i]) < 6:
+            hm_ddb_b[2] = hm_ddb_b[2] + 1
+        if float(hm_ck_ddb_s[i]) > 6 and float(hm_ck_ddb_s[i]) < 8:
+            hm_ddb_b[3] = hm_ddb_b[3] + 1
+        if float(hm_ck_ddb_s[i]) > 8 and float(hm_ck_ddb_s[i]) < 12:
+            hm_ddb_b[4] = hm_ddb_b[4] + 1
+        if float(hm_ck_ddb_s[i]) > 12 and float(hm_ck_ddb_s[i]) < 24:
+            hm_ddb_b[5] = hm_ddb_b[5] + 1
+        if float(hm_ck_ddb_s[i]) > 24:
+            hm_ddb_b[6] = hm_ddb_b[6] + 1
+    for i in range(len(hm_dck[0])):
+        if float(hm_ck_dck_s[i]) > 0 and float(hm_ck_dck_s[i]) < 2:
+            hm_dck_j[0] = hm_dck_j[0] + hm_dck[0][i][1]
+        if float(hm_ck_dck_s[i]) > 2 and float(hm_ck_dck_s[i]) < 4:
+            hm_dck_j[1] = hm_dck_j[1] + hm_dck[0][i][1]
+        if float(hm_ck_dck_s[i]) > 4 and float(hm_ck_dck_s[i]) < 6:
+            hm_dck_j[2] = hm_dck_j[2] + hm_dck[0][i][1]
+        if float(hm_ck_dck_s[i]) > 6 and float(hm_ck_dck_s[i]) < 8:
+            hm_dck_j[3] = hm_dck_j[3] + hm_dck[0][i][1]
+        if float(hm_ck_dck_s[i]) > 8 and float(hm_ck_dck_s[i]) < 12:
+            hm_dck_j[4] = hm_dck_j[4] + hm_dck[0][i][1]
+        if float(hm_ck_dck_s[i]) > 12 and float(hm_ck_dck_s[i]) < 24:
+            hm_dck_j[5] = hm_dck_j[5] + hm_dck[0][i][1]
+        if float(hm_ck_dck_s[i]) > 24:
+            hm_dck_j[6] = hm_dck_j[6] + hm_dck[0][i][1]
+    for i in range(len(hm_dck[0])):
+        if float(hm_ck_dck_s[i]) > 0 and float(hm_ck_dck_s[i]) < 2:
+            hm_dck_b[0] = hm_dck_b[0] + 1
+        if float(hm_ck_dck_s[i]) > 2 and float(hm_ck_dck_s[i]) < 4:
+            hm_dck_b[1] = hm_dck_b[1] + 1
+        if float(hm_ck_dck_s[i]) > 4 and float(hm_ck_dck_s[i]) < 6:
+            hm_dck_b[2] = hm_dck_b[2] + 1
+        if float(hm_ck_dck_s[i]) > 6 and float(hm_ck_dck_s[i]) < 8:
+            hm_dck_b[3] = hm_dck_b[3] + 1
+        if float(hm_ck_dck_s[i]) > 8 and float(hm_ck_dck_s[i]) < 12:
+            hm_dck_b[4] = hm_dck_b[4] + 1
+        if float(hm_ck_dck_s[i]) > 12 and float(hm_ck_dck_s[i]) < 24:
+            hm_dck_b[5] = hm_dck_b[5] + 1
+        if float(hm_ck_dck_s[i]) > 24:
+            hm_dck_b[6] = hm_dck_b[6] + 1
+    for i in range(len(hm_djy[0])):
+        if float(hm_ck_djy_s[i]) > 0 and float(hm_ck_djy_s[i]) < 2:
+            hm_djy_j[0] = hm_djy_j[0] + hm_djy[0][i][1]
+        if float(hm_ck_djy_s[i]) > 2 and float(hm_ck_djy_s[i]) < 4:
+            hm_djy_j[1] = hm_djy_j[1] + hm_djy[0][i][1]
+        if float(hm_ck_djy_s[i]) > 4 and float(hm_ck_djy_s[i]) < 6:
+            hm_djy_j[2] = hm_djy_j[2] + hm_djy[0][i][1]
+        if float(hm_ck_djy_s[i]) > 6 and float(hm_ck_djy_s[i]) < 8:
+            hm_djy_j[3] = hm_djy_j[3] + hm_djy[0][i][1]
+        if float(hm_ck_djy_s[i]) > 8 and float(hm_ck_djy_s[i]) < 12:
+            hm_djy_j[4] = hm_djy_j[4] + hm_djy[0][i][1]
+        if float(hm_ck_djy_s[i]) > 12 and float(hm_ck_djy_s[i]) < 24:
+            hm_djy_j[5] = hm_djy_j[5] + hm_djy[0][i][1]
+        if float(hm_ck_djy_s[i]) > 24:
+            hm_djy_j[6] = hm_djy_j[6] + hm_djy[0][i][1]
+    for i in range(len(hm_djy[0])):
+        if float(hm_ck_djy_s[i]) > 0 and float(hm_ck_djy_s[i]) < 2:
+            hm_djy_b[0] = hm_djy_b[0] + 1
+        if float(hm_ck_djy_s[i]) > 2 and float(hm_ck_djy_s[i]) < 4:
+            hm_djy_b[1] = hm_djy_b[1] + 1
+        if float(hm_ck_djy_s[i]) > 4 and float(hm_ck_djy_s[i]) < 6:
+            hm_djy_b[2] = hm_djy_b[2] + 1
+        if float(hm_ck_djy_s[i]) > 6 and float(hm_ck_djy_s[i]) < 8:
+            hm_djy_b[3] = hm_djy_b[3] + 1
+        if float(hm_ck_djy_s[i]) > 8 and float(hm_ck_djy_s[i]) < 12:
+            hm_djy_b[4] = hm_djy_b[4] + 1
+        if float(hm_ck_djy_s[i]) > 12 and float(hm_ck_djy_s[i]) < 24:
+            hm_djy_b[5] = hm_djy_b[5] + 1
+        if float(hm_ck_djy_s[i]) > 24:
+            hm_djy_b[6] = hm_djy_b[6] + 1
+    for i in range(len(tx_dld[0])):
+        if float(tx_ck_dld_s[i]) > 0 and float(tx_ck_dld_s[i]) < 2:
+            tx_dld_j[0] = tx_dld_j[0] + tx_dld[0][i][1]
+        if float(tx_ck_dld_s[i]) > 2 and float(tx_ck_dld_s[i]) < 4:
+            tx_dld_j[1] = tx_dld_j[1] + tx_dld[0][i][1]
+        if float(tx_ck_dld_s[i]) > 4 and float(tx_ck_dld_s[i]) < 6:
+            tx_dld_j[2] = tx_dld_j[2] + tx_dld[0][i][1]
+        if float(tx_ck_dld_s[i]) > 6 and float(tx_ck_dld_s[i]) < 8:
+            tx_dld_j[3] = tx_dld_j[3] + tx_dld[0][i][1]
+        if float(tx_ck_dld_s[i]) > 8 and float(tx_ck_dld_s[i]) < 12:
+            tx_dld_j[4] = tx_dld_j[4] + tx_dld[0][i][1]
+        if float(tx_ck_dld_s[i]) > 12 and float(tx_ck_dld_s[i]) < 24:
+            tx_dld_j[5] = tx_dld_j[5] + tx_dld[0][i][1]
+        if float(tx_ck_dld_s[i]) > 24:
+            tx_dld_j[6] = tx_dld_j[6] + tx_dld[0][i][1]
+    for i in range(len(tx_dld[0])):
+        if float(tx_ck_dld_s[i]) > 0 and float(tx_ck_dld_s[i]) < 2:
+            tx_dld_b[0] = tx_dld_b[0] + 1
+        if float(tx_ck_dld_s[i]) > 2 and float(tx_ck_dld_s[i]) < 4:
+            tx_dld_b[1] = tx_dld_b[1] + 1
+        if float(tx_ck_dld_s[i]) > 4 and float(tx_ck_dld_s[i]) < 6:
+            tx_dld_b[2] = tx_dld_b[2] + 1
+        if float(tx_ck_dld_s[i]) > 6 and float(tx_ck_dld_s[i]) < 8:
+            tx_dld_b[3] = tx_dld_b[3] + 1
+        if float(tx_ck_dld_s[i]) > 8 and float(tx_ck_dld_s[i]) < 12:
+            tx_dld_b[4] = tx_dld_b[4] + 1
+        if float(tx_ck_dld_s[i]) > 12 and float(tx_ck_dld_s[i]) < 24:
+            tx_dld_b[5] = tx_dld_b[5] + 1
+        if float(tx_ck_dld_s[i]) > 24:
+            tx_dld_b[6] = tx_dld_b[6] + 1
+    for i in range(len(tx_djh[0])):
+        if float(tx_ck_djh_s[i]) > 0 and float(tx_ck_djh_s[i]) < 2:
+            tx_djh_j[0] = tx_djh_j[0] + tx_djh[0][i][1]
+        if float(tx_ck_djh_s[i]) > 2 and float(tx_ck_djh_s[i]) < 4:
+            tx_djh_j[1] = tx_djh_j[1] + tx_djh[0][i][1]
+        if float(tx_ck_djh_s[i]) > 4 and float(tx_ck_djh_s[i]) < 6:
+            tx_djh_j[2] = tx_djh_j[2] + tx_djh[0][i][1]
+        if float(tx_ck_djh_s[i]) > 6 and float(tx_ck_djh_s[i]) < 8:
+            tx_djh_j[3] = tx_djh_j[3] + tx_djh[0][i][1]
+        if float(tx_ck_djh_s[i]) > 8 and float(tx_ck_djh_s[i]) < 12:
+            tx_djh_j[4] = tx_djh_j[4] + tx_djh[0][i][1]
+        if float(tx_ck_djh_s[i]) > 12 and float(tx_ck_djh_s[i]) < 24:
+            tx_djh_j[5] = tx_djh_j[5] + tx_djh[0][i][1]
+        if float(tx_ck_djh_s[i]) > 24:
+            tx_djh_j[6] = tx_djh_j[6] + tx_djh[0][i][1]
+    for i in range(len(tx_djh[0])):
+        if float(tx_ck_djh_s[i]) > 0 and float(tx_ck_djh_s[i]) < 2:
+            tx_djh_b[0] = tx_djh_b[0] + 1
+        if float(tx_ck_djh_s[i]) > 2 and float(tx_ck_djh_s[i]) < 4:
+            tx_djh_b[1] = tx_djh_b[1] + 1
+        if float(tx_ck_djh_s[i]) > 4 and float(tx_ck_djh_s[i]) < 6:
+            tx_djh_b[2] = tx_djh_b[2] + 1
+        if float(tx_ck_djh_s[i]) > 6 and float(tx_ck_djh_s[i]) < 8:
+            tx_djh_b[3] = tx_djh_b[3] + 1
+        if float(tx_ck_djh_s[i]) > 8 and float(tx_ck_djh_s[i]) < 12:
+            tx_djh_b[4] = tx_djh_b[4] + 1
+        if float(tx_ck_djh_s[i]) > 12 and float(tx_ck_djh_s[i]) < 24:
+            tx_djh_b[5] = tx_djh_b[5] + 1
+        if float(tx_ck_djh_s[i]) > 24:
+            tx_djh_b[6] = tx_djh_b[6] + 1
+
+    for i in range(len(tx_ddb[0])):
+        if float(tx_ck_ddb_s[i]) > 0 and float(tx_ck_ddb_s[i]) < 2:
+            tx_ddb_j[0] = tx_ddb_j[0] + tx_ddb[0][i][1]
+        if float(tx_ck_ddb_s[i]) > 2 and float(tx_ck_ddb_s[i]) < 4:
+            tx_ddb_j[1] = tx_ddb_j[1] + tx_ddb[0][i][1]
+        if float(tx_ck_ddb_s[i]) > 4 and float(tx_ck_ddb_s[i]) < 6:
+            tx_ddb_j[2] = tx_ddb_j[2] + tx_ddb[0][i][1]
+        if float(tx_ck_ddb_s[i]) > 6 and float(tx_ck_ddb_s[i]) < 8:
+            tx_ddb_j[3] = tx_ddb_j[3] + tx_ddb[0][i][1]
+        if float(tx_ck_ddb_s[i]) > 8 and float(tx_ck_ddb_s[i]) < 12:
+            tx_ddb_j[4] = tx_ddb_j[4] + tx_ddb[0][i][1]
+        if float(tx_ck_ddb_s[i]) > 12 and float(tx_ck_ddb_s[i]) < 24:
+            tx_ddb_j[5] = tx_ddb_j[5] + tx_ddb[0][i][1]
+        if float(tx_ck_ddb_s[i]) > 24:
+            tx_ddb_j[6] = tx_ddb_j[6] + tx_ddb[0][i][1]
+    for i in range(len(tx_ddb[0])):
+        if float(tx_ck_ddb_s[i]) > 0 and float(tx_ck_ddb_s[i]) < 2:
+            tx_ddb_b[0] = tx_ddb_b[0] + 1
+        if float(tx_ck_ddb_s[i]) > 2 and float(tx_ck_ddb_s[i]) < 4:
+            tx_ddb_b[1] = tx_ddb_b[1] + 1
+        if float(tx_ck_ddb_s[i]) > 4 and float(tx_ck_ddb_s[i]) < 6:
+            tx_ddb_b[2] = tx_ddb_b[2] + 1
+        if float(tx_ck_ddb_s[i]) > 6 and float(tx_ck_ddb_s[i]) < 8:
+            tx_ddb_b[3] = tx_ddb_b[3] + 1
+        if float(tx_ck_ddb_s[i]) > 8 and float(tx_ck_ddb_s[i]) < 12:
+            tx_ddb_b[4] = tx_ddb_b[4] + 1
+        if float(tx_ck_ddb_s[i]) > 12 and float(tx_ck_ddb_s[i]) < 24:
+            tx_ddb_b[5] = tx_ddb_b[5] + 1
+        if float(tx_ck_ddb_s[i]) > 24:
+            tx_ddb_b[6] = tx_ddb_b[6] + 1
+    for i in range(len(tx_dck[0])):
+        if float(tx_ck_dck_s[i]) > 0 and float(tx_ck_dck_s[i]) < 2:
+            tx_dck_j[0] = tx_dck_j[0] + tx_dck[0][i][1]
+        if float(tx_ck_dck_s[i]) > 2 and float(tx_ck_dck_s[i]) < 4:
+            tx_dck_j[1] = tx_dck_j[1] + tx_dck[0][i][1]
+        if float(tx_ck_dck_s[i]) > 4 and float(tx_ck_dck_s[i]) < 6:
+            tx_dck_j[2] = tx_dck_j[2] + tx_dck[0][i][1]
+        if float(tx_ck_dck_s[i]) > 6 and float(tx_ck_dck_s[i]) < 8:
+            tx_dck_j[3] = tx_dck_j[3] + tx_dck[0][i][1]
+        if float(tx_ck_dck_s[i]) > 8 and float(tx_ck_dck_s[i]) < 12:
+            tx_dck_j[4] = tx_dck_j[4] + tx_dck[0][i][1]
+        if float(tx_ck_dck_s[i]) > 12 and float(tx_ck_dck_s[i]) < 24:
+            tx_dck_j[5] = tx_dck_j[5] + tx_dck[0][i][1]
+        if float(tx_ck_dck_s[i]) > 24:
+            tx_dck_j[6] = tx_dck_j[6] + tx_dck[0][i][1]
+    for i in range(len(tx_dck[0])):
+        if float(tx_ck_dck_s[i]) > 0 and float(tx_ck_dck_s[i]) < 2:
+            tx_dck_b[0] = tx_dck_b[0] + 1
+        if float(tx_ck_dck_s[i]) > 2 and float(tx_ck_dck_s[i]) < 4:
+            tx_dck_b[1] = tx_dck_b[1] + 1
+        if float(tx_ck_dck_s[i]) > 4 and float(tx_ck_dck_s[i]) < 6:
+            tx_dck_b[2] = tx_dck_b[2] + 1
+        if float(tx_ck_dck_s[i]) > 6 and float(tx_ck_dck_s[i]) < 8:
+            tx_dck_b[3] = tx_dck_b[3] + 1
+        if float(tx_ck_dck_s[i]) > 8 and float(tx_ck_dck_s[i]) < 12:
+            tx_dck_b[4] = tx_dck_b[4] + 1
+        if float(tx_ck_dck_s[i]) > 12 and float(tx_ck_dck_s[i]) < 24:
+            tx_dck_b[5] = tx_dck_b[5] + 1
+        if float(tx_ck_dck_s[i]) > 24:
+            tx_dck_b[6] = tx_dck_b[6] + 1
+    for i in range(len(tx_djy[0])):
+        if float(tx_ck_djy_s[i]) > 0 and float(tx_ck_djy_s[i]) < 2:
+            tx_djy_j[0] = tx_djy_j[0] + tx_djy[0][i][1]
+        if float(tx_ck_djy_s[i]) > 2 and float(tx_ck_djy_s[i]) < 4:
+            tx_djy_j[1] = tx_djy_j[1] + tx_djy[0][i][1]
+        if float(tx_ck_djy_s[i]) > 4 and float(tx_ck_djy_s[i]) < 6:
+            tx_djy_j[2] = tx_djy_j[2] + tx_djy[0][i][1]
+        if float(tx_ck_djy_s[i]) > 6 and float(tx_ck_djy_s[i]) < 8:
+            tx_djy_j[3] = tx_djy_j[3] + tx_djy[0][i][1]
+        if float(tx_ck_djy_s[i]) > 8 and float(tx_ck_djy_s[i]) < 12:
+            tx_djy_j[4] = tx_djy_j[4] + tx_djy[0][i][1]
+        if float(tx_ck_djy_s[i]) > 12 and float(tx_ck_djy_s[i]) < 24:
+            tx_djy_j[5] = tx_djy_j[5] + tx_djy[0][i][1]
+        if float(tx_ck_djy_s[i]) > 24:
+            tx_djy_j[6] = tx_djy_j[6] + tx_djy[0][i][1]
+    for i in range(len(tx_djy[0])):
+        if float(tx_ck_djy_s[i]) > 0 and float(tx_ck_djy_s[i]) < 2:
+            tx_djy_b[0] = tx_djy_b[0] + 1
+        if float(tx_ck_djy_s[i]) > 2 and float(tx_ck_djy_s[i]) < 4:
+            tx_djy_b[1] = tx_djy_b[1] + 1
+        if float(tx_ck_djy_s[i]) > 4 and float(tx_ck_djy_s[i]) < 6:
+            tx_djy_b[2] = tx_djy_b[2] + 1
+        if float(tx_ck_djy_s[i]) > 6 and float(tx_ck_djy_s[i]) < 8:
+            tx_djy_b[3] = tx_djy_b[3] + 1
+        if float(tx_ck_djy_s[i]) > 8 and float(tx_ck_djy_s[i]) < 12:
+            tx_djy_b[4] = tx_djy_b[4] + 1
+        if float(tx_ck_djy_s[i]) > 12 and float(tx_ck_djy_s[i]) < 24:
+            tx_djy_b[5] = tx_djy_b[5] + 1
+        if float(tx_ck_djy_s[i]) > 24:
+            tx_djy_b[6] = tx_djy_b[6] + 1
+    hm_ck_dld_j_color = []
+    hm_ck_djh_j_color = []
+    hm_ck_ddb_j_color = []
+    hm_ck_dck_j_color = []
+    hm_ck_djy_j_color = []
+    hm_ck_dld_b_color = []
+    hm_ck_djh_b_color = []
+    hm_ck_ddb_b_color = []
+    hm_ck_dck_b_color = []
+    hm_ck_djy_b_color = []
+    tx_ck_dld_j_color = []
+    tx_ck_djh_j_color = []
+    tx_ck_ddb_j_color = []
+    tx_ck_dck_j_color = []
+    tx_ck_djy_j_color = []
+    tx_ck_dld_b_color = []
+    tx_ck_djh_b_color = []
+    tx_ck_ddb_b_color = []
+    tx_ck_dck_b_color = []
+    tx_ck_djy_b_color = []
+
+    arrayA = np.divide(hm_dld_j, max(hm_dld_j), out=np.zeros_like(hm_dld_j, dtype=np.float64), where=max(hm_dld_j) != 0,
+                       casting="unsafe")
+    for i in range(len(hm_dld_j)):
+        hm_ck_dld_j_color.append("%.2f%%" % (arrayA[i] * 100))
+    if hm_dld_j[0] == 'nan%':
+        a = 0
+        for i in range(len(hm_dld_j)):
+            hm_dld_j[i] = '{:.2%}'.format(a)
+
+    arrayA = np.divide(hm_djh_j, max(hm_djh_j), out=np.zeros_like(hm_djh_j, dtype=np.float64), casting="unsafe",
+                       where=max(hm_djh_j) != 0)
+    for i in range(len(hm_djh_j)):
+        hm_ck_djh_j_color.append("%.2f%%" % (arrayA[i] * 100))
+    if hm_djh_j[0] == 'nan%':
+        a = 0
+        for i in range(len(hm_djh_j)):
+            hm_djh_j[i] = '{:.2%}'.format(a)
+
+    arrayA = np.divide(hm_ddb_j, max(hm_ddb_j), out=np.zeros_like(hm_ddb_j, dtype=np.float64), casting="unsafe",
+                       where=max(hm_ddb_j) != 0)
+    for i in range(len(hm_ddb_j)):
+        hm_ck_ddb_j_color.append("%.2f%%" % (arrayA[i] * 100))
+    if hm_ddb_j[0] == 'nan%':
+        a = 0
+        for i in range(len(hm_ddb_j)):
+            hm_ddb_j[i] = '{:.2%}'.format(a)
+    arrayA = np.divide(hm_dck_j, max(hm_dck_j), out=np.zeros_like(hm_dck_j, dtype=np.float64), casting="unsafe",
+                       where=max(hm_dck_j) != 0)
+    for i in range(len(hm_dck_j)):
+        hm_ck_dck_j_color.append("%.2f%%" % (arrayA[i] * 100))
+    if hm_dck_j[0] == 'nan%':
+        a = 0
+        for i in range(len(hm_dck_j)):
+            hm_dck_j[i] = '{:.2%}'.format(a)
+    arrayA = np.divide(hm_djy_j, max(hm_djy_j), out=np.zeros_like(hm_djy_j, dtype=np.float64), casting="unsafe",
+                       where=max(hm_djy_j) != 0)
+    for i in range(len(hm_djy_j)):
+        hm_ck_djy_j_color.append("%.2f%%" % (arrayA[i] * 100))
+    if hm_djy_j[0] == 'nan%':
+        a = 0
+        for i in range(len(hm_djy_j)):
+            hm_djy_j[i] = '{:.2%}'.format(a)
+    arrayA = np.divide(hm_dld_b, max(hm_dld_b), out=np.zeros_like(hm_dld_b, dtype=np.float64), casting="unsafe",
+                       where=max(hm_dld_b) != 0)
+    for i in range(len(hm_dld_b)):
+        hm_ck_dld_b_color.append("%.2f%%" % (arrayA[i] * 100))
+    if hm_dld_b[0] == 'nan%':
+        a = 0
+        for i in range(len(hm_dld_b)):
+            hm_dld_b[i] = '{:.2%}'.format(a)
+    arrayA = np.divide(hm_djh_b, max(hm_djh_b), out=np.zeros_like(hm_djh_b, dtype=np.float64), casting="unsafe",
+                       where=max(hm_djh_b) != 0)
+    for i in range(len(hm_djh_b)):
+        hm_ck_djh_b_color.append("%.2f%%" % (arrayA[i] * 100))
+    if hm_djh_b[0] == 'nan%':
+        a = 0
+        for i in range(len(hm_djh_b)):
+            hm_djh_b[i] = '{:.2%}'.format(a)
+    arrayA = np.divide(hm_ddb_b, max(hm_ddb_b), out=np.zeros_like(hm_ddb_b, dtype=np.float64), casting="unsafe",
+                       where=max(hm_ddb_b) != 0)
+    for i in range(len(hm_ddb_b)):
+        hm_ck_ddb_b_color.append("%.2f%%" % (arrayA[i] * 100))
+    if hm_ddb_b[0] == 'nan%':
+        a = 0
+        for i in range(len(hm_ddb_b)):
+            hm_ddb_b[i] = '{:.2%}'.format(a)
+    arrayA = np.divide(hm_dck_b, max(hm_dck_b), out=np.zeros_like(hm_dck_b, dtype=np.float64), casting="unsafe",
+                       where=max(hm_dck_b) != 0)
+    for i in range(len(hm_dck_b)):
+        hm_ck_dck_b_color.append("%.2f%%" % (arrayA[i] * 100))
+    if hm_dck_b[0] == 'nan%':
+        a = 0
+        for i in range(len(hm_dck_b)):
+            hm_dck_b[i] = '{:.2%}'.format(a)
+    arrayA = np.divide(hm_djy_b, max(hm_djy_b), out=np.zeros_like(hm_djy_b, dtype=np.float64), casting="unsafe",
+                       where=max(hm_djy_b) != 0)
+    for i in range(len(hm_djy_b)):
+        hm_ck_djy_b_color.append("%.2f%%" % (arrayA[i] * 100))
+    if hm_djy_b[0] == 'nan%':
+        a = 0
+        for i in range(len(hm_djy_b)):
+            hm_djy_b[i] = '{:.2%}'.format(a)
+    arrayA = np.divide(tx_dld_j, max(tx_dld_j), out=np.zeros_like(tx_dld_j, dtype=np.float64), casting="unsafe",
+                       where=max(tx_dld_j) != 0)
+    for i in range(len(tx_dld_j)):
+        tx_ck_dld_j_color.append("%.2f%%" % (arrayA[i] * 100))
+    if tx_dld_j[0] == 'nan%':
+        a = 0
+        for i in range(len(tx_dld_j)):
+            tx_dld_j[i] = '{:.2%}'.format(a)
+    arrayA = np.divide(tx_djh_j, max(tx_djh_j), out=np.zeros_like(tx_djh_j, dtype=np.float64), casting="unsafe",
+                       where=max(tx_djh_j) != 0)
+    for i in range(len(tx_djh_j)):
+        tx_ck_djh_j_color.append("%.2f%%" % (arrayA[i] * 100))
+    if tx_djh_j[0] == 'nan%':
+        a = 0
+        for i in range(len(tx_djh_j)):
+            tx_djh_j[i] = '{:.2%}'.format(a)
+    arrayA = np.divide(tx_ddb_j, max(tx_ddb_j), out=np.zeros_like(tx_ddb_j, dtype=np.float64), casting="unsafe",
+                       where=max(tx_ddb_j) != 0)
+    for i in range(len(tx_ddb_j)):
+        tx_ck_ddb_j_color.append("%.2f%%" % (arrayA[i] * 100))
+    if tx_ddb_j[0] == 'nan%':
+        a = 0
+        for i in range(len(tx_ddb_j)):
+            tx_ddb_j[i] = '{:.2%}'.format(a)
+    arrayA = np.divide(tx_dck_j, max(tx_dck_j), out=np.zeros_like(tx_dck_j, dtype=np.float64), casting="unsafe",
+                       where=max(tx_dck_j) != 0)
+    for i in range(len(tx_dck_j)):
+        tx_ck_dck_j_color.append("%.2f%%" % (arrayA[i] * 100))
+    if tx_dck_j[0] == 'nan%':
+        a = 0
+        for i in range(len(tx_dck_j)):
+            tx_dck_j[i] = '{:.2%}'.format(a)
+    arrayA = np.divide(tx_djy_j, max(tx_djy_j), out=np.zeros_like(tx_djy_j, dtype=np.float64), casting="unsafe",
+                       where=max(tx_djy_j) != 0)
+    for i in range(len(tx_djy_j)):
+        tx_ck_djy_j_color.append("%.2f%%" % (arrayA[i] * 100))
+    if tx_djy_j[0] == 'nan%':
+        a = 0
+        for i in range(len(tx_djy_j)):
+            tx_djy_j[i] = '{:.2%}'.format(a)
+    arrayA = np.divide(tx_dld_b, max(tx_dld_b), out=np.zeros_like(tx_dld_b, dtype=np.float64), casting="unsafe",
+                       where=max(tx_dld_b) != 0)
+    for i in range(len(tx_dld_b)):
+        tx_ck_dld_b_color.append("%.2f%%" % (arrayA[i] * 100))
+    if tx_dld_b[0] == 'nan%':
+        a = 0
+        for i in range(len(tx_dld_b)):
+            tx_dld_b[i] = '{:.2%}'.format(a)
+    arrayA = np.divide(tx_djh_b, max(tx_djh_b), out=np.zeros_like(tx_djh_b, dtype=np.float64), casting="unsafe",
+                       where=max(tx_djh_b) != 0)
+    for i in range(len(tx_djh_b)):
+        tx_ck_djh_b_color.append("%.2f%%" % (arrayA[i] * 100))
+    if tx_djh_b[0] == 'nan%':
+        a = 0
+        for i in range(len(tx_djh_b)):
+            tx_djh_b[i] = '{:.2%}'.format(a)
+    arrayA = np.divide(tx_ddb_b, max(tx_ddb_b), out=np.zeros_like(tx_ddb_b, dtype=np.float64), casting="unsafe",
+                       where=max(tx_ddb_b) != 0)
+    for i in range(len(tx_ddb_b)):
+        tx_ck_ddb_b_color.append("%.2f%%" % (arrayA[i] * 100))
+    if tx_ddb_b[0] == 'nan%':
+        a = 0
+        for i in range(len(tx_ddb_b)):
+            tx_ddb_b[i] = '{:.2%}'.format(a)
+    arrayA = np.divide(tx_dck_b, max(tx_dck_b), out=np.zeros_like(tx_dck_b, dtype=np.float64), casting="unsafe",
+                       where=max(tx_dck_b) != 0)
+    for i in range(len(tx_dck_b)):
+        tx_ck_dck_b_color.append("%.2f%%" % (arrayA[i] * 100))
+    if tx_dck_b[0] == 'nan%':
+        a = 0
+        for i in range(len(tx_dck_b)):
+            tx_dck_b[i] = '{:.2%}'.format(a)
+    arrayA = np.divide(tx_djy_b, max(tx_djy_b), out=np.zeros_like(tx_djy_b, dtype=np.float64), casting="unsafe",
+                       where=max(tx_djy_b) != 0)
+    for i in range(len(tx_djy_b)):
+        tx_ck_djy_b_color.append("%.2f%%" % (arrayA[i] * 100))
+    if tx_djy_b[0] == 'nan%':
+        a = 0
+        for i in range(len(tx_djy_b)):
+            tx_djy_b[i] = '{:.2%}'.format(a)
+
+    jsonData['hm_dld_j'] = hm_dld_j
+    jsonData['hm_dld_b'] = hm_dld_b
+    jsonData['hm_djh_j'] = hm_djh_j
+    jsonData['hm_djh_b'] = hm_djh_b
+    jsonData['hm_ddb_j'] = hm_ddb_j
+    jsonData['hm_ddb_b'] = hm_ddb_b
+    jsonData['hm_dck_j'] = hm_dck_j
+    jsonData['hm_dck_b'] = hm_dck_b
+    jsonData['hm_djy_j'] = hm_djy_j
+    jsonData['hm_djy_b'] = hm_djy_b
+    jsonData['tx_dld_j'] = tx_dld_j
+    jsonData['tx_dld_b'] = tx_dld_b
+    jsonData['tx_djh_j'] = tx_djh_j
+    jsonData['tx_djh_b'] = tx_djh_b
+    jsonData['tx_ddb_j'] = tx_ddb_j
+    jsonData['tx_ddb_b'] = tx_ddb_b
+    jsonData['tx_dck_j'] = tx_dck_j
+    jsonData['tx_dck_b'] = tx_dck_b
+    jsonData['tx_djy_j'] = tx_djy_j
+    jsonData['tx_djy_b'] = tx_djy_b
+    jsonData['hm_ck_dld_j_color'] = hm_ck_dld_j_color
+    jsonData['hm_ck_djh_j_color'] = hm_ck_djh_j_color
+    jsonData['hm_ck_ddb_j_color'] = hm_ck_ddb_j_color
+    jsonData['hm_ck_dck_j_color'] = hm_ck_dck_j_color
+    jsonData['hm_ck_djy_j_color'] = hm_ck_djy_j_color
+    jsonData['hm_ck_dld_b_color'] = hm_ck_dld_b_color
+    jsonData['hm_ck_djh_b_color'] = hm_ck_djh_b_color
+    jsonData['hm_ck_ddb_b_color'] = hm_ck_ddb_b_color
+    jsonData['hm_ck_dck_b_color'] = hm_ck_dck_b_color
+    jsonData['hm_ck_djy_b_color'] = hm_ck_djy_b_color
+    jsonData['tx_ck_dld_j_color'] = tx_ck_dld_j_color
+    jsonData['tx_ck_djh_j_color'] = tx_ck_djh_j_color
+    jsonData['tx_ck_ddb_j_color'] = tx_ck_ddb_j_color
+    jsonData['tx_ck_dck_j_color'] = tx_ck_dck_j_color
+    jsonData['tx_ck_djy_j_color'] = tx_ck_djy_j_color
+    jsonData['tx_ck_dld_b_color'] = tx_ck_dld_b_color
+    jsonData['tx_ck_djh_b_color'] = tx_ck_djh_b_color
+    jsonData['tx_ck_ddb_b_color'] = tx_ck_ddb_b_color
+    jsonData['tx_ck_dck_b_color'] = tx_ck_dck_b_color
+    jsonData['tx_ck_djy_b_color'] = tx_ck_djy_b_color
+
+    hm_order_id = []
+    hm_status = []
+    hm_num = []
+    hm_s = []
+    tx_order_id = []
+    tx_status = []
+    tx_num = []
+    tx_s = []
+    for i in range(len(warehouse)):
+        if warehouse[i] == 'HM_AA':
+            hm_order_id.append(order_id[i])
+            hm_status.append(status[i])
+            hm_num.append(num[i])
+            hm_s.append(s[i])
+    for i in range(len(warehouse)):
+        if warehouse[i] == 'SZ_AA':
+            tx_order_id.append(order_id[i])
+            tx_status.append(status[i])
+            tx_num.append(num[i])
+            tx_s.append(s[i])
+    print(tx_s)
+    hm_data = np.dstack((hm_order_id, hm_status, hm_num, hm_s))
+    tx_data = np.dstack((tx_order_id, tx_status, tx_num, tx_s))
+    hm_drk_order = []
+    hm_drk_s = []
+    hm_rkz_s = []
+    hm_drk_num = []
+    hm_rkz_num = []
+    tx_drk_s = []
+    tx_rkz_s = []
+    tx_drk_num = []
+    tx_rkz_num = []
+    for i in range(len(hm_data[0])):
+        if (hm_data[0][i][1] == 1):
+            hm_drk_num.append(hm_data[0][i][2])
+            hm_drk_s.append(hm_data[0][i][3])
+            hm_drk_order.append(hm_data[0][i][0])
+    for i in range(len(hm_data[0])):
+        if (hm_data[0][i][1] == 2):
+            hm_rkz_num.append(hm_data[0][i][2])
+            hm_rkz_s.append(hm_data[0][i][3])
+    for i in range(len(tx_data[0])):
+        if (tx_data[0][i][1] == 1):
+            tx_drk_num.append(tx_data[0][i][2])
+            tx_drk_s.append(tx_data[0][i][3])
+    for i in range(len(tx_data[0])):
+        if (tx_data[0][i][1] == 2):
+            tx_rkz_num.append(tx_data[0][i][2])
+            tx_rkz_s.append(tx_data[0][i][3])
+    # 去重
+    a1 = []
+    a2 = []
+    hm_drk_order = []
+    hm_drk_s2 = []
+
+    for i in range(len(hm_data[0])):
+        if hm_data[0][i][0] not in a2 and hm_data[0][i][1] == 1:
+            a1.append(hm_data[0][i])
+        a2.append(hm_data[0][i][0])
+    for i in range(len(a1)):
+        hm_drk_order.append(a1[i][0])
+        hm_drk_s2.append(a1[i][3])
+    # print(hm_drk_order)
+
+    a1 = []
+    a2 = []
+    hm_rkz_order = []
+    hm_rkz_s2 = []
+    for i in range(len(hm_data[0])):
+        if hm_data[0][i][0] not in a2 and hm_data[0][i][1] == 2:
+            a1.append(hm_data[0][i])
+        a2.append(hm_data[0][i][0])
+    for i in range(len(a1)):
+        hm_rkz_order.append(a1[i][0])
+        hm_rkz_s2.append(a1[i][3])
+    # 去重
+    a1 = []
+    a2 = []
+    tx_drk_order = []
+    tx_drk_s2 = []
+    for i in range(len(tx_data[0])):
+        if tx_data[0][i][0] not in a2 and tx_data[0][i][1] == 1:
+            a1.append(tx_data[0][i])
+        a2.append(tx_data[0][i][0])
+    for i in range(len(a1)):
+        tx_drk_order.append(a1[i][0])
+        tx_drk_s2.append(a1[i][3])
+    a1 = []
+    a2 = []
+    tx_rkz_order = []
+    tx_rkz_s2 = []
+    for i in range(len(tx_data[0])):
+        if tx_data[0][i][0] not in a2 and tx_data[0][i][1] == 2:
+            a1.append(tx_data[0][i])
+        a2.append(tx_data[0][i][0])
+    for i in range(len(a1)):
+        tx_rkz_order.append(a1[i][0])
+        tx_rkz_s2.append(a1[i][3])
+    hm_drk = np.dstack((hm_drk_num, hm_drk_s))
+    hm_drk2 = np.dstack((hm_drk_order, hm_drk_s2))
+    hm_rkz = np.dstack((hm_rkz_num, hm_rkz_s))
+    hm_rkz2 = np.dstack((hm_rkz_order, hm_rkz_s2))
+    tx_drk = np.dstack((tx_drk_num, tx_drk_s))
+    tx_rkz = np.dstack((tx_rkz_num, tx_rkz_s))
+    tx_drk2 = np.dstack((tx_drk_order, tx_drk_s2))
+    tx_rkz2 = np.dstack((tx_rkz_order, tx_rkz_s2))
+    hm_drk_b = [0, 0, 0, 0, 0, 0, 0]
+    hm_drk_j = [0, 0, 0, 0, 0, 0, 0]
+    hm_rkz_b = [0, 0, 0, 0, 0, 0, 0]
+    hm_rkz_j = [0, 0, 0, 0, 0, 0, 0]
+    tx_drk_b = [0, 0, 0, 0, 0, 0, 0]
+    tx_drk_j = [0, 0, 0, 0, 0, 0, 0]
+    tx_rkz_b = [0, 0, 0, 0, 0, 0, 0]
+    tx_rkz_j = [0, 0, 0, 0, 0, 0, 0]
+
+    for i in range(len(hm_drk[0])):
+        if float(hm_drk_s[i]) > 0 and float(hm_drk_s[i]) <= 12:
+            hm_drk_j[0] = hm_drk_j[0] + hm_drk[0][i][0]
+        if float(hm_drk_s[i]) > 12 and float(hm_drk_s[i]) <= 24:
+            hm_drk_j[1] = hm_drk_j[1] + hm_drk[0][i][0]
+        if float(hm_drk_s[i]) > 24 and float(hm_drk_s[i]) <= 168:
+            hm_drk_j[2] = hm_drk_j[2] + hm_drk[0][i][0]
+        if float(hm_drk_s[i]) > 168 and float(hm_drk_s[i]) <= 360:
+            hm_drk_j[3] = hm_drk_j[3] + hm_drk[0][i][0]
+        if float(hm_drk_s[i]) > 360 and float(hm_drk_s[i]) <= 720:
+            hm_drk_j[4] = hm_drk_j[4] + hm_drk[0][i][0]
+        if float(hm_drk_s[i]) > 720:
+            hm_drk_j[5] = hm_drk_j[5] + hm_drk[0][i][0]
+        hm_drk_j[6] = hm_drk_j[6] + hm_drk[0][i][0]
+    for i in range(len(hm_drk2[0])):
+        if float(hm_drk_s2[i]) > 0 and float(hm_drk_s2[i]) <= 12:
+            hm_drk_b[0] = hm_drk_b[0] + 1
+        if float(hm_drk_s2[i]) > 12 and float(hm_drk_s2[i]) <= 24:
+            hm_drk_b[1] = hm_drk_b[1] + 1
+        if float(hm_drk_s2[i]) > 24 and float(hm_drk_s2[i]) <= 168:
+            hm_drk_b[2] = hm_drk_b[2] + 1
+        if float(hm_drk_s2[i]) > 168 and float(hm_drk_s2[i]) <= 360:
+            hm_drk_b[3] = hm_drk_b[3] + 1
+        if float(hm_drk_s2[i]) > 360 and float(hm_drk_s2[i]) <= 720:
+            hm_drk_b[4] = hm_drk_b[4] + 1
+        if float(hm_drk_s2[i]) > 720:
+            hm_drk_b[5] = hm_drk_b[5] + 1
+        hm_drk_b[6] = hm_drk_b[6] + 1
+    for i in range(len(hm_rkz[0])):
+        if float(hm_rkz_s[i]) > 0 and float(hm_rkz_s[i]) <= 12:
+            hm_rkz_j[0] = hm_rkz_j[0] + hm_rkz[0][i][0]
+        if float(hm_rkz_s[i]) > 12 and float(hm_rkz_s[i]) <= 24:
+            hm_rkz_j[1] = hm_rkz_j[1] + hm_rkz[0][i][0]
+        if float(hm_rkz_s[i]) > 24 and float(hm_rkz_s[i]) <= 168:
+            hm_rkz_j[2] = hm_rkz_j[2] + hm_rkz[0][i][0]
+        if float(hm_rkz_s[i]) > 168 and float(hm_rkz_s[i]) <= 360:
+            hm_rkz_j[3] = hm_rkz_j[3] + hm_rkz[0][i][0]
+        if float(hm_rkz_s[i]) > 360 and float(hm_rkz_s[i]) <= 720:
+            hm_rkz_j[4] = hm_rkz_j[4] + hm_rkz[0][i][0]
+        if float(hm_rkz_s[i]) > 720:
+            hm_rkz_j[5] = hm_rkz_j[5] + hm_rkz[0][i][0]
+        hm_rkz_j[6] = hm_rkz_j[6] + hm_rkz[0][i][0]
+
+    for i in range(len(hm_rkz2[0])):
+        if float(hm_rkz_s2[i]) > 0 and float(hm_rkz_s2[i]) <= 12:
+            hm_rkz_b[0] = hm_rkz_b[0] + 1
+        if float(hm_rkz_s2[i]) > 12 and float(hm_rkz_s2[i]) <= 24:
+            hm_rkz_b[1] = hm_rkz_b[1] + 1
+        if float(hm_rkz_s2[i]) > 24 and float(hm_rkz_s2[i]) <= 168:
+            hm_rkz_b[2] = hm_rkz_b[2] + 1
+        if float(hm_rkz_s2[i]) > 168 and float(hm_rkz_s2[i]) <= 360:
+            hm_rkz_b[3] = hm_rkz_b[3] + 1
+        if float(hm_rkz_s2[i]) > 360 and float(hm_rkz_s2[i]) <= 720:
+            hm_rkz_b[4] = hm_rkz_b[4] + 1
+        if float(hm_rkz_s2[i]) > 720:
+            hm_rkz_b[5] = hm_rkz_b[5] + 1
+        hm_rkz_b[6] = hm_rkz_b[6] + 1
+    for i in range(len(tx_drk[0])):
+        if float(tx_drk_s[i]) > 0 and float(tx_drk_s[i]) <= 12:
+            tx_drk_j[0] = tx_drk_j[0] + tx_drk[0][i][0]
+        if float(tx_drk_s[i]) > 12 and float(tx_drk_s[i]) <= 24:
+            tx_drk_j[1] = tx_drk_j[1] + tx_drk[0][i][0]
+        if float(tx_drk_s[i]) > 24 and float(tx_drk_s[i]) <= 168:
+            tx_drk_j[2] = tx_drk_j[2] + tx_drk[0][i][0]
+        if float(tx_drk_s[i]) > 168 and float(tx_drk_s[i]) <= 360:
+            tx_drk_j[3] = tx_drk_j[3] + tx_drk[0][i][0]
+        if float(tx_drk_s[i]) > 360 and float(tx_drk_s[i]) <= 720:
+            tx_drk_j[4] = tx_drk_j[4] + tx_drk[0][i][0]
+        if float(tx_drk_s[i]) > 720:
+            tx_drk_j[5] = tx_drk_j[5] + tx_drk[0][i][0]
+        tx_drk_j[6] = tx_drk_j[6] + tx_drk[0][i][0]
+    for i in range(len(tx_drk2[0])):
+        if float(tx_drk_s2[i]) > 0 and float(tx_drk_s2[i]) <= 12:
+            tx_drk_b[0] = tx_drk_b[0] + 1
+        if float(tx_drk_s2[i]) > 12 and float(tx_drk_s2[i]) <= 24:
+            tx_drk_b[1] = tx_drk_b[1] + 1
+        if float(tx_drk_s2[i]) > 24 and float(tx_drk_s2[i]) <= 168:
+            tx_drk_b[2] = tx_drk_b[2] + 1
+        if float(tx_drk_s2[i]) > 168 and float(tx_drk_s2[i]) <= 360:
+            tx_drk_b[3] = tx_drk_b[3] + 1
+        if float(tx_drk_s2[i]) > 360 and float(tx_drk_s2[i]) <= 720:
+            tx_drk_b[4] = tx_drk_b[4] + 1
+        if float(tx_drk_s2[i]) > 720:
+            tx_drk_b[5] = tx_drk_b[5] + 1
+        tx_drk_b[6] = tx_drk_b[6] + 1
+    for i in range(len(tx_rkz[0])):
+        if float(tx_rkz_s[i]) > 0 and float(tx_rkz_s[i]) <= 12:
+            tx_rkz_j[0] = tx_rkz_j[0] + tx_rkz[0][i][0]
+        if float(tx_rkz_s[i]) > 12 and float(tx_rkz_s[i]) <= 24:
+            tx_rkz_j[1] = tx_rkz_j[1] + tx_rkz[0][i][0]
+        if float(tx_rkz_s[i]) > 24 and float(tx_rkz_s[i]) <= 168:
+            tx_rkz_j[2] = tx_rkz_j[2] + tx_rkz[0][i][0]
+        if float(tx_rkz_s[i]) > 168 and float(tx_rkz_s[i]) <= 360:
+            tx_rkz_j[3] = tx_rkz_j[3] + tx_rkz[0][i][0]
+        if float(tx_rkz_s[i]) > 360 and float(tx_rkz_s[i]) <= 720:
+            tx_rkz_j[4] = tx_rkz_j[4] + tx_rkz[0][i][0]
+        if float(tx_rkz_s[i]) > 720:
+            tx_rkz_j[5] = tx_rkz_j[5] + tx_rkz[0][i][0]
+        tx_rkz_j[6] = tx_rkz_j[6] + tx_rkz[0][i][0]
+    for i in range(len(tx_rkz2[0])):
+        if float(tx_rkz_s2[i]) > 0 and float(tx_rkz_s2[i]) <= 12:
+            tx_rkz_b[0] = tx_rkz_b[0] + 1
+        if float(tx_rkz_s2[i]) > 12 and float(tx_rkz_s2[i]) <= 24:
+            tx_rkz_b[1] = tx_rkz_b[1] + 1
+        if float(tx_rkz_s2[i]) > 24 and float(tx_rkz_s2[i]) <= 168:
+            tx_rkz_b[2] = tx_rkz_b[2] + 1
+        if float(tx_rkz_s2[i]) > 168 and float(tx_rkz_s2[i]) <= 360:
+            tx_rkz_b[3] = tx_rkz_b[3] + 1
+        if float(tx_rkz_s2[i]) > 360 and float(tx_rkz_s2[i]) <= 720:
+            tx_rkz_b[4] = tx_rkz_b[4] + 1
+        if float(tx_rkz_s2[i]) > 720:
+            tx_rkz_b[5] = tx_rkz_b[5] + 1
+        tx_rkz_b[6] = tx_rkz_b[6] + 1
+    hm_drk_b_color = []
+    hm_drk_j_color = []
+    hm_rkz_b_color = []
+    hm_rkz_j_color = []
+    tx_drk_b_color = []
+    tx_drk_j_color = []
+    tx_rkz_b_color = []
+    tx_rkz_j_color = []
+
+    arrayA = np.divide(hm_drk_b, max(hm_drk_b), out=np.zeros_like(hm_drk_b, dtype=np.float64),
+                       where=max(hm_drk_b) != 0)
+    for i in range(len(hm_drk_b)):
+        hm_drk_b_color.append("%.2f%%" % (arrayA[i] * 100))
+    if hm_drk_b[0] == 'nan%':
+        a = 0
+        for i in range(len(hm_drk_b)):
+            hm_drk_b[i] = '{:.2%}'.format(a)
+    arrayA = np.divide(hm_drk_j, max(hm_drk_j), out=np.zeros_like(hm_drk_j, dtype=np.float64),
+                       where=max(hm_drk_j) != 0)
+    for i in range(len(hm_drk_j)):
+        hm_drk_j_color.append("%.2f%%" % (arrayA[i] * 100))
+    if hm_drk_j[0] == 'nan%':
+        a = 0
+        for i in range(len(hm_drk_j)):
+            hm_drk_j[i] = '{:.2%}'.format(a)
+
+    arrayA = np.divide(hm_rkz_b, max(hm_rkz_b), out=np.zeros_like(hm_rkz_b, dtype=np.float64),
+                       where=max(hm_rkz_b) != 0)
+    for i in range(len(hm_rkz_b)):
+        hm_rkz_b_color.append("%.2f%%" % (arrayA[i] * 100))
+    if hm_rkz_b[0] == 'nan%':
+        a = 0
+        for i in range(len(hm_rkz_b)):
+            hm_rkz_b[i] = '{:.2%}'.format(a)
+    arrayA = np.divide(hm_rkz_j, max(hm_rkz_j), out=np.zeros_like(hm_rkz_j, dtype=np.float64),
+                       where=max(hm_rkz_j) != 0)
+    for i in range(len(hm_rkz_j)):
+        hm_rkz_j_color.append("%.2f%%" % (arrayA[i] * 100))
+    if hm_rkz_j[0] == 'nan%':
+        a = 0
+        for i in range(len(hm_rkz_j)):
+            hm_rkz_j[i] = '{:.2%}'.format(a)
+    arrayA = np.divide(tx_drk_b, max(tx_drk_b), out=np.zeros_like(tx_drk_b, dtype=np.float64),
+                       where=max(tx_drk_b) != 0)
+    for i in range(len(tx_drk_b)):
+        tx_drk_b_color.append("%.2f%%" % (arrayA[i] * 100))
+    if tx_drk_b[0] == 'nan%':
+        a = 0
+        for i in range(len(tx_drk_b)):
+            tx_drk_b[i] = '{:.2%}'.format(a)
+    arrayA = np.divide(tx_drk_j, max(tx_drk_j), out=np.zeros_like(tx_drk_j, dtype=np.float64),
+                       where=max(tx_drk_j) != 0)
+    for i in range(len(tx_drk_j)):
+        tx_drk_j_color.append("%.2f%%" % (arrayA[i] * 100))
+    if tx_drk_j[0] == 'nan%':
+        a = 0
+        for i in range(len(tx_drk_j)):
+            tx_drk_j[i] = '{:.2%}'.format(a)
+
+    arrayA = np.divide(tx_rkz_b, max(tx_rkz_b), out=np.zeros_like(tx_rkz_b, dtype=np.float64),
+                       where=max(tx_rkz_b) != 0)
+    for i in range(len(tx_rkz_b)):
+        tx_rkz_b_color.append("%.2f%%" % (arrayA[i] * 100))
+    if tx_rkz_b[0] == 'nan%':
+        a = 0
+        for i in range(len(tx_rkz_b)):
+            tx_rkz_b[i] = '{:.2%}'.format(a)
+    arrayA = np.divide(tx_rkz_j, max(tx_rkz_j), out=np.zeros_like(tx_rkz_j, dtype=np.float64),
+                       where=max(tx_rkz_j) != 0)
+    for i in range(len(tx_rkz_j)):
+        tx_rkz_j_color.append("%.2f%%" % (arrayA[i] * 100))
+    if tx_rkz_j[0] == 'nan%':
+        a = 0
+        for i in range(len(tx_rkz_j)):
+            tx_rkz_j[i] = '{:.2%}'.format(a)
+    # 看这里
+    arrayA = np.divide(tx_rkz_b, max(tx_rkz_b), out=np.zeros_like(tx_rkz_b, dtype=np.float64), where=max(tx_rkz_b) != 0)
+    for i in range(len(tx_rkz_b)):
+        tx_rkz_b_color.append("%.2f%%" % (arrayA[i] * 100))
+    if tx_rkz_b[0] == 'nan%':
+        a = 0
+        for i in range(len(tx_rkz_b)):
+            tx_rkz_b[i] = '{:.2%}'.format(a)
+
+    arrayA = np.divide(tx_rkz_j, max(tx_rkz_j), out=np.zeros_like(tx_rkz_j, dtype=np.float64), where=max(tx_rkz_j) != 0)
+    for i in range(len(tx_rkz_j)):
+        tx_rkz_j_color.append("%.2f%%" % (arrayA[i] * 100))
+    if tx_rkz_j[0] == 'nan%':
+        a = 0
+        for i in range(len(tx_rkz_j)):
+            tx_rkz_j[i] = '{:.2%}'.format(a)
+            
+    jsonData['hm_drk_j'] = hm_drk_j
+    jsonData['hm_drk_b'] = hm_drk_b
+    jsonData['tx_drk_j'] = tx_drk_j
+    jsonData['tx_drk_b'] = tx_drk_b
+    jsonData['hm_rkz_j'] = hm_rkz_j
+    jsonData['hm_rkz_b'] = hm_rkz_b
+    jsonData['tx_rkz_j'] = tx_rkz_j
+    jsonData['tx_rkz_b'] = tx_rkz_b
+    jsonData['hm_drk_b_color'] = hm_drk_b_color
+    jsonData['hm_drk_j_color'] = hm_drk_j_color
+    jsonData['hm_rkz_b_color'] = hm_rkz_b_color
+    jsonData['hm_rkz_j_color'] = hm_rkz_j_color
+    jsonData['tx_drk_b_color'] = tx_drk_b_color
+    jsonData['tx_drk_j_color'] = tx_drk_j_color
+    jsonData['tx_rkz_b_color'] = tx_rkz_b_color
+    jsonData['tx_rkz_j_color'] = tx_rkz_j_color
+    jsonData['hm_drk_order'] = hm_drk_order
+    jsonData['tx_drk_order'] = tx_drk_order
+    jsonData['hm_drk_s2'] = hm_drk_s2
+    jsonData['tx_drk_s2'] = tx_drk_s2
+    jsonData['hm_ck_dld_order'] = hm_ck_dld_order
+    jsonData['hm_ck_dld_s'] = hm_ck_dld_s
+    jsonData['hm_ck_djh_order'] = hm_ck_djh_order
+    jsonData['hm_ck_djh_s'] = hm_ck_djh_s
+    jsonData['hm_ck_ddb_order'] = hm_ck_ddb_order
+    jsonData['hm_ck_ddb_s'] = hm_ck_ddb_s
+    jsonData['hm_ck_dck_order'] = hm_ck_dck_order
+    jsonData['hm_ck_dck_s'] = hm_ck_dck_s
+    jsonData['tx_ck_dld_order'] = tx_ck_dld_order
+    jsonData['tx_ck_dld_s'] = tx_ck_dld_s
+    jsonData['tx_ck_djh_order'] = tx_ck_djh_order
+    jsonData['tx_ck_djh_s'] = tx_ck_djh_s
+    jsonData['tx_ck_ddb_order'] = tx_ck_ddb_order
+    jsonData['tx_ck_ddb_s'] = tx_ck_ddb_s
+    jsonData['tx_ck_dck_order'] = tx_ck_dck_order
+    jsonData['tx_ck_dck_s'] = tx_ck_dck_s
+    # print(tx_drk_s2)
+    j = json.dumps(jsonData, cls=DecimalEncoder)
+    cur.close()
+    return (j)
+
+
+@app.route('/daily3', methods=['POST'])
+def montor():
+    con = pymysql.connect(host='192.168.86.79', user='wanjunsheng', passwd='df2932141LFDF', db='warehouse',
+                          port=3307, charset='utf8')
+    cur = con.cursor()
+    # sql_updata='UPDATE ueb_warehouse_shelf_sku_map  SET shelf_type = 99 WHERE shelf LIKE "%BGA%";'
+    sql = 'SELECT	warehouse_code,	purchase_order_no,	storage_position,	sku,	actual_num,	CASE		WHEN post_code_start_time IS NOT NULL 		AND post_code_end_time IS NOT NULL 		AND quality_time IS NOT NULL 		AND upper_start_time IS NOT NULL 		AND upper_end_time IS NULL THEN			"SJZ" 			WHEN post_code_start_time IS NOT NULL 			AND post_code_end_time IS NOT NULL 			AND quality_time IS NOT NULL 			AND paragraph != 11 			AND upper_start_time IS NULL THEN				"DSJ" 				WHEN post_code_start_time IS NOT NULL 				AND post_code_end_time IS NOT NULL 				AND quality_time IS NOT NULL 				AND paragraph = 11 				AND upper_start_time IS NULL THEN					"DGNZJ" 					WHEN post_code_start_time IS NULL THEN					"DTM" ELSE "else" 				END AS type,				cast(ROUND( ( unix_timestamp( now()) - unix_timestamp( quality_start_time ) ) / 3600, 2 ) as DECIMAL  ) AS s 			FROM				ueb_quality_warehousing_record 			WHERE				paragraph != 5 				AND purchase_order_no NOT LIKE "ABD%" 				AND warehouse_code IN ( "HM_AA", "SZ_AA" ) 			GROUP BY				purchase_order_no,				sku,				warehouse_code UNION			SELECT				warehouse_code,				"RK" AS purchase_order_no,				car_no AS storage_position,				"RK" AS sku,				box_number AS quality_num,				"DRK" AS type,				cast(ROUND( ( unix_timestamp( now()) - unix_timestamp( add_time ) ) / 3600, 2 ) as DECIMAL   )AS s 			FROM				ueb_express_receipt 			WHERE				STATUS = 1 				AND warehouse_type = 1 				AND is_abnormal = "2" 			AND is_quality = "2" 	AND is_end = "1"'
+    sql_fba = 'select * from (select warehouse_code,order_id,case when pay_time >0 and wait_pull_time >0 and pick_time >0 and  pack_time >0 and outstock_time > 0 and delivery_time = 0  then "DJY"when pay_time >0 and wait_pull_time >0 and pick_time >0 and ((choice_time =0 and pack_time>0) or (choice_time >0 and pack_time >0)) and outstock_time = 0  then "DCK"when pay_time >0 and wait_pull_time >0 and pick_time >0 and pack_time = 0  then "DDB"when pay_time >0 and wait_pull_time >0 and pick_time =0  then "DJH"when pay_time >0 and wait_pull_time =0  then "DLD"ELSE "else" end as `status`,CAST(order_product_number AS SIGNED) as `order_product_number`,ROUND(( unix_timestamp(now()) - greatest(pay_time,wait_pull_time,pick_time,choice_time,pack_time) ) / 3600, 2 ) AS time from ueb_order_operate_time where order_is_cancel =0 and delivery_time = 0 and order_id like "FB%"  union    select warehouse_code,order_id,case when wh_order_status=-1 then "DPK" when wh_order_status in (1)then  "DFPLD" when wh_order_status in (2)then  "DLD" else "else" end  as `status`,CAST(sum(order_product_number) AS SIGNED) as `order_product_number`,case  when wh_order_status=-1 then ROUND(( unix_timestamp(now()) - paytime_int) / 3600, 2 )  when wh_order_status in (1,2) then     ROUND(( unix_timestamp(now()) - wait_pull_time) / 3600, 2 ) else "else" end  AS time       from ueb_order where order_id like "FB%" and wh_order_status in(-1,1,2)  group by warehouse_code,order_id) a  order by time  DESC'
+    sql_xb = 'select * from (select warehouse_code,order_id,case when pay_time >0 and wait_pull_time >0 and pick_time >0 and  pack_time >0 and outstock_time > 0 and delivery_time = 0  then "DJY"when pay_time >0 and wait_pull_time >0 and pick_time >0 and ((choice_time =0 and pack_time>0) or (choice_time >0 and pack_time >0)) and outstock_time = 0  then "DCK"when pay_time >0 and wait_pull_time >0 and pick_time >0 and pack_time = 0  then "DDB"when pay_time >0 and wait_pull_time >0 and pick_time =0  then "DJH"when pay_time >0 and wait_pull_time =0  then "DLD"ELSE "else" end as `status`,CAST(order_product_number AS SIGNED) as `order_product_number`,ROUND(( unix_timestamp(now()) - greatest(pay_time,wait_pull_time,pick_time,choice_time,pack_time) ) / 3600, 2 ) AS time from ueb_order_operate_time where order_is_cancel =0 and delivery_time = 0 and 	 batch_no NOT LIKE "%-6-%"  union   select warehouse_code,order_id,case when wh_order_status=-1 then "DPK" when wh_order_status in (1)then  "DFPLD" when wh_order_status in (2)then  "DLD" else "else" end  as `status`,CAST(sum(order_product_number) AS SIGNED) as `order_product_number`,case  when wh_order_status=-1 then ROUND(( unix_timestamp(now()) - paytime_int) / 3600, 2 )  when wh_order_status in (1,2) then     ROUND(( unix_timestamp(now()) - wait_pull_time) / 3600, 2 ) else "else" end  AS time       from ueb_order  WHERE batch_type != 6 and wh_order_status < 9  group by warehouse_code,order_id) a  order by time  DESC'
+    cur.execute(sql_xb)
+    see_xb = cur.fetchall()
+    warehouse_xb = []
+    type_xb = []
+    order_xb = []
+    num_xb = []
+    s_xb = []
+    for data_xb in see_xb:
+        warehouse_xb.append(data_xb[0])
+        type_xb.append(data_xb[2])
+        order_xb.append(data_xb[1])
+        num_xb.append(data_xb[3])
+        s_xb.append(data_xb[4])
+    print(num_xb)
+    hm_type_xb = []
+    hm_order_xb = []
+    hm_num_xb = []
+    hm_s_xb = []
+    tx_type_xb = []
+    tx_order_xb = []
+    tx_num_xb = []
+    tx_s_xb = []
+    for i in range(len(warehouse_xb)):
+        if warehouse_xb[i] == 'HM_AA':
+            hm_type_xb.append(type_xb[i])
+            hm_order_xb.append(order_xb[i])
+            hm_num_xb.append(num_xb[i])
+            hm_s_xb.append(s_xb[i])
+    for i in range(len(warehouse_xb)):
+        if warehouse_xb[i] == 'SZ_AA':
+            tx_type_xb.append(type_xb[i])
+            tx_order_xb.append(order_xb[i])
+            tx_num_xb.append(num_xb[i])
+            tx_s_xb.append(s_xb[i])
+    hm_xb_data = np.dstack((hm_type_xb, hm_order_xb, hm_num_xb, hm_s_xb))
+    tx_xb_data = np.dstack((tx_type_xb, tx_order_xb, tx_num_xb, tx_s_xb))
+    hm_xb_djy_b_num = []
+    hm_xb_djy_j_num = []
+    hm_xb_djy_time = []
+    hm_xb_dfpld_b_num = []
+    hm_xb_dfpld_j_num = []
+    hm_xb_dfpld_time = []
+    hm_xb_dpk_b_num = []
+    hm_xb_dpk_j_num = []
+    hm_xb_dpk_time = []
+    hm_xb_dld_b_num = []
+    hm_xb_dld_j_num = []
+    hm_xb_dld_time = []
+    hm_xb_djh_b_num = []
+    hm_xb_djh_j_num = []
+    hm_xb_djh_time = []
+    hm_xb_ddb_b_num = []
+    hm_xb_ddb_j_num = []
+    hm_xb_ddb_time = []
+    hm_xb_dck_b_num = []
+    hm_xb_dck_j_num = []
+    hm_xb_dck_time = []
+    tx_xb_djy_b_num = []
+    tx_xb_djy_j_num = []
+    tx_xb_djy_time = []
+    tx_xb_dfpld_b_num = []
+    tx_xb_dfpld_j_num = []
+    tx_xb_dfpld_time = []
+    tx_xb_dpk_b_num = []
+    tx_xb_dpk_j_num = []
+    tx_xb_dpk_time = []
+    tx_xb_dld_b_num = []
+    tx_xb_dld_j_num = []
+    tx_xb_dld_time = []
+    tx_xb_djh_b_num = []
+    tx_xb_djh_j_num = []
+    tx_xb_djh_time = []
+    tx_xb_ddb_b_num = []
+    tx_xb_ddb_j_num = []
+    tx_xb_ddb_time = []
+    tx_xb_dck_b_num = []
+    tx_xb_dck_j_num = []
+    tx_xb_dck_time = []
+    for i in range(len(hm_s_xb)):
+        if (hm_xb_data[0][i][0] == 'DJY'):
+            hm_xb_djy_b_num.append(1)
+            hm_xb_djy_j_num.append(hm_xb_data[0][i][2])
+            hm_xb_djy_time.append(hm_xb_data[0][i][3])
+    for i in range(len(hm_s_xb)):
+        if (hm_xb_data[0][i][0] == 'DFPLD'):
+            hm_xb_dfpld_b_num.append(1)
+            hm_xb_dfpld_j_num.append(hm_xb_data[0][i][2])
+            hm_xb_dfpld_time.append(hm_xb_data[0][i][3])
+    for i in range(len(hm_s_xb)):
+        if (hm_xb_data[0][i][0] == 'DPK'):
+            hm_xb_dpk_b_num.append(1)
+            hm_xb_dpk_j_num.append(hm_xb_data[0][i][2])
+            hm_xb_dpk_time.append(hm_xb_data[0][i][3])
+
+    for i in range(len(hm_s_xb)):
+        if (hm_xb_data[0][i][0] == 'DLD'):
+            hm_xb_dld_b_num.append(1)
+            hm_xb_dld_j_num.append(hm_xb_data[0][i][2])
+            hm_xb_dld_time.append(hm_xb_data[0][i][3])
+    for i in range(len(hm_s_xb)):
+        if (hm_xb_data[0][i][0] == 'DJH'):
+            hm_xb_djh_b_num.append(1)
+            hm_xb_djh_j_num.append(hm_xb_data[0][i][2])
+            hm_xb_djh_time.append(hm_xb_data[0][i][3])
+    for i in range(len(hm_s_xb)):
+        if (hm_xb_data[0][i][0] == 'DDB'):
+            hm_xb_ddb_b_num.append(1)
+            hm_xb_ddb_j_num.append(hm_xb_data[0][i][2])
+            hm_xb_ddb_time.append(hm_xb_data[0][i][3])
+    for i in range(len(hm_s_xb)):
+        if (hm_xb_data[0][i][0] == 'DCK'):
+            hm_xb_dck_b_num.append(1)
+            hm_xb_dck_j_num.append(hm_xb_data[0][i][2])
+            hm_xb_dck_time.append(hm_xb_data[0][i][3])
+    for i in range(len(tx_s_xb)):
+        if (tx_xb_data[0][i][0] == 'DJY'):
+            tx_xb_djy_b_num.append(1)
+            tx_xb_djy_j_num.append(tx_xb_data[0][i][2])
+            tx_xb_djy_time.append(tx_xb_data[0][i][3])
+    for i in range(len(tx_s_xb)):
+        if (tx_xb_data[0][i][0] == 'DFPLD'):
+            tx_xb_dfpld_b_num.append(1)
+            tx_xb_dfpld_j_num.append(tx_xb_data[0][i][2])
+            tx_xb_dfpld_time.append(tx_xb_data[0][i][3])
+    for i in range(len(tx_s_xb)):
+        if (tx_xb_data[0][i][0] == 'DPK'):
+            tx_xb_dpk_b_num.append(1)
+            tx_xb_dpk_j_num.append(tx_xb_data[0][i][2])
+            tx_xb_dpk_time.append(tx_xb_data[0][i][3])
+    for i in range(len(tx_s_xb)):
+        if (tx_xb_data[0][i][0] == 'DLD'):
+            tx_xb_dld_b_num.append(1)
+            tx_xb_dld_j_num.append(tx_xb_data[0][i][2])
+            tx_xb_dld_time.append(tx_xb_data[0][i][3])
+    for i in range(len(tx_s_xb)):
+        if (tx_xb_data[0][i][0] == 'DJH'):
+            tx_xb_djh_b_num.append(1)
+            tx_xb_djh_j_num.append(tx_xb_data[0][i][2])
+            tx_xb_djh_time.append(tx_xb_data[0][i][3])
+    for i in range(len(tx_s_xb)):
+        if (tx_xb_data[0][i][0] == 'DDB'):
+            tx_xb_ddb_b_num.append(1)
+            tx_xb_ddb_j_num.append(tx_xb_data[0][i][2])
+            tx_xb_ddb_time.append(tx_xb_data[0][i][3])
+    for i in range(len(tx_s_xb)):
+        if (tx_xb_data[0][i][0] == 'DCK'):
+            tx_xb_dck_b_num.append(1)
+            tx_xb_dck_j_num.append(tx_xb_data[0][i][2])
+            tx_xb_dck_time.append(tx_xb_data[0][i][3])
+
+    hm_xb_djy = np.dstack((hm_xb_djy_b_num, hm_xb_djy_j_num, hm_xb_djy_time))
+    hm_xb_dfpld = np.dstack((hm_xb_dfpld_b_num, hm_xb_dfpld_j_num, hm_xb_dfpld_time))
+    hm_xb_dpk = np.dstack((hm_xb_dpk_b_num, hm_xb_dpk_j_num, hm_xb_dpk_time))
+    hm_xb_dld = np.dstack((hm_xb_dld_b_num, hm_xb_dld_j_num, hm_xb_dld_time))
+    hm_xb_djh = np.dstack((hm_xb_djh_b_num, hm_xb_djh_j_num, hm_xb_djh_time))
+    hm_xb_ddb = np.dstack((hm_xb_ddb_b_num, hm_xb_ddb_j_num, hm_xb_ddb_time))
+    hm_xb_dck = np.dstack((hm_xb_dck_b_num, hm_xb_dck_j_num, hm_xb_dck_time))
+    tx_xb_djy = np.dstack((tx_xb_djy_b_num, tx_xb_djy_j_num, tx_xb_djy_time))
+    tx_xb_dfpld = np.dstack((tx_xb_dfpld_b_num, tx_xb_dfpld_j_num, tx_xb_dfpld_time))
+    tx_xb_dpk = np.dstack((tx_xb_dpk_b_num, tx_xb_dpk_j_num, tx_xb_dpk_time))
+    tx_xb_dld = np.dstack((tx_xb_dld_b_num, tx_xb_dld_j_num, tx_xb_dld_time))
+    tx_xb_djh = np.dstack((tx_xb_djh_b_num, tx_xb_djh_j_num, tx_xb_djh_time))
+    tx_xb_ddb = np.dstack((tx_xb_ddb_b_num, tx_xb_ddb_j_num, tx_xb_ddb_time))
+    tx_xb_dck = np.dstack((tx_xb_dck_b_num, tx_xb_dck_j_num, tx_xb_dck_time))
+
+    hm_xb_djy_b_num1 = [0, 0, 0, 0, 0, 0, 0, 0]
+    hm_xb_djy_j_num1 = [0, 0, 0, 0, 0, 0, 0, 0]
+    hm_xb_dfpld_b_num1 = [0, 0, 0, 0, 0, 0, 0, 0]
+    hm_xb_dfpld_j_num1 = [0, 0, 0, 0, 0, 0, 0, 0]
+    tx_xb_djy_b_num1 = [0, 0, 0, 0, 0, 0, 0, 0]
+    tx_xb_djy_j_num1 = [0, 0, 0, 0, 0, 0, 0, 0]
+    tx_xb_dfpld_b_num1 = [0, 0, 0, 0, 0, 0, 0, 0]
+    tx_xb_dfpld_j_num1 = [0, 0, 0, 0, 0, 0, 0, 0]
+    hm_xb_dpk_b_num1 = [0, 0, 0, 0, 0, 0, 0, 0]
+    hm_xb_dld_b_num1 = [0, 0, 0, 0, 0, 0, 0, 0]
+    hm_xb_djh_b_num1 = [0, 0, 0, 0, 0, 0, 0, 0]
+    hm_xb_ddb_b_num1 = [0, 0, 0, 0, 0, 0, 0, 0]
+    hm_xb_dck_b_num1 = [0, 0, 0, 0, 0, 0, 0, 0]
+    tx_xb_dpk_b_num1 = [0, 0, 0, 0, 0, 0, 0, 0]
+    tx_xb_dld_b_num1 = [0, 0, 0, 0, 0, 0, 0, 0]
+    tx_xb_djh_b_num1 = [0, 0, 0, 0, 0, 0, 0, 0]
+    tx_xb_ddb_b_num1 = [0, 0, 0, 0, 0, 0, 0, 0]
+    tx_xb_dck_b_num1 = [0, 0, 0, 0, 0, 0, 0, 0]
+    hm_xb_dpk_j_num1 = [0, 0, 0, 0, 0, 0, 0, 0]
+    hm_xb_dld_j_num1 = [0, 0, 0, 0, 0, 0, 0, 0]
+    hm_xb_djh_j_num1 = [0, 0, 0, 0, 0, 0, 0, 0]
+    hm_xb_ddb_j_num1 = [0, 0, 0, 0, 0, 0, 0, 0]
+    hm_xb_dck_j_num1 = [0, 0, 0, 0, 0, 0, 0, 0]
+    tx_xb_dpk_j_num1 = [0, 0, 0, 0, 0, 0, 0, 0]
+    tx_xb_dld_j_num1 = [0, 0, 0, 0, 0, 0, 0, 0]
+    tx_xb_djh_j_num1 = [0, 0, 0, 0, 0, 0, 0, 0]
+    tx_xb_ddb_j_num1 = [0, 0, 0, 0, 0, 0, 0, 0]
+    tx_xb_dck_j_num1 = [0, 0, 0, 0, 0, 0, 0, 0]
+
+    hm_xb_b_2 = []
+    hm_xb_b_4 = []
+    hm_xb_b_6 = []
+    hm_xb_b_8 = []
+    hm_xb_b_10 = []
+    hm_xb_b_12 = []
+    hm_xb_b_24 = []
+    hm_xb_b_24_ = []
+    tx_xb_b_2 = []
+    tx_xb_b_4 = []
+    tx_xb_b_6 = []
+    tx_xb_b_8 = []
+    tx_xb_b_10 = []
+    tx_xb_b_12 = []
+    tx_xb_b_24 = []
+    tx_xb_b_24_ = []
+    # hm_j_12 = []
+    # hm_j_24 = []
+    # hm_j_48 = []
+    # hm_j_72 = []
+    # hm_j_120 = []
+    # hm_j_240 = []
+    # hm_j_360 = []
+    # hm_j_361 = []
+    #
+    # tx_j_12 = []
+    # tx_j_24 = []
+    # tx_j_48 = []
+    # tx_j_72 = []
+    # tx_j_120 = []
+    # tx_j_240 = []
+    # tx_j_360 = []
+    # tx_j_361 = []
+
+    for i in range(len(hm_xb_djy[0])):
+        if float(hm_xb_djy[0][i][2]) > 0 and float(hm_xb_djy[0][i][2]) <= 2:
+            hm_xb_djy_b_num1[0] = hm_xb_djy_b_num1[0] + 1
+            hm_xb_djy_j_num1[0] = hm_xb_djy_j_num1[0] + float(hm_xb_djy[0][i][1])
+        if float(hm_xb_djy[0][i][2]) > 2 and float(hm_xb_djy[0][i][2]) <= 4:
+            hm_xb_djy_b_num1[1] = hm_xb_djy_b_num1[1] + 1
+            hm_xb_djy_j_num1[1] = hm_xb_djy_j_num1[1] + float(hm_xb_djy[0][i][1])
+        if float(hm_xb_djy[0][i][2]) > 4 and float(hm_xb_djy[0][i][2]) <= 6:
+            hm_xb_djy_b_num1[2] = hm_xb_djy_b_num1[2] + 1
+            hm_xb_djy_j_num1[2] = hm_xb_djy_j_num1[2] + float(hm_xb_djy[0][i][1])
+        if float(hm_xb_djy[0][i][2]) > 6 and float(hm_xb_djy[0][i][2]) <= 8:
+            hm_xb_djy_b_num1[3] = hm_xb_djy_b_num1[3] + 1
+            hm_xb_djy_j_num1[3] = hm_xb_djy_j_num1[3] + float(hm_xb_djy[0][i][1])
+        if float(hm_xb_djy[0][i][2]) > 8 and float(hm_xb_djy[0][i][2]) <= 10:
+            hm_xb_djy_b_num1[4] = hm_xb_djy_b_num1[4] + 1
+            hm_xb_djy_j_num1[4] = hm_xb_djy_j_num1[4] + float(hm_xb_djy[0][i][1])
+        if float(hm_xb_djy[0][i][2]) > 10 and float(hm_xb_djy[0][i][2]) <= 12:
+            hm_xb_djy_b_num1[5] = hm_xb_djy_b_num1[5] + 1
+            hm_xb_djy_j_num1[5] = hm_xb_djy_j_num1[5] + float(hm_xb_djy[0][i][1])
+        if float(hm_xb_djy[0][i][2]) > 12 and float(hm_xb_djy[0][i][2]) <= 24:
+            hm_xb_djy_b_num1[6] = hm_xb_djy_b_num1[6] + 1
+            hm_xb_djy_j_num1[6] = hm_xb_djy_j_num1[6] + float(hm_xb_djy[0][i][1])
+        if float(hm_xb_djy[0][i][2]) > 24:
+            hm_xb_djy_b_num1[7] = hm_xb_djy_b_num1[7] + 1
+            hm_xb_djy_j_num1[7] = hm_xb_djy_j_num1[7] + float(hm_xb_djy[0][i][1])
+
+    for i in range(len(hm_xb_dfpld[0])):
+        if float(hm_xb_dfpld[0][i][2]) > 0 and float(hm_xb_dfpld[0][i][2]) <= 2:
+            hm_xb_dfpld_b_num1[0] = hm_xb_dfpld_b_num1[0] + 1
+            hm_xb_dfpld_j_num1[0] = hm_xb_dfpld_j_num1[0] + float(hm_xb_dfpld[0][i][1])
+        if float(hm_xb_dfpld[0][i][2]) > 2 and float(hm_xb_dfpld[0][i][2]) <= 4:
+            hm_xb_dfpld_b_num1[1] = hm_xb_dfpld_b_num1[1] + 1
+            hm_xb_dfpld_j_num1[1] = hm_xb_dfpld_j_num1[1] + float(hm_xb_dfpld[0][i][1])
+        if float(hm_xb_dfpld[0][i][2]) > 4 and float(hm_xb_dfpld[0][i][2]) <= 6:
+            hm_xb_dfpld_b_num1[2] = hm_xb_dfpld_b_num1[2] + 1
+            hm_xb_dfpld_j_num1[2] = hm_xb_dfpld_j_num1[2] + float(hm_xb_dfpld[0][i][1])
+        if float(hm_xb_dfpld[0][i][2]) > 6 and float(hm_xb_dfpld[0][i][2]) <= 8:
+            hm_xb_dfpld_b_num1[3] = hm_xb_dfpld_b_num1[3] + 1
+            hm_xb_dfpld_j_num1[3] = hm_xb_dfpld_j_num1[3] + float(hm_xb_dfpld[0][i][1])
+        if float(hm_xb_dfpld[0][i][2]) > 8 and float(hm_xb_dfpld[0][i][2]) <= 10:
+            hm_xb_dfpld_b_num1[4] = hm_xb_dfpld_b_num1[4] + 1
+            hm_xb_dfpld_j_num1[4] = hm_xb_dfpld_j_num1[4] + float(hm_xb_dfpld[0][i][1])
+        if float(hm_xb_dfpld[0][i][2]) > 10 and float(hm_xb_dfpld[0][i][2]) <= 12:
+            hm_xb_dfpld_b_num1[5] = hm_xb_dfpld_b_num1[5] + 1
+            hm_xb_dfpld_j_num1[5] = hm_xb_dfpld_j_num1[5] + float(hm_xb_dfpld[0][i][1])
+        if float(hm_xb_dfpld[0][i][2]) > 12 and float(hm_xb_dfpld[0][i][2]) <= 24:
+            hm_xb_dfpld_b_num1[6] = hm_xb_dfpld_b_num1[6] + 1
+            hm_xb_dfpld_j_num1[6] = hm_xb_dfpld_j_num1[6] + float(hm_xb_dfpld[0][i][1])
+        if float(hm_xb_dfpld[0][i][2]) > 24:
+            hm_xb_dfpld_b_num1[7] = hm_xb_dfpld_b_num1[7] + 1
+            hm_xb_dfpld_j_num1[7] = hm_xb_dfpld_j_num1[7] + float(hm_xb_dfpld[0][i][1])
+    for i in range(len(hm_xb_dpk[0])):
+        if float(hm_xb_dpk[0][i][2]) > 0 and float(hm_xb_dpk[0][i][2]) <= 2:
+            hm_xb_dpk_b_num1[0] = hm_xb_dpk_b_num1[0] + 1
+            hm_xb_dpk_j_num1[0] = hm_xb_dpk_j_num1[0] + float(hm_xb_dpk[0][i][1])
+        if float(hm_xb_dpk[0][i][2]) > 2 and float(hm_xb_dpk[0][i][2]) <= 4:
+            hm_xb_dpk_b_num1[1] = hm_xb_dpk_b_num1[1] + 1
+            hm_xb_dpk_j_num1[1] = hm_xb_dpk_j_num1[1] + float(hm_xb_dpk[0][i][1])
+        if float(hm_xb_dpk[0][i][2]) > 4 and float(hm_xb_dpk[0][i][2]) <= 6:
+            hm_xb_dpk_b_num1[2] = hm_xb_dpk_b_num1[2] + 1
+            hm_xb_dpk_j_num1[2] = hm_xb_dpk_j_num1[2] + float(hm_xb_dpk[0][i][1])
+        if float(hm_xb_dpk[0][i][2]) > 6 and float(hm_xb_dpk[0][i][2]) <= 8:
+            hm_xb_dpk_b_num1[3] = hm_xb_dpk_b_num1[3] + 1
+            hm_xb_dpk_j_num1[3] = hm_xb_dpk_j_num1[3] + float(hm_xb_dpk[0][i][1])
+        if float(hm_xb_dpk[0][i][2]) > 8 and float(hm_xb_dpk[0][i][2]) <= 10:
+            hm_xb_dpk_b_num1[4] = hm_xb_dpk_b_num1[4] + 1
+            hm_xb_dpk_j_num1[4] = hm_xb_dpk_j_num1[4] + float(hm_xb_dpk[0][i][1])
+        if float(hm_xb_dpk[0][i][2]) > 10 and float(hm_xb_dpk[0][i][2]) <= 12:
+            hm_xb_dpk_b_num1[5] = hm_xb_dpk_b_num1[5] + 1
+            hm_xb_dpk_j_num1[5] = hm_xb_dpk_j_num1[5] + float(hm_xb_dpk[0][i][1])
+        if float(hm_xb_dpk[0][i][2]) > 12 and float(hm_xb_dpk[0][i][2]) <= 24:
+            hm_xb_dpk_b_num1[6] = hm_xb_dpk_b_num1[6] + 1
+            hm_xb_dpk_j_num1[6] = hm_xb_dpk_j_num1[6] + float(hm_xb_dpk[0][i][1])
+        if float(hm_xb_dpk[0][i][2]) > 24:
+            hm_xb_dpk_b_num1[7] = hm_xb_dpk_b_num1[7] + 1
+            hm_xb_dpk_j_num1[7] = hm_xb_dpk_j_num1[7] + float(hm_xb_dpk[0][i][1])
+    for i in range(len(hm_xb_dld[0])):
+        if float(hm_xb_dld[0][i][2]) > 0 and float(hm_xb_dld[0][i][2]) <= 2:
+            hm_xb_dld_b_num1[0] = hm_xb_dld_b_num1[0] + 1
+            hm_xb_dld_j_num1[0] = hm_xb_dld_j_num1[0] + float(hm_xb_dld[0][i][1])
+        if float(hm_xb_dld[0][i][2]) > 2 and float(hm_xb_dld[0][i][2]) <= 4:
+            hm_xb_dld_b_num1[1] = hm_xb_dld_b_num1[1] + 1
+            hm_xb_dld_j_num1[1] = hm_xb_dld_j_num1[1] + float(hm_xb_dld[0][i][1])
+        if float(hm_xb_dld[0][i][2]) > 4 and float(hm_xb_dld[0][i][2]) <= 6:
+            hm_xb_dld_b_num1[2] = hm_xb_dld_b_num1[2] + 1
+            hm_xb_dld_j_num1[2] = hm_xb_dld_j_num1[2] + float(hm_xb_dld[0][i][1])
+        if float(hm_xb_dld[0][i][2]) > 6 and float(hm_xb_dld[0][i][2]) <= 8:
+            hm_xb_dld_b_num1[3] = hm_xb_dld_b_num1[3] + 1
+            hm_xb_dld_j_num1[3] = hm_xb_dld_j_num1[3] + float(hm_xb_dld[0][i][1])
+        if float(hm_xb_dld[0][i][2]) > 8 and float(hm_xb_dld[0][i][2]) <= 10:
+            hm_xb_dld_b_num1[4] = hm_xb_dld_b_num1[4] + 1
+            hm_xb_dld_j_num1[4] = hm_xb_dld_j_num1[4] + float(hm_xb_dld[0][i][1])
+        if float(hm_xb_dld[0][i][2]) > 10 and float(hm_xb_dld[0][i][2]) <= 12:
+            hm_xb_dld_b_num1[5] = hm_xb_dld_b_num1[5] + 1
+            hm_xb_dld_j_num1[5] = hm_xb_dld_j_num1[5] + float(hm_xb_dld[0][i][1])
+        if float(hm_xb_dld[0][i][2]) > 12 and float(hm_xb_dld[0][i][2]) <= 24:
+            hm_xb_dld_b_num1[6] = hm_xb_dld_b_num1[6] + 1
+            hm_xb_dld_j_num1[6] = hm_xb_dld_j_num1[6] + float(hm_xb_dld[0][i][1])
+        if float(hm_xb_dld[0][i][2]) > 24:
+            hm_xb_dld_b_num1[7] = hm_xb_dld_b_num1[7] + 1
+            hm_xb_dld_j_num1[7] = hm_xb_dld_j_num1[7] + float(hm_xb_dld[0][i][1])
+
+    for i in range(len(hm_xb_djh[0])):
+        if float(hm_xb_djh[0][i][2]) > 0 and float(hm_xb_djh[0][i][2]) <= 2:
+            hm_xb_djh_b_num1[0] = hm_xb_djh_b_num1[0] + 1
+            hm_xb_djh_j_num1[0] = hm_xb_djh_j_num1[0] + float(hm_xb_djh[0][i][1])
+        if float(hm_xb_djh[0][i][2]) > 2 and float(hm_xb_djh[0][i][2]) <= 4:
+            hm_xb_djh_b_num1[1] = hm_xb_djh_b_num1[1] + 1
+            hm_xb_djh_j_num1[1] = hm_xb_djh_j_num1[1] + float(hm_xb_djh[0][i][1])
+        if float(hm_xb_djh[0][i][2]) > 4 and float(hm_xb_djh[0][i][2]) <= 6:
+            hm_xb_djh_b_num1[2] = hm_xb_djh_b_num1[2] + 1
+            hm_xb_djh_j_num1[2] = hm_xb_djh_j_num1[2] + float(hm_xb_djh[0][i][1])
+        if float(hm_xb_djh[0][i][2]) > 6 and float(hm_xb_djh[0][i][2]) <= 8:
+            hm_xb_djh_b_num1[3] = hm_xb_djh_b_num1[3] + 1
+            hm_xb_djh_j_num1[3] = hm_xb_djh_j_num1[3] + float(hm_xb_djh[0][i][1])
+        if float(hm_xb_djh[0][i][2]) > 8 and float(hm_xb_djh[0][i][2]) <= 10:
+            hm_xb_djh_b_num1[4] = hm_xb_djh_b_num1[4] + 1
+            hm_xb_djh_j_num1[4] = hm_xb_djh_j_num1[4] + float(hm_xb_djh[0][i][1])
+        if float(hm_xb_djh[0][i][2]) > 10 and float(hm_xb_djh[0][i][2]) <= 12:
+            hm_xb_djh_b_num1[5] = hm_xb_djh_b_num1[5] + 1
+            hm_xb_djh_j_num1[5] = hm_xb_djh_j_num1[5] + float(hm_xb_djh[0][i][1])
+        if float(hm_xb_djh[0][i][2]) > 12 and float(hm_xb_djh[0][i][2]) <= 24:
+            hm_xb_djh_b_num1[6] = hm_xb_djh_b_num1[6] + 1
+            hm_xb_djh_j_num1[6] = hm_xb_djh_j_num1[6] + float(hm_xb_djh[0][i][1])
+        if float(hm_xb_djh[0][i][2]) > 24:
+            hm_xb_djh_b_num1[7] = hm_xb_djh_b_num1[7] + 1
+            hm_xb_djh_j_num1[7] = hm_xb_djh_j_num1[7] + float(hm_xb_djh[0][i][1])
+
+    for i in range(len(hm_xb_ddb[0])):
+        if float(hm_xb_ddb[0][i][2]) > 0 and float(hm_xb_ddb[0][i][2]) <= 2:
+            hm_xb_ddb_b_num1[0] = hm_xb_ddb_b_num1[0] + 1
+            hm_xb_ddb_j_num1[0] = hm_xb_ddb_j_num1[0] + float(hm_xb_ddb[0][i][1])
+        if float(hm_xb_ddb[0][i][2]) > 2 and float(hm_xb_ddb[0][i][2]) <= 4:
+            hm_xb_ddb_b_num1[1] = hm_xb_ddb_b_num1[1] + 1
+            hm_xb_ddb_j_num1[1] = hm_xb_ddb_j_num1[1] + float(hm_xb_ddb[0][i][1])
+        if float(hm_xb_ddb[0][i][2]) > 4 and float(hm_xb_ddb[0][i][2]) <= 6:
+            hm_xb_ddb_b_num1[2] = hm_xb_ddb_b_num1[2] + 1
+            hm_xb_ddb_j_num1[2] = hm_xb_ddb_j_num1[2] + float(hm_xb_ddb[0][i][1])
+        if float(hm_xb_ddb[0][i][2]) > 6 and float(hm_xb_ddb[0][i][2]) <= 8:
+            hm_xb_ddb_b_num1[3] = hm_xb_ddb_b_num1[3] + 1
+            hm_xb_ddb_j_num1[3] = hm_xb_ddb_j_num1[3] + float(hm_xb_ddb[0][i][1])
+        if float(hm_xb_ddb[0][i][2]) > 8 and float(hm_xb_ddb[0][i][2]) <= 10:
+            hm_xb_ddb_b_num1[4] = hm_xb_ddb_b_num1[4] + 1
+            hm_xb_ddb_j_num1[4] = hm_xb_ddb_j_num1[4] + float(hm_xb_ddb[0][i][1])
+        if float(hm_xb_ddb[0][i][2]) > 10 and float(hm_xb_ddb[0][i][2]) <= 12:
+            hm_xb_ddb_b_num1[5] = hm_xb_ddb_b_num1[5] + 1
+            hm_xb_ddb_j_num1[5] = hm_xb_ddb_j_num1[5] + float(hm_xb_ddb[0][i][1])
+        if float(hm_xb_ddb[0][i][2]) > 12 and float(hm_xb_ddb[0][i][2]) <= 24:
+            hm_xb_ddb_b_num1[6] = hm_xb_ddb_b_num1[6] + 1
+            hm_xb_ddb_j_num1[6] = hm_xb_ddb_j_num1[6] + float(hm_xb_ddb[0][i][1])
+        if float(hm_xb_ddb[0][i][2]) > 24:
+            hm_xb_ddb_b_num1[7] = hm_xb_ddb_b_num1[7] + 1
+            hm_xb_ddb_j_num1[7] = hm_xb_ddb_j_num1[7] + float(hm_xb_ddb[0][i][1])
+
+    for i in range(len(hm_xb_dck[0])):
+        if float(hm_xb_dck[0][i][2]) > 0 and float(hm_xb_dck[0][i][2]) <= 2:
+            hm_xb_dck_b_num1[0] = hm_xb_dck_b_num1[0] + 1
+            hm_xb_dck_j_num1[0] = hm_xb_dck_j_num1[0] + float(hm_xb_dck[0][i][1])
+        if float(hm_xb_dck[0][i][2]) > 2 and float(hm_xb_dck[0][i][2]) <= 4:
+            hm_xb_dck_b_num1[1] = hm_xb_dck_b_num1[1] + 1
+            hm_xb_dck_j_num1[1] = hm_xb_dck_j_num1[1] + float(hm_xb_dck[0][i][1])
+        if float(hm_xb_dck[0][i][2]) > 4 and float(hm_xb_dck[0][i][2]) <= 6:
+            hm_xb_dck_b_num1[2] = hm_xb_dck_b_num1[2] + 1
+            hm_xb_dck_j_num1[2] = hm_xb_dck_j_num1[2] + float(hm_xb_dck[0][i][1])
+        if float(hm_xb_dck[0][i][2]) > 6 and float(hm_xb_dck[0][i][2]) <= 8:
+            hm_xb_dck_b_num1[3] = hm_xb_dck_b_num1[3] + 1
+            hm_xb_dck_j_num1[3] = hm_xb_dck_j_num1[3] + float(hm_xb_dck[0][i][1])
+        if float(hm_xb_dck[0][i][2]) > 8 and float(hm_xb_dck[0][i][2]) <= 10:
+            hm_xb_dck_b_num1[4] = hm_xb_dck_b_num1[4] + 1
+            hm_xb_dck_j_num1[4] = hm_xb_dck_j_num1[4] + float(hm_xb_dck[0][i][1])
+        if float(hm_xb_dck[0][i][2]) > 10 and float(hm_xb_dck[0][i][2]) <= 12:
+            hm_xb_dck_b_num1[5] = hm_xb_dck_b_num1[5] + 1
+            hm_xb_dck_j_num1[5] = hm_xb_dck_j_num1[5] + float(hm_xb_dck[0][i][1])
+        if float(hm_xb_dck[0][i][2]) > 12 and float(hm_xb_dck[0][i][2]) <= 24:
+            hm_xb_dck_b_num1[6] = hm_xb_dck_b_num1[6] + 1
+            hm_xb_dck_j_num1[6] = hm_xb_dck_j_num1[6] + float(hm_xb_dck[0][i][1])
+        if float(hm_xb_dck[0][i][2]) > 24:
+            hm_xb_dck_b_num1[7] = hm_xb_dck_b_num1[7] + 1
+            hm_xb_dck_j_num1[7] = hm_xb_dck_j_num1[7] + float(hm_xb_dck[0][i][1])
+
+    for i in range(len(tx_xb_djy[0])):
+        if float(tx_xb_djy[0][i][2]) > 0 and float(tx_xb_djy[0][i][2]) <= 2:
+            tx_xb_djy_b_num1[0] = tx_xb_djy_b_num1[0] + 1
+            tx_xb_djy_j_num1[0] = tx_xb_djy_j_num1[0] + float(tx_xb_djy[0][i][1])
+        if float(tx_xb_djy[0][i][2]) > 2 and float(tx_xb_djy[0][i][2]) <= 4:
+            tx_xb_djy_b_num1[1] = tx_xb_djy_b_num1[1] + 1
+            tx_xb_djy_j_num1[1] = tx_xb_djy_j_num1[1] + float(tx_xb_djy[0][i][1])
+        if float(tx_xb_djy[0][i][2]) > 4 and float(tx_xb_djy[0][i][2]) <= 6:
+            tx_xb_djy_b_num1[2] = tx_xb_djy_b_num1[2] + 1
+            tx_xb_djy_j_num1[2] = tx_xb_djy_j_num1[2] + float(tx_xb_djy[0][i][1])
+        if float(tx_xb_djy[0][i][2]) > 6 and float(tx_xb_djy[0][i][2]) <= 8:
+            tx_xb_djy_b_num1[3] = tx_xb_djy_b_num1[3] + 1
+            tx_xb_djy_j_num1[3] = tx_xb_djy_j_num1[3] + float(tx_xb_djy[0][i][1])
+        if float(tx_xb_djy[0][i][2]) > 8 and float(tx_xb_djy[0][i][2]) <= 10:
+            tx_xb_djy_b_num1[4] = tx_xb_djy_b_num1[4] + 1
+            tx_xb_djy_j_num1[4] = tx_xb_djy_j_num1[4] + float(tx_xb_djy[0][i][1])
+        if float(tx_xb_djy[0][i][2]) > 10 and float(tx_xb_djy[0][i][2]) <= 12:
+            tx_xb_djy_b_num1[5] = tx_xb_djy_b_num1[5] + 1
+            tx_xb_djy_j_num1[5] = tx_xb_djy_j_num1[5] + float(tx_xb_djy[0][i][1])
+        if float(tx_xb_djy[0][i][2]) > 12 and float(tx_xb_djy[0][i][2]) <= 24:
+            tx_xb_djy_b_num1[6] = tx_xb_djy_b_num1[6] + 1
+            tx_xb_djy_j_num1[6] = tx_xb_djy_j_num1[6] + float(tx_xb_djy[0][i][1])
+        if float(tx_xb_djy[0][i][2]) > 24:
+            tx_xb_djy_b_num1[7] = tx_xb_djy_b_num1[7] + 1
+            tx_xb_djy_j_num1[7] = tx_xb_djy_j_num1[7] + float(tx_xb_djy[0][i][1])
+    for i in range(len(tx_xb_dfpld[0])):
+        if float(tx_xb_dfpld[0][i][2]) > 0 and float(tx_xb_dfpld[0][i][2]) <= 2:
+            tx_xb_dfpld_b_num1[0] = tx_xb_dfpld_b_num1[0] + 1
+            tx_xb_dfpld_j_num1[0] = tx_xb_dfpld_j_num1[0] + float(tx_xb_dfpld[0][i][1])
+        if float(tx_xb_dfpld[0][i][2]) > 2 and float(tx_xb_dfpld[0][i][2]) <= 4:
+            tx_xb_dfpld_b_num1[1] = tx_xb_dfpld_b_num1[1] + 1
+            tx_xb_dfpld_j_num1[1] = tx_xb_dfpld_j_num1[1] + float(tx_xb_dfpld[0][i][1])
+        if float(tx_xb_dfpld[0][i][2]) > 4 and float(tx_xb_dfpld[0][i][2]) <= 6:
+            tx_xb_dfpld_b_num1[2] = tx_xb_dfpld_b_num1[2] + 1
+            tx_xb_dfpld_j_num1[2] = tx_xb_dfpld_j_num1[2] + float(tx_xb_dfpld[0][i][1])
+        if float(tx_xb_dfpld[0][i][2]) > 6 and float(tx_xb_dfpld[0][i][2]) <= 8:
+            tx_xb_dfpld_b_num1[3] = tx_xb_dfpld_b_num1[3] + 1
+            tx_xb_dfpld_j_num1[3] = tx_xb_dfpld_j_num1[3] + float(tx_xb_dfpld[0][i][1])
+        if float(tx_xb_dfpld[0][i][2]) > 8 and float(tx_xb_dfpld[0][i][2]) <= 10:
+            tx_xb_dfpld_b_num1[4] = tx_xb_dfpld_b_num1[4] + 1
+            tx_xb_dfpld_j_num1[4] = tx_xb_dfpld_j_num1[4] + float(tx_xb_dfpld[0][i][1])
+        if float(tx_xb_dfpld[0][i][2]) > 10 and float(tx_xb_dfpld[0][i][2]) <= 12:
+            tx_xb_dfpld_b_num1[5] = tx_xb_dfpld_b_num1[5] + 1
+            tx_xb_dfpld_j_num1[5] = tx_xb_dfpld_j_num1[5] + float(tx_xb_dfpld[0][i][1])
+        if float(tx_xb_dfpld[0][i][2]) > 12 and float(tx_xb_dfpld[0][i][2]) <= 24:
+            tx_xb_dfpld_b_num1[6] = tx_xb_dfpld_b_num1[6] + 1
+            tx_xb_dfpld_j_num1[6] = tx_xb_dfpld_j_num1[6] + float(tx_xb_dfpld[0][i][1])
+        if float(tx_xb_dfpld[0][i][2]) > 24:
+            tx_xb_dfpld_b_num1[7] = tx_xb_dfpld_b_num1[7] + 1
+            tx_xb_dfpld_j_num1[7] = tx_xb_dfpld_j_num1[7] + float(tx_xb_dfpld[0][i][1])
+    for i in range(len(tx_xb_dpk[0])):
+        if float(tx_xb_dpk[0][i][2]) > 0 and float(tx_xb_dpk[0][i][2]) <= 2:
+            tx_xb_dpk_b_num1[0] = tx_xb_dpk_b_num1[0] + 1
+            tx_xb_dpk_j_num1[0] = tx_xb_dpk_j_num1[0] + float(tx_xb_dpk[0][i][1])
+        if float(tx_xb_dpk[0][i][2]) > 2 and float(tx_xb_dpk[0][i][2]) <= 4:
+            tx_xb_dpk_b_num1[1] = tx_xb_dpk_b_num1[1] + 1
+            tx_xb_dpk_j_num1[1] = tx_xb_dpk_j_num1[1] + float(tx_xb_dpk[0][i][1])
+        if float(tx_xb_dpk[0][i][2]) > 4 and float(tx_xb_dpk[0][i][2]) <= 6:
+            tx_xb_dpk_b_num1[2] = tx_xb_dpk_b_num1[2] + 1
+            tx_xb_dpk_j_num1[2] = tx_xb_dpk_j_num1[2] + float(tx_xb_dpk[0][i][1])
+        if float(tx_xb_dpk[0][i][2]) > 6 and float(tx_xb_dpk[0][i][2]) <= 8:
+            tx_xb_dpk_b_num1[3] = tx_xb_dpk_b_num1[3] + 1
+            tx_xb_dpk_j_num1[3] = tx_xb_dpk_j_num1[3] + float(tx_xb_dpk[0][i][1])
+        if float(tx_xb_dpk[0][i][2]) > 8 and float(tx_xb_dpk[0][i][2]) <= 10:
+            tx_xb_dpk_b_num1[4] = tx_xb_dpk_b_num1[4] + 1
+            tx_xb_dpk_j_num1[4] = tx_xb_dpk_j_num1[4] + float(tx_xb_dpk[0][i][1])
+        if float(tx_xb_dpk[0][i][2]) > 10 and float(tx_xb_dpk[0][i][2]) <= 12:
+            tx_xb_dpk_b_num1[5] = tx_xb_dpk_b_num1[5] + 1
+            tx_xb_dpk_j_num1[5] = tx_xb_dpk_j_num1[5] + float(tx_xb_dpk[0][i][1])
+        if float(tx_xb_dpk[0][i][2]) > 12 and float(tx_xb_dpk[0][i][2]) <= 24:
+            tx_xb_dpk_b_num1[6] = tx_xb_dpk_b_num1[6] + 1
+            tx_xb_dpk_j_num1[6] = tx_xb_dpk_j_num1[6] + float(tx_xb_dpk[0][i][1])
+        if float(tx_xb_dpk[0][i][2]) > 24:
+            tx_xb_dpk_b_num1[7] = tx_xb_dpk_b_num1[7] + 1
+            tx_xb_dpk_j_num1[7] = tx_xb_dpk_j_num1[7] + float(tx_xb_dpk[0][i][1])
+
+    for i in range(len(tx_xb_dld[0])):
+        if float(tx_xb_dld[0][i][2]) > 0 and float(tx_xb_dld[0][i][2]) <= 2:
+            tx_xb_dld_b_num1[0] = tx_xb_dld_b_num1[0] + 1
+            tx_xb_dld_j_num1[0] = tx_xb_dld_j_num1[0] + float(tx_xb_dld[0][i][1])
+        if float(tx_xb_dld[0][i][2]) > 2 and float(tx_xb_dld[0][i][2]) <= 4:
+            tx_xb_dld_b_num1[1] = tx_xb_dld_b_num1[1] + 1
+            tx_xb_dld_j_num1[1] = tx_xb_dld_j_num1[1] + float(tx_xb_dld[0][i][1])
+        if float(tx_xb_dld[0][i][2]) > 4 and float(tx_xb_dld[0][i][2]) <= 6:
+            tx_xb_dld_b_num1[2] = tx_xb_dld_b_num1[2] + 1
+            tx_xb_dld_j_num1[2] = tx_xb_dld_j_num1[2] + float(tx_xb_dld[0][i][1])
+        if float(tx_xb_dld[0][i][2]) > 6 and float(tx_xb_dld[0][i][2]) <= 8:
+            tx_xb_dld_b_num1[3] = tx_xb_dld_b_num1[3] + 1
+            tx_xb_dld_j_num1[3] = tx_xb_dld_j_num1[3] + float(tx_xb_dld[0][i][1])
+        if float(tx_xb_dld[0][i][2]) > 8 and float(tx_xb_dld[0][i][2]) <= 10:
+            tx_xb_dld_b_num1[4] = tx_xb_dld_b_num1[4] + 1
+            tx_xb_dld_j_num1[4] = tx_xb_dld_j_num1[4] + float(tx_xb_dld[0][i][1])
+        if float(tx_xb_dld[0][i][2]) > 10 and float(tx_xb_dld[0][i][2]) <= 12:
+            tx_xb_dld_b_num1[5] = tx_xb_dld_b_num1[5] + 1
+            tx_xb_dld_j_num1[5] = tx_xb_dld_j_num1[5] + float(tx_xb_dld[0][i][1])
+        if float(tx_xb_dld[0][i][2]) > 12 and float(tx_xb_dld[0][i][2]) <= 24:
+            tx_xb_dld_b_num1[6] = tx_xb_dld_b_num1[6] + 1
+            tx_xb_dld_j_num1[6] = tx_xb_dld_j_num1[6] + float(tx_xb_dld[0][i][1])
+        if float(tx_xb_dld[0][i][2]) > 24:
+            tx_xb_dld_b_num1[7] = tx_xb_dld_b_num1[7] + 1
+            tx_xb_dld_j_num1[7] = tx_xb_dld_j_num1[7] + float(tx_xb_dld[0][i][1])
+
+    for i in range(len(tx_xb_djh[0])):
+        if float(tx_xb_djh[0][i][2]) > 0 and float(tx_xb_djh[0][i][2]) <= 2:
+            tx_xb_djh_b_num1[0] = tx_xb_djh_b_num1[0] + 1
+            tx_xb_djh_j_num1[0] = tx_xb_djh_j_num1[0] + float(tx_xb_djh[0][i][1])
+        if float(tx_xb_djh[0][i][2]) > 2 and float(tx_xb_djh[0][i][2]) <= 4:
+            tx_xb_djh_b_num1[1] = tx_xb_djh_b_num1[1] + 1
+            tx_xb_djh_j_num1[1] = tx_xb_djh_j_num1[1] + float(tx_xb_djh[0][i][1])
+        if float(tx_xb_djh[0][i][2]) > 4 and float(tx_xb_djh[0][i][2]) <= 6:
+            tx_xb_djh_b_num1[2] = tx_xb_djh_b_num1[2] + 1
+            tx_xb_djh_j_num1[2] = tx_xb_djh_j_num1[2] + float(tx_xb_djh[0][i][1])
+        if float(tx_xb_djh[0][i][2]) > 6 and float(tx_xb_djh[0][i][2]) <= 8:
+            tx_xb_djh_b_num1[3] = tx_xb_djh_b_num1[3] + 1
+            tx_xb_djh_j_num1[3] = tx_xb_djh_j_num1[3] + float(tx_xb_djh[0][i][1])
+        if float(tx_xb_djh[0][i][2]) > 8 and float(tx_xb_djh[0][i][2]) <= 10:
+            tx_xb_djh_b_num1[4] = tx_xb_djh_b_num1[4] + 1
+            tx_xb_djh_j_num1[4] = tx_xb_djh_j_num1[4] + float(tx_xb_djh[0][i][1])
+        if float(tx_xb_djh[0][i][2]) > 10 and float(tx_xb_djh[0][i][2]) <= 12:
+            tx_xb_djh_b_num1[5] = tx_xb_djh_b_num1[5] + 1
+            tx_xb_djh_j_num1[5] = tx_xb_djh_j_num1[5] + float(tx_xb_djh[0][i][1])
+        if float(tx_xb_djh[0][i][2]) > 12 and float(tx_xb_djh[0][i][2]) <= 24:
+            tx_xb_djh_b_num1[6] = tx_xb_djh_b_num1[6] + 1
+            tx_xb_djh_j_num1[6] = tx_xb_djh_j_num1[6] + float(tx_xb_djh[0][i][1])
+        if float(tx_xb_djh[0][i][2]) > 24:
+            tx_xb_djh_b_num1[7] = tx_xb_djh_b_num1[7] + 1
+            tx_xb_djh_j_num1[7] = tx_xb_djh_j_num1[7] + float(tx_xb_djh[0][i][1])
+
+    for i in range(len(tx_xb_ddb[0])):
+        if float(tx_xb_ddb[0][i][2]) > 0 and float(tx_xb_ddb[0][i][2]) <= 2:
+            tx_xb_ddb_b_num1[0] = tx_xb_ddb_b_num1[0] + 1
+            tx_xb_ddb_j_num1[0] = tx_xb_ddb_j_num1[0] + float(tx_xb_ddb[0][i][1])
+        if float(tx_xb_ddb[0][i][2]) > 2 and float(tx_xb_ddb[0][i][2]) <= 4:
+            tx_xb_ddb_b_num1[1] = tx_xb_ddb_b_num1[1] + 1
+            tx_xb_ddb_j_num1[1] = tx_xb_ddb_j_num1[1] + float(tx_xb_ddb[0][i][1])
+        if float(tx_xb_ddb[0][i][2]) > 4 and float(tx_xb_ddb[0][i][2]) <= 6:
+            tx_xb_ddb_b_num1[2] = tx_xb_ddb_b_num1[2] + 1
+            tx_xb_ddb_j_num1[2] = tx_xb_ddb_j_num1[2] + float(tx_xb_ddb[0][i][1])
+        if float(tx_xb_ddb[0][i][2]) > 6 and float(tx_xb_ddb[0][i][2]) <= 8:
+            tx_xb_ddb_b_num1[3] = tx_xb_ddb_b_num1[3] + 1
+            tx_xb_ddb_j_num1[3] = tx_xb_ddb_j_num1[3] + float(tx_xb_ddb[0][i][1])
+        if float(tx_xb_ddb[0][i][2]) > 8 and float(tx_xb_ddb[0][i][2]) <= 10:
+            tx_xb_ddb_b_num1[4] = tx_xb_ddb_b_num1[4] + 1
+            tx_xb_ddb_j_num1[4] = tx_xb_ddb_j_num1[4] + float(tx_xb_ddb[0][i][1])
+        if float(tx_xb_ddb[0][i][2]) > 10 and float(tx_xb_ddb[0][i][2]) <= 12:
+            tx_xb_ddb_b_num1[5] = tx_xb_ddb_b_num1[5] + 1
+            tx_xb_ddb_j_num1[5] = tx_xb_ddb_j_num1[5] + float(tx_xb_ddb[0][i][1])
+        if float(tx_xb_ddb[0][i][2]) > 12 and float(tx_xb_ddb[0][i][2]) <= 24:
+            tx_xb_ddb_b_num1[6] = tx_xb_ddb_b_num1[6] + 1
+            tx_xb_ddb_j_num1[6] = tx_xb_ddb_j_num1[6] + float(tx_xb_ddb[0][i][1])
+        if float(tx_xb_ddb[0][i][2]) > 24:
+            tx_xb_ddb_b_num1[7] = tx_xb_ddb_b_num1[7] + 1
+            tx_xb_ddb_j_num1[7] = tx_xb_ddb_j_num1[7] + float(tx_xb_ddb[0][i][1])
+
+    for i in range(len(tx_xb_dck[0])):
+        if float(tx_xb_dck[0][i][2]) > 0 and float(tx_xb_dck[0][i][2]) <= 2:
+            tx_xb_dck_b_num1[0] = tx_xb_dck_b_num1[0] + 1
+            tx_xb_dck_j_num1[0] = tx_xb_dck_j_num1[0] + float(tx_xb_dck[0][i][1])
+        if float(tx_xb_dck[0][i][2]) > 2 and float(tx_xb_dck[0][i][2]) <= 4:
+            tx_xb_dck_b_num1[1] = tx_xb_dck_b_num1[1] + 1
+            tx_xb_dck_j_num1[1] = tx_xb_dck_j_num1[1] + float(tx_xb_dck[0][i][1])
+        if float(tx_xb_dck[0][i][2]) > 4 and float(tx_xb_dck[0][i][2]) <= 6:
+            tx_xb_dck_b_num1[2] = tx_xb_dck_b_num1[2] + 1
+            tx_xb_dck_j_num1[2] = tx_xb_dck_j_num1[2] + float(tx_xb_dck[0][i][1])
+        if float(tx_xb_dck[0][i][2]) > 6 and float(tx_xb_dck[0][i][2]) <= 8:
+            tx_xb_dck_b_num1[3] = tx_xb_dck_b_num1[3] + 1
+            tx_xb_dck_j_num1[3] = tx_xb_dck_j_num1[3] + float(tx_xb_dck[0][i][1])
+        if float(tx_xb_dck[0][i][2]) > 8 and float(tx_xb_dck[0][i][2]) <= 10:
+            tx_xb_dck_b_num1[4] = tx_xb_dck_b_num1[4] + 1
+            tx_xb_dck_j_num1[4] = tx_xb_dck_j_num1[4] + float(tx_xb_dck[0][i][1])
+        if float(tx_xb_dck[0][i][2]) > 10 and float(tx_xb_dck[0][i][2]) <= 12:
+            tx_xb_dck_b_num1[5] = tx_xb_dck_b_num1[5] + 1
+            tx_xb_dck_j_num1[5] = tx_xb_dck_j_num1[5] + float(tx_xb_dck[0][i][1])
+        if float(tx_xb_dck[0][i][2]) > 12 and float(tx_xb_dck[0][i][2]) <= 24:
+            tx_xb_dck_b_num1[6] = tx_xb_dck_b_num1[6] + 1
+            tx_xb_dck_j_num1[6] = tx_xb_dck_j_num1[6] + float(tx_xb_dck[0][i][1])
+        if float(tx_xb_dck[0][i][2]) > 24:
+            tx_xb_dck_b_num1[7] = tx_xb_dck_b_num1[7] + 1
+            tx_xb_dck_j_num1[7] = tx_xb_dck_j_num1[7] + float(tx_xb_dck[0][i][1])
+
+    hm_b_xb_num_2 = np.r_[
+        hm_xb_dpk_b_num1[0], hm_xb_dfpld_b_num1[0], hm_xb_dld_b_num1[0], hm_xb_djh_b_num1[0], hm_xb_ddb_b_num1[0],
+        hm_xb_dck_b_num1[0],
+        hm_xb_djy_b_num1[0]]
+
+    hm_b_xb_num_4 = np.r_[
+        hm_xb_dpk_b_num1[1], hm_xb_dfpld_b_num1[1], hm_xb_dld_b_num1[1], hm_xb_djh_b_num1[1], hm_xb_ddb_b_num1[1],
+        hm_xb_dck_b_num1[1],
+        hm_xb_djy_b_num1[1]]
+    hm_b_xb_num_6 = np.r_[
+        hm_xb_dpk_b_num1[2], hm_xb_dfpld_b_num1[2], hm_xb_dld_b_num1[2], hm_xb_djh_b_num1[2], hm_xb_ddb_b_num1[2],
+        hm_xb_dck_b_num1[2],
+        hm_xb_djy_b_num1[2]]
+    hm_b_xb_num_8 = np.r_[
+        hm_xb_dpk_b_num1[3], hm_xb_dfpld_b_num1[3], hm_xb_dld_b_num1[3], hm_xb_djh_b_num1[3], hm_xb_ddb_b_num1[3],
+        hm_xb_dck_b_num1[3],
+        hm_xb_djy_b_num1[3]]
+    hm_b_xb_num_10 = np.r_[
+        hm_xb_dpk_b_num1[4], hm_xb_dfpld_b_num1[4], hm_xb_dld_b_num1[4], hm_xb_djh_b_num1[4], hm_xb_ddb_b_num1[4],
+        hm_xb_dck_b_num1[4],
+        hm_xb_djy_b_num1[4]]
+    hm_b_xb_num_12 = np.r_[
+        hm_xb_dpk_b_num1[5], hm_xb_dfpld_b_num1[5], hm_xb_dld_b_num1[5], hm_xb_djh_b_num1[5], hm_xb_ddb_b_num1[5],
+        hm_xb_dck_b_num1[5],
+        hm_xb_djy_b_num1[5]]
+    hm_b_xb_num_24 = np.r_[
+        hm_xb_dpk_b_num1[6], hm_xb_dfpld_b_num1[6], hm_xb_dld_b_num1[6], hm_xb_djh_b_num1[6], hm_xb_ddb_b_num1[6],
+        hm_xb_dck_b_num1[6],
+        hm_xb_djy_b_num1[6]]
+    hm_b_xb_num_24_ = np.r_[
+        hm_xb_dpk_b_num1[7], hm_xb_dfpld_b_num1[7], hm_xb_dld_b_num1[7], hm_xb_djh_b_num1[7], hm_xb_ddb_b_num1[7],
+        hm_xb_dck_b_num1[7],
+        hm_xb_djy_b_num1[7]]
+
+    tx_b_xb_num_2 = np.r_[
+        tx_xb_dpk_b_num1[0], tx_xb_dfpld_b_num1[0], tx_xb_dld_b_num1[0], tx_xb_djh_b_num1[0], tx_xb_ddb_b_num1[0],
+        tx_xb_dck_b_num1[0],
+        tx_xb_djy_b_num1[0]]
+
+    tx_b_xb_num_4 = np.r_[
+        tx_xb_dpk_b_num1[1], tx_xb_dfpld_b_num1[1], tx_xb_dld_b_num1[1], tx_xb_djh_b_num1[1], tx_xb_ddb_b_num1[1],
+        tx_xb_dck_b_num1[1],
+        tx_xb_djy_b_num1[1]]
+    tx_b_xb_num_6 = np.r_[
+        tx_xb_dpk_b_num1[2], tx_xb_dfpld_b_num1[2], tx_xb_dld_b_num1[2], tx_xb_djh_b_num1[2], tx_xb_ddb_b_num1[2],
+        tx_xb_dck_b_num1[2],
+        tx_xb_djy_b_num1[2]]
+    tx_b_xb_num_8 = np.r_[
+        tx_xb_dpk_b_num1[3], tx_xb_dfpld_b_num1[3], tx_xb_dld_b_num1[3], tx_xb_djh_b_num1[3], tx_xb_ddb_b_num1[3],
+        tx_xb_dck_b_num1[3],
+        tx_xb_djy_b_num1[3]]
+    tx_b_xb_num_10 = np.r_[
+        tx_xb_dpk_b_num1[4], tx_xb_dfpld_b_num1[4], tx_xb_dld_b_num1[4], tx_xb_djh_b_num1[4], tx_xb_ddb_b_num1[4],
+        tx_xb_dck_b_num1[4],
+        tx_xb_djy_b_num1[4]]
+    tx_b_xb_num_12 = np.r_[
+        tx_xb_dpk_b_num1[5], tx_xb_dfpld_b_num1[5], tx_xb_dld_b_num1[5], tx_xb_djh_b_num1[5], tx_xb_ddb_b_num1[5],
+        tx_xb_dck_b_num1[5],
+        tx_xb_djy_b_num1[5]]
+    tx_b_xb_num_24 = np.r_[
+        tx_xb_dpk_b_num1[6], tx_xb_dfpld_b_num1[6], tx_xb_dld_b_num1[6], tx_xb_djh_b_num1[6], tx_xb_ddb_b_num1[6],
+        tx_xb_dck_b_num1[6],
+        tx_xb_djy_b_num1[6]]
+    tx_b_xb_num_24_ = np.r_[
+        tx_xb_dpk_b_num1[7], tx_xb_dfpld_b_num1[7], tx_xb_dld_b_num1[7], tx_xb_djh_b_num1[7], tx_xb_ddb_b_num1[7],
+        tx_xb_dck_b_num1[7],
+        tx_xb_djy_b_num1[7]]
+    print(hm_b_xb_num_2)
+
+    arrayA = np.divide(hm_b_xb_num_2, max(hm_b_xb_num_2), out=np.zeros_like(hm_b_xb_num_2, dtype=np.float64),
+                       where=max(hm_b_xb_num_2) != 0)
+    for i in range(len(hm_b_xb_num_2)):
+        hm_xb_b_2.append("%.2f%%" % (arrayA[i] * 100))
+    if hm_b_xb_num_2[0] == 'nan%':
+        a = 0
+        for i in range(len(hm_b_xb_num_2)):
+            hm_b_xb_num_2[i] = '{:.2%}'.format(a)
+
+    arrayA = np.divide(hm_b_xb_num_4, max(hm_b_xb_num_4), out=np.zeros_like(hm_b_xb_num_4, dtype=np.float64),
+                       where=max(hm_b_xb_num_4) != 0)
+    for i in range(len(hm_b_xb_num_4)):
+        hm_xb_b_4.append("%.2f%%" % (arrayA[i] * 100))
+    if hm_b_xb_num_4[0] == 'nan%':
+        a = 0
+        for i in range(len(hm_b_xb_num_4)):
+            hm_b_xb_num_4[i] = '{:.2%}'.format(a)
+
+    arrayA = np.divide(hm_b_xb_num_6, max(hm_b_xb_num_6), out=np.zeros_like(hm_b_xb_num_6, dtype=np.float64),
+                       where=max(hm_b_xb_num_6) != 0)
+    for i in range(len(hm_b_xb_num_6)):
+        hm_xb_b_6.append("%.2f%%" % (arrayA[i] * 100))
+    if hm_b_xb_num_6[0] == 'nan%':
+        a = 0
+        for i in range(len(hm_b_xb_num_6)):
+            hm_b_xb_num_6[i] = '{:.2%}'.format(a)
+
+    arrayA = np.divide(hm_b_xb_num_8, max(hm_b_xb_num_8), out=np.zeros_like(hm_b_xb_num_8, dtype=np.float64),
+                       where=max(hm_b_xb_num_8) != 0)
+    for i in range(len(hm_b_xb_num_8)):
+        hm_xb_b_8.append("%.2f%%" % (arrayA[i] * 100))
+    if hm_b_xb_num_8[0] == 'nan%':
+        a = 0
+        for i in range(len(hm_b_xb_num_8)):
+            hm_b_xb_num_8[i] = '{:.2%}'.format(a)
+
+    arrayA = np.divide(hm_b_xb_num_10, max(hm_b_xb_num_10), out=np.zeros_like(hm_b_xb_num_10, dtype=np.float64),
+                       where=max(hm_b_xb_num_10) != 0)
+    for i in range(len(hm_b_xb_num_10)):
+        hm_xb_b_10.append("%.2f%%" % (arrayA[i] * 100))
+    if hm_b_xb_num_10[0] == 'nan%':
+        a = 0
+        for i in range(len(hm_b_xb_num_10)):
+            hm_b_xb_num_10[i] = '{:.2%}'.format(a)
+
+    arrayA = np.divide(hm_b_xb_num_12, max(hm_b_xb_num_12), out=np.zeros_like(hm_b_xb_num_12, dtype=np.float64),
+                       where=max(hm_b_xb_num_12) != 0)
+    for i in range(len(hm_b_xb_num_12)):
+        hm_xb_b_12.append("%.2f%%" % (arrayA[i] * 100))
+    if hm_b_xb_num_12[0] == 'nan%':
+        a = 0
+        for i in range(len(hm_b_xb_num_12)):
+            hm_b_xb_num_12[i] = '{:.2%}'.format(a)
+    arrayA = np.divide(hm_b_xb_num_24, max(hm_b_xb_num_24), out=np.zeros_like(hm_b_xb_num_24, dtype=np.float64),
+                       where=max(hm_b_xb_num_24) != 0)
+    for i in range(len(hm_b_xb_num_24)):
+        hm_xb_b_24.append("%.2f%%" % (arrayA[i] * 100))
+    if hm_b_xb_num_24[0] == 'nan%':
+        a = 0
+        for i in range(len(hm_b_xb_num_24)):
+            hm_b_xb_num_24[i] = '{:.2%}'.format(a)
+    arrayA = np.divide(hm_b_xb_num_24_, max(hm_b_xb_num_24_), out=np.zeros_like(hm_b_xb_num_24_, dtype=np.float64),
+                       where=max(hm_b_xb_num_24_) != 0)
+    for i in range(len(hm_b_xb_num_24_)):
+        hm_xb_b_24_.append("%.2f%%" % (arrayA[i] * 100))
+    if hm_b_xb_num_24_[0] == 'nan%':
+        a = 0
+        for i in range(len(hm_b_xb_num_24_)):
+            hm_b_xb_num_24_[i] = '{:.2%}'.format(a)
+    arrayA = np.divide(tx_b_xb_num_2, max(tx_b_xb_num_2), out=np.zeros_like(tx_b_xb_num_2, dtype=np.float64),
+                       where=max(tx_b_xb_num_2) != 0)
+    for i in range(len(tx_b_xb_num_2)):
+        tx_xb_b_2.append("%.2f%%" % (arrayA[i] * 100))
+    if tx_b_xb_num_2[0] == 'nan%':
+        a = 0
+        for i in range(len(tx_b_xb_num_2)):
+            tx_b_xb_num_2[i] = '{:.2%}'.format(a)
+
+    arrayA = np.divide(tx_b_xb_num_4, max(tx_b_xb_num_4), out=np.zeros_like(tx_b_xb_num_4, dtype=np.float64),
+                       where=max(tx_b_xb_num_4) != 0)
+    for i in range(len(tx_b_xb_num_4)):
+        tx_xb_b_4.append("%.2f%%" % (arrayA[i] * 100))
+    if tx_b_xb_num_4[0] == 'nan%':
+        a = 0
+        for i in range(len(tx_b_xb_num_4)):
+            tx_b_xb_num_4[i] = '{:.2%}'.format(a)
+
+    arrayA = np.divide(tx_b_xb_num_6, max(tx_b_xb_num_6), out=np.zeros_like(tx_b_xb_num_6, dtype=np.float64),
+                       where=max(tx_b_xb_num_6) != 0)
+    for i in range(len(tx_b_xb_num_6)):
+        tx_xb_b_6.append("%.2f%%" % (arrayA[i] * 100))
+    if tx_b_xb_num_6[0] == 'nan%':
+        a = 0
+        for i in range(len(tx_b_xb_num_6)):
+            tx_b_xb_num_6[i] = '{:.2%}'.format(a)
+
+    arrayA = np.divide(tx_b_xb_num_8, max(tx_b_xb_num_8), out=np.zeros_like(tx_b_xb_num_8, dtype=np.float64),
+                       where=max(tx_b_xb_num_8) != 0)
+    for i in range(len(tx_b_xb_num_8)):
+        tx_xb_b_8.append("%.2f%%" % (arrayA[i] * 100))
+    if tx_b_xb_num_8[0] == 'nan%':
+        a = 0
+        for i in range(len(tx_b_xb_num_8)):
+            tx_b_xb_num_8[i] = '{:.2%}'.format(a)
+
+    arrayA = np.divide(tx_b_xb_num_10, max(tx_b_xb_num_10), out=np.zeros_like(tx_b_xb_num_10, dtype=np.float64),
+                       where=max(tx_b_xb_num_10) != 0)
+    for i in range(len(tx_b_xb_num_10)):
+        tx_xb_b_10.append("%.2f%%" % (arrayA[i] * 100))
+    if tx_b_xb_num_10[0] == 'nan%':
+        a = 0
+        for i in range(len(tx_b_xb_num_10)):
+            tx_b_xb_num_10[i] = '{:.2%}'.format(a)
+
+    arrayA = np.divide(tx_b_xb_num_12, max(tx_b_xb_num_12), out=np.zeros_like(tx_b_xb_num_12, dtype=np.float64),
+                       where=max(tx_b_xb_num_12) != 0)
+    for i in range(len(tx_b_xb_num_12)):
+        tx_xb_b_12.append("%.2f%%" % (arrayA[i] * 100))
+    if tx_b_xb_num_12[0] == 'nan%':
+        a = 0
+        for i in range(len(tx_b_xb_num_12)):
+            tx_b_xb_num_12[i] = '{:.2%}'.format(a)
+    arrayA = np.divide(tx_b_xb_num_24, max(tx_b_xb_num_24), out=np.zeros_like(tx_b_xb_num_24, dtype=np.float64),
+                       where=max(tx_b_xb_num_24) != 0)
+    for i in range(len(tx_b_xb_num_24)):
+        tx_xb_b_24.append("%.2f%%" % (arrayA[i] * 100))
+    if tx_b_xb_num_24[0] == 'nan%':
+        a = 0
+        for i in range(len(tx_b_xb_num_24)):
+            tx_b_xb_num_24[i] = '{:.2%}'.format(a)
+    arrayA = np.divide(tx_b_xb_num_24_, max(tx_b_xb_num_24_), out=np.zeros_like(tx_b_xb_num_24_, dtype=np.float64),
+                       where=max(tx_b_xb_num_24_) != 0)
+    for i in range(len(tx_b_xb_num_24_)):
+        tx_xb_b_24_.append("%.2f%%" % (arrayA[i] * 100))
+    if tx_b_xb_num_24_[0] == 'nan%':
+        a = 0
+        for i in range(len(tx_b_xb_num_24_)):
+            tx_b_xb_num_24_[i] = '{:.2%}'.format(a)
+
+    cur.execute(sql_fba)
+    see_fba = cur.fetchall()
+    warehouse_fba = []
+    type_fba = []
+    order_fba = []
+    num_fba = []
+    s_fba = []
+
+    for data_fba in see_fba:
+        warehouse_fba.append(data_fba[0])
+        type_fba.append(data_fba[2])
+        order_fba.append(data_fba[1])
+        num_fba.append(data_fba[3])
+        s_fba.append(data_fba[4])
+    print(num_fba)
+    hm_type_fba = []
+    hm_order_fba = []
+    hm_num_fba = []
+    hm_s_fba = []
+    tx_type_fba = []
+    tx_order_fba = []
+    tx_num_fba = []
+    tx_s_fba = []
+    for i in range(len(warehouse_fba)):
+        if warehouse_fba[i] == 'HM_AA':
+            hm_type_fba.append(type_fba[i])
+            hm_order_fba.append(order_fba[i])
+            hm_num_fba.append(num_fba[i])
+            hm_s_fba.append(s_fba[i])
+    for i in range(len(warehouse_fba)):
+        if warehouse_fba[i] == 'SZ_AA':
+            tx_type_fba.append(type_fba[i])
+            tx_order_fba.append(order_fba[i])
+            tx_num_fba.append(num_fba[i])
+            tx_s_fba.append(s_fba[i])
+    hm_fba_data = np.dstack((hm_type_fba, hm_order_fba, hm_num_fba, hm_s_fba))
+    tx_fba_data = np.dstack((tx_type_fba, tx_order_fba, tx_num_fba, tx_s_fba))
+
+    hm_djy_b_num = []
+    hm_djy_j_num = []
+    hm_djy_time = []
+    hm_dfpld_b_num = []
+    hm_dfpld_j_num = []
+    hm_dfpld_time = []
+    hm_dpk_b_num = []
+    hm_dpk_j_num = []
+    hm_dpk_time = []
+    hm_dld_b_num = []
+    hm_dld_j_num = []
+    hm_dld_time = []
+    hm_djh_b_num = []
+    hm_djh_j_num = []
+    hm_djh_time = []
+    hm_ddb_b_num = []
+    hm_ddb_j_num = []
+    hm_ddb_time = []
+    hm_dck_b_num = []
+    hm_dck_j_num = []
+    hm_dck_time = []
+    tx_djy_b_num = []
+    tx_djy_j_num = []
+    tx_djy_time = []
+    tx_dfpld_b_num = []
+    tx_dfpld_j_num = []
+    tx_dfpld_time = []
+    tx_dpk_b_num = []
+    tx_dpk_j_num = []
+    tx_dpk_time = []
+    tx_dld_b_num = []
+    tx_dld_j_num = []
+    tx_dld_time = []
+    tx_djh_b_num = []
+    tx_djh_j_num = []
+    tx_djh_time = []
+    tx_ddb_b_num = []
+    tx_ddb_j_num = []
+    tx_ddb_time = []
+    tx_dck_b_num = []
+    tx_dck_j_num = []
+    tx_dck_time = []
+
+    for i in range(len(hm_s_fba)):
+        if (hm_fba_data[0][i][0] == 'DJY'):
+            hm_djy_b_num.append(1)
+            hm_djy_j_num.append(hm_fba_data[0][i][2])
+            hm_djy_time.append(hm_fba_data[0][i][3])
+    for i in range(len(hm_s_fba)):
+        if (hm_fba_data[0][i][0] == 'DFPLD'):
+            hm_dfpld_b_num.append(1)
+            hm_dfpld_j_num.append(hm_fba_data[0][i][2])
+            hm_dfpld_time.append(hm_fba_data[0][i][3])
+    for i in range(len(hm_s_fba)):
+        if (hm_fba_data[0][i][0] == 'DPK'):
+            hm_dpk_b_num.append(1)
+            hm_dpk_j_num.append(hm_fba_data[0][i][2])
+            hm_dpk_time.append(hm_fba_data[0][i][3])
+
+    for i in range(len(hm_s_fba)):
+        if (hm_fba_data[0][i][0] == 'DLD'):
+            hm_dld_b_num.append(1)
+            hm_dld_j_num.append(hm_fba_data[0][i][2])
+            hm_dld_time.append(hm_fba_data[0][i][3])
+    for i in range(len(hm_s_fba)):
+        if (hm_fba_data[0][i][0] == 'DJH'):
+            hm_djh_b_num.append(1)
+            hm_djh_j_num.append(hm_fba_data[0][i][2])
+            hm_djh_time.append(hm_fba_data[0][i][3])
+    for i in range(len(hm_s_fba)):
+        if (hm_fba_data[0][i][0] == 'DDB'):
+            hm_ddb_b_num.append(1)
+            hm_ddb_j_num.append(hm_fba_data[0][i][2])
+            hm_ddb_time.append(hm_fba_data[0][i][3])
+    for i in range(len(hm_s_fba)):
+        if (hm_fba_data[0][i][0] == 'DCK'):
+            hm_dck_b_num.append(1)
+            hm_dck_j_num.append(hm_fba_data[0][i][2])
+            hm_dck_time.append(hm_fba_data[0][i][3])
+    for i in range(len(tx_s_fba)):
+        if (tx_fba_data[0][i][0] == 'DJY'):
+            tx_djy_b_num.append(1)
+            tx_djy_j_num.append(tx_fba_data[0][i][2])
+            tx_djy_time.append(tx_fba_data[0][i][3])
+    for i in range(len(tx_s_fba)):
+        if (tx_fba_data[0][i][0] == 'DFPLD'):
+            tx_dfpld_b_num.append(1)
+            tx_dfpld_j_num.append(tx_fba_data[0][i][2])
+            tx_dfpld_time.append(tx_fba_data[0][i][3])
+    for i in range(len(tx_s_fba)):
+        if (tx_fba_data[0][i][0] == 'DPK'):
+            tx_dpk_b_num.append(1)
+            tx_dpk_j_num.append(tx_fba_data[0][i][2])
+            tx_dpk_time.append(tx_fba_data[0][i][3])
+    for i in range(len(tx_s_fba)):
+        if (tx_fba_data[0][i][0] == 'DLD'):
+            tx_dld_b_num.append(1)
+            tx_dld_j_num.append(tx_fba_data[0][i][2])
+            tx_dld_time.append(tx_fba_data[0][i][3])
+    for i in range(len(tx_s_fba)):
+        if (tx_fba_data[0][i][0] == 'DJH'):
+            tx_djh_b_num.append(1)
+            tx_djh_j_num.append(tx_fba_data[0][i][2])
+            tx_djh_time.append(tx_fba_data[0][i][3])
+    for i in range(len(tx_s_fba)):
+        if (tx_fba_data[0][i][0] == 'DDB'):
+            tx_ddb_b_num.append(1)
+            tx_ddb_j_num.append(tx_fba_data[0][i][2])
+            tx_ddb_time.append(tx_fba_data[0][i][3])
+    for i in range(len(tx_s_fba)):
+        if (tx_fba_data[0][i][0] == 'DCK'):
+            tx_dck_b_num.append(1)
+            tx_dck_j_num.append(tx_fba_data[0][i][2])
+            tx_dck_time.append(tx_fba_data[0][i][3])
+
+    hm_djy = np.dstack((hm_djy_b_num, hm_djy_j_num, hm_djy_time))
+    hm_dfpld = np.dstack((hm_dfpld_b_num, hm_dfpld_j_num, hm_dfpld_time))
+    hm_dpk = np.dstack((hm_dpk_b_num, hm_dpk_j_num, hm_dpk_time))
+    hm_dld = np.dstack((hm_dld_b_num, hm_dld_j_num, hm_dld_time))
+    hm_djh = np.dstack((hm_djh_b_num, hm_djh_j_num, hm_djh_time))
+    hm_ddb = np.dstack((hm_ddb_b_num, hm_ddb_j_num, hm_ddb_time))
+    hm_dck = np.dstack((hm_dck_b_num, hm_dck_j_num, hm_dck_time))
+    tx_djy = np.dstack((tx_djy_b_num, tx_djy_j_num, tx_djy_time))
+    tx_dfpld = np.dstack((tx_dfpld_b_num, tx_dfpld_j_num, tx_dfpld_time))
+    tx_dpk = np.dstack((tx_dpk_b_num, tx_dpk_j_num, tx_dpk_time))
+    tx_dld = np.dstack((tx_dld_b_num, tx_dld_j_num, tx_dld_time))
+    tx_djh = np.dstack((tx_djh_b_num, tx_djh_j_num, tx_djh_time))
+    tx_ddb = np.dstack((tx_ddb_b_num, tx_ddb_j_num, tx_ddb_time))
+    tx_dck = np.dstack((tx_dck_b_num, tx_dck_j_num, tx_dck_time))
+
+    hm_djy_b_num1 = [0, 0, 0, 0, 0, 0, 0, 0]
+    hm_djy_j_num1 = [0, 0, 0, 0, 0, 0, 0, 0]
+    hm_dfpld_b_num1 = [0, 0, 0, 0, 0, 0, 0, 0]
+    hm_dfpld_j_num1 = [0, 0, 0, 0, 0, 0, 0, 0]
+    tx_djy_b_num1 = [0, 0, 0, 0, 0, 0, 0, 0]
+    tx_djy_j_num1 = [0, 0, 0, 0, 0, 0, 0, 0]
+    tx_dfpld_b_num1 = [0, 0, 0, 0, 0, 0, 0, 0]
+    tx_dfpld_j_num1 = [0, 0, 0, 0, 0, 0, 0, 0]
+    hm_dpk_b_num1 = [0, 0, 0, 0, 0, 0, 0, 0]
+    hm_dld_b_num1 = [0, 0, 0, 0, 0, 0, 0, 0]
+    hm_djh_b_num1 = [0, 0, 0, 0, 0, 0, 0, 0]
+    hm_ddb_b_num1 = [0, 0, 0, 0, 0, 0, 0, 0]
+    hm_dck_b_num1 = [0, 0, 0, 0, 0, 0, 0, 0]
+    tx_dpk_b_num1 = [0, 0, 0, 0, 0, 0, 0, 0]
+    tx_dld_b_num1 = [0, 0, 0, 0, 0, 0, 0, 0]
+    tx_djh_b_num1 = [0, 0, 0, 0, 0, 0, 0, 0]
+    tx_ddb_b_num1 = [0, 0, 0, 0, 0, 0, 0, 0]
+    tx_dck_b_num1 = [0, 0, 0, 0, 0, 0, 0, 0]
+    hm_dpk_j_num1 = [0, 0, 0, 0, 0, 0, 0, 0]
+    hm_dld_j_num1 = [0, 0, 0, 0, 0, 0, 0, 0]
+    hm_djh_j_num1 = [0, 0, 0, 0, 0, 0, 0, 0]
+    hm_ddb_j_num1 = [0, 0, 0, 0, 0, 0, 0, 0]
+    hm_dck_j_num1 = [0, 0, 0, 0, 0, 0, 0, 0]
+    tx_dpk_j_num1 = [0, 0, 0, 0, 0, 0, 0, 0]
+    tx_dld_j_num1 = [0, 0, 0, 0, 0, 0, 0, 0]
+    tx_djh_j_num1 = [0, 0, 0, 0, 0, 0, 0, 0]
+    tx_ddb_j_num1 = [0, 0, 0, 0, 0, 0, 0, 0]
+    tx_dck_j_num1 = [0, 0, 0, 0, 0, 0, 0, 0]
+
+    hm_b_12 = []
+    hm_b_24 = []
+    hm_b_48 = []
+    hm_b_72 = []
+    hm_b_120 = []
+    hm_b_240 = []
+    hm_b_360 = []
+    hm_b_361 = []
+    tx_b_12 = []
+    tx_b_24 = []
+    tx_b_48 = []
+    tx_b_72 = []
+    tx_b_120 = []
+    tx_b_240 = []
+    tx_b_360 = []
+    tx_b_361 = []
+
+    hm_j_12 = []
+    hm_j_24 = []
+    hm_j_48 = []
+    hm_j_72 = []
+    hm_j_120 = []
+    hm_j_240 = []
+    hm_j_360 = []
+    hm_j_361 = []
+
+    tx_j_12 = []
+    tx_j_24 = []
+    tx_j_48 = []
+    tx_j_72 = []
+    tx_j_120 = []
+    tx_j_240 = []
+    tx_j_360 = []
+    tx_j_361 = []
+
+    for i in range(len(hm_djy[0])):
+        if float(hm_djy[0][i][2]) > 0 and float(hm_djy[0][i][2]) <= 12:
+            hm_djy_b_num1[0] = hm_djy_b_num1[0] + 1
+            hm_djy_j_num1[0] = hm_djy_j_num1[0] + float(hm_djy[0][i][1])
+        if float(hm_djy[0][i][2]) > 12 and float(hm_djy[0][i][2]) <= 24:
+            hm_djy_b_num1[1] = hm_djy_b_num1[1] + 1
+            hm_djy_j_num1[1] = hm_djy_j_num1[1] + float(hm_djy[0][i][1])
+        if float(hm_djy[0][i][2]) > 24 and float(hm_djy[0][i][2]) <= 48:
+            hm_djy_b_num1[2] = hm_djy_b_num1[2] + 1
+            hm_djy_j_num1[2] = hm_djy_j_num1[2] + float(hm_djy[0][i][1])
+        if float(hm_djy[0][i][2]) > 48 and float(hm_djy[0][i][2]) <= 72:
+            hm_djy_b_num1[3] = hm_djy_b_num1[3] + 1
+            hm_djy_j_num1[3] = hm_djy_j_num1[3] + float(hm_djy[0][i][1])
+        if float(hm_djy[0][i][2]) > 72 and float(hm_djy[0][i][2]) <= 120:
+            hm_djy_b_num1[4] = hm_djy_b_num1[4] + 1
+            hm_djy_j_num1[4] = hm_djy_j_num1[4] + float(hm_djy[0][i][1])
+        if float(hm_djy[0][i][2]) > 120 and float(hm_djy[0][i][2]) <= 240:
+            hm_djy_b_num1[5] = hm_djy_b_num1[5] + 1
+            hm_djy_j_num1[5] = hm_djy_j_num1[5] + float(hm_djy[0][i][1])
+        if float(hm_djy[0][i][2]) > 240 and float(hm_djy[0][i][2]) <= 360:
+            hm_djy_b_num1[6] = hm_djy_b_num1[6] + 1
+            hm_djy_j_num1[6] = hm_djy_j_num1[6] + float(hm_djy[0][i][1])
+        if float(hm_djy[0][i][2]) > 360:
+            hm_djy_b_num1[7] = hm_djy_b_num1[7] + 1
+            hm_djy_j_num1[7] = hm_djy_j_num1[7] + float(hm_djy[0][i][1])
+
+    for i in range(len(hm_dfpld[0])):
+        if float(hm_dfpld[0][i][2]) > 0 and float(hm_dfpld[0][i][2]) <= 12:
+            hm_dfpld_b_num1[0] = hm_dfpld_b_num1[0] + 1
+            hm_dfpld_j_num1[0] = hm_dfpld_j_num1[0] + float(hm_dfpld[0][i][1])
+        if float(hm_dfpld[0][i][2]) > 12 and float(hm_dfpld[0][i][2]) <= 24:
+            hm_dfpld_b_num1[1] = hm_dfpld_b_num1[1] + 1
+            hm_dfpld_j_num1[1] = hm_dfpld_j_num1[1] + float(hm_dfpld[0][i][1])
+        if float(hm_dfpld[0][i][2]) > 24 and float(hm_dfpld[0][i][2]) <= 48:
+            hm_dfpld_b_num1[2] = hm_dfpld_b_num1[2] + 1
+            hm_dfpld_j_num1[2] = hm_dfpld_j_num1[2] + float(hm_dfpld[0][i][1])
+        if float(hm_dfpld[0][i][2]) > 48 and float(hm_dfpld[0][i][2]) <= 72:
+            hm_dfpld_b_num1[3] = hm_dfpld_b_num1[3] + 1
+            hm_dfpld_j_num1[3] = hm_dfpld_j_num1[3] + float(hm_dfpld[0][i][1])
+        if float(hm_dfpld[0][i][2]) > 72 and float(hm_dfpld[0][i][2]) <= 120:
+            hm_dfpld_b_num1[4] = hm_dfpld_b_num1[4] + 1
+            hm_dfpld_j_num1[4] = hm_dfpld_j_num1[4] + float(hm_dfpld[0][i][1])
+        if float(hm_dfpld[0][i][2]) > 120 and float(hm_dfpld[0][i][2]) <= 240:
+            hm_dfpld_b_num1[5] = hm_dfpld_b_num1[5] + 1
+            hm_dfpld_j_num1[5] = hm_dfpld_j_num1[5] + float(hm_dfpld[0][i][1])
+        if float(hm_dfpld[0][i][2]) > 240 and float(hm_dfpld[0][i][2]) <= 360:
+            hm_dfpld_b_num1[6] = hm_dfpld_b_num1[6] + 1
+            hm_dfpld_j_num1[6] = hm_dfpld_j_num1[6] + float(hm_dfpld[0][i][1])
+        if float(hm_dfpld[0][i][2]) > 360:
+            hm_dfpld_b_num1[7] = hm_dfpld_b_num1[7] + 1
+            hm_dfpld_j_num1[7] = hm_dfpld_j_num1[7] + float(hm_dfpld[0][i][1])
+    for i in range(len(hm_dpk[0])):
+        if float(hm_dpk[0][i][2]) > 0 and float(hm_dpk[0][i][2]) <= 12:
+            hm_dpk_b_num1[0] = hm_dpk_b_num1[0] + 1
+            hm_dpk_j_num1[0] = hm_dpk_j_num1[0] + float(hm_dpk[0][i][1])
+        if float(hm_dpk[0][i][2]) > 12 and float(hm_dpk[0][i][2]) <= 24:
+            hm_dpk_b_num1[1] = hm_dpk_b_num1[1] + 1
+            hm_dpk_j_num1[1] = hm_dpk_j_num1[1] + float(hm_dpk[0][i][1])
+        if float(hm_dpk[0][i][2]) > 24 and float(hm_dpk[0][i][2]) <= 48:
+            hm_dpk_b_num1[2] = hm_dpk_b_num1[2] + 1
+            hm_dpk_j_num1[2] = hm_dpk_j_num1[2] + float(hm_dpk[0][i][1])
+        if float(hm_dpk[0][i][2]) > 48 and float(hm_dpk[0][i][2]) <= 72:
+            hm_dpk_b_num1[3] = hm_dpk_b_num1[3] + 1
+            hm_dpk_j_num1[3] = hm_dpk_j_num1[3] + float(hm_dpk[0][i][1])
+        if float(hm_dpk[0][i][2]) > 72 and float(hm_dpk[0][i][2]) <= 120:
+            hm_dpk_b_num1[4] = hm_dpk_b_num1[4] + 1
+            hm_dpk_j_num1[4] = hm_dpk_j_num1[4] + float(hm_dpk[0][i][1])
+        if float(hm_dpk[0][i][2]) > 120 and float(hm_dpk[0][i][2]) <= 240:
+            hm_dpk_b_num1[5] = hm_dpk_b_num1[5] + 1
+            hm_dpk_j_num1[5] = hm_dpk_j_num1[5] + float(hm_dpk[0][i][1])
+        if float(hm_dpk[0][i][2]) > 240 and float(hm_dpk[0][i][2]) <= 360:
+            hm_dpk_b_num1[6] = hm_dpk_b_num1[6] + 1
+            hm_dpk_j_num1[6] = hm_dpk_j_num1[6] + float(hm_dpk[0][i][1])
+        if float(hm_dpk[0][i][2]) > 360:
+            hm_dpk_b_num1[7] = hm_dpk_b_num1[7] + 1
+            hm_dpk_j_num1[7] = hm_dpk_j_num1[7] + float(hm_dpk[0][i][1])
+    for i in range(len(hm_dld[0])):
+        if float(hm_dld[0][i][2]) > 0 and float(hm_dld[0][i][2]) <= 12:
+            hm_dld_b_num1[0] = hm_dld_b_num1[0] + 1
+            hm_dld_j_num1[0] = hm_dld_j_num1[0] + float(hm_dld[0][i][1])
+        if float(hm_dld[0][i][2]) > 12 and float(hm_dld[0][i][2]) <= 24:
+            hm_dld_b_num1[1] = hm_dld_b_num1[1] + 1
+            hm_dld_j_num1[1] = hm_dld_j_num1[1] + float(hm_dld[0][i][1])
+        if float(hm_dld[0][i][2]) > 24 and float(hm_dld[0][i][2]) <= 48:
+            hm_dld_b_num1[2] = hm_dld_b_num1[2] + 1
+            hm_dld_j_num1[2] = hm_dld_j_num1[2] + float(hm_dld[0][i][1])
+        if float(hm_dld[0][i][2]) > 48 and float(hm_dld[0][i][2]) <= 72:
+            hm_dld_b_num1[3] = hm_dld_b_num1[3] + 1
+            hm_dld_j_num1[3] = hm_dld_j_num1[3] + float(hm_dld[0][i][1])
+        if float(hm_dld[0][i][2]) > 72 and float(hm_dld[0][i][2]) <= 120:
+            hm_dld_b_num1[4] = hm_dld_b_num1[4] + 1
+            hm_dld_j_num1[4] = hm_dld_j_num1[4] + float(hm_dld[0][i][1])
+        if float(hm_dld[0][i][2]) > 120 and float(hm_dld[0][i][2]) <= 240:
+            hm_dld_b_num1[5] = hm_dld_b_num1[5] + 1
+            hm_dld_j_num1[5] = hm_dld_j_num1[5] + float(hm_dld[0][i][1])
+        if float(hm_dld[0][i][2]) > 240 and float(hm_dld[0][i][2]) <= 360:
+            hm_dld_b_num1[6] = hm_dld_b_num1[6] + 1
+            hm_dld_j_num1[6] = hm_dld_j_num1[6] + float(hm_dld[0][i][1])
+        if float(hm_dld[0][i][2]) > 360:
+            hm_dld_b_num1[7] = hm_dld_b_num1[7] + 1
+            hm_dld_j_num1[7] = hm_dld_j_num1[7] + float(hm_dld[0][i][1])
+
+    for i in range(len(hm_djh[0])):
+        if float(hm_djh[0][i][2]) > 0 and float(hm_djh[0][i][2]) <= 12:
+            hm_djh_b_num1[0] = hm_djh_b_num1[0] + 1
+            hm_djh_j_num1[0] = hm_djh_j_num1[0] + float(hm_djh[0][i][1])
+        if float(hm_djh[0][i][2]) > 12 and float(hm_djh[0][i][2]) <= 24:
+            hm_djh_b_num1[1] = hm_djh_b_num1[1] + 1
+            hm_djh_j_num1[1] = hm_djh_j_num1[1] + float(hm_djh[0][i][1])
+        if float(hm_djh[0][i][2]) > 24 and float(hm_djh[0][i][2]) <= 48:
+            hm_djh_b_num1[2] = hm_djh_b_num1[2] + 1
+            hm_djh_j_num1[2] = hm_djh_j_num1[2] + float(hm_djh[0][i][1])
+        if float(hm_djh[0][i][2]) > 48 and float(hm_djh[0][i][2]) <= 72:
+            hm_djh_b_num1[3] = hm_djh_b_num1[3] + 1
+            hm_djh_j_num1[3] = hm_djh_j_num1[3] + float(hm_djh[0][i][1])
+        if float(hm_djh[0][i][2]) > 72 and float(hm_djh[0][i][2]) <= 120:
+            hm_djh_b_num1[4] = hm_djh_b_num1[4] + 1
+            hm_djh_j_num1[4] = hm_djh_j_num1[4] + float(hm_djh[0][i][1])
+        if float(hm_djh[0][i][2]) > 120 and float(hm_djh[0][i][2]) <= 240:
+            hm_djh_b_num1[5] = hm_djh_b_num1[5] + 1
+            hm_djh_j_num1[5] = hm_djh_j_num1[5] + float(hm_djh[0][i][1])
+        if float(hm_djh[0][i][2]) > 240 and float(hm_djh[0][i][2]) <= 360:
+            hm_djh_b_num1[6] = hm_djh_b_num1[6] + 1
+            hm_djh_j_num1[6] = hm_djh_j_num1[6] + float(hm_djh[0][i][1])
+        if float(hm_djh[0][i][2]) > 360:
+            hm_djh_b_num1[7] = hm_djh_b_num1[7] + 1
+            hm_djh_j_num1[7] = hm_djh_j_num1[7] + float(hm_djh[0][i][1])
+
+    for i in range(len(hm_ddb[0])):
+        if float(hm_ddb[0][i][2]) > 0 and float(hm_ddb[0][i][2]) <= 12:
+            hm_ddb_b_num1[0] = hm_ddb_b_num1[0] + 1
+            hm_ddb_j_num1[0] = hm_ddb_j_num1[0] + float(hm_ddb[0][i][1])
+        if float(hm_ddb[0][i][2]) > 12 and float(hm_ddb[0][i][2]) <= 24:
+            hm_ddb_b_num1[1] = hm_ddb_b_num1[1] + 1
+            hm_ddb_j_num1[1] = hm_ddb_j_num1[1] + float(hm_ddb[0][i][1])
+        if float(hm_ddb[0][i][2]) > 24 and float(hm_ddb[0][i][2]) <= 48:
+            hm_ddb_b_num1[2] = hm_ddb_b_num1[2] + 1
+            hm_ddb_j_num1[2] = hm_ddb_j_num1[2] + float(hm_ddb[0][i][1])
+        if float(hm_ddb[0][i][2]) > 48 and float(hm_ddb[0][i][2]) <= 72:
+            hm_ddb_b_num1[3] = hm_ddb_b_num1[3] + 1
+            hm_ddb_j_num1[3] = hm_ddb_j_num1[3] + float(hm_ddb[0][i][1])
+        if float(hm_ddb[0][i][2]) > 72 and float(hm_ddb[0][i][2]) <= 120:
+            hm_ddb_b_num1[4] = hm_ddb_b_num1[4] + 1
+            hm_ddb_j_num1[4] = hm_ddb_j_num1[4] + float(hm_ddb[0][i][1])
+        if float(hm_ddb[0][i][2]) > 120 and float(hm_ddb[0][i][2]) <= 240:
+            hm_ddb_b_num1[5] = hm_ddb_b_num1[5] + 1
+            hm_ddb_j_num1[5] = hm_ddb_j_num1[5] + float(hm_ddb[0][i][1])
+        if float(hm_ddb[0][i][2]) > 240 and float(hm_ddb[0][i][2]) <= 360:
+            hm_ddb_b_num1[6] = hm_ddb_b_num1[6] + 1
+            hm_ddb_j_num1[6] = hm_ddb_j_num1[6] + float(hm_ddb[0][i][1])
+        if float(hm_ddb[0][i][2]) > 360:
+            hm_ddb_b_num1[7] = hm_ddb_b_num1[7] + 1
+            hm_ddb_j_num1[7] = hm_ddb_j_num1[7] + float(hm_ddb[0][i][1])
+
+    for i in range(len(hm_dck[0])):
+        if float(hm_dck[0][i][2]) > 0 and float(hm_dck[0][i][2]) <= 12:
+            hm_dck_b_num1[0] = hm_dck_b_num1[0] + 1
+            hm_dck_j_num1[0] = hm_dck_j_num1[0] + float(hm_dck[0][i][1])
+        if float(hm_dck[0][i][2]) > 12 and float(hm_dck[0][i][2]) <= 24:
+            hm_dck_b_num1[1] = hm_dck_b_num1[1] + 1
+            hm_dck_j_num1[1] = hm_dck_j_num1[1] + float(hm_dck[0][i][1])
+        if float(hm_dck[0][i][2]) > 24 and float(hm_dck[0][i][2]) <= 48:
+            hm_dck_b_num1[2] = hm_dck_b_num1[2] + 1
+            hm_dck_j_num1[2] = hm_dck_j_num1[2] + float(hm_dck[0][i][1])
+        if float(hm_dck[0][i][2]) > 48 and float(hm_dck[0][i][2]) <= 72:
+            hm_dck_b_num1[3] = hm_dck_b_num1[3] + 1
+            hm_dck_j_num1[3] = hm_dck_j_num1[3] + float(hm_dck[0][i][1])
+        if float(hm_dck[0][i][2]) > 72 and float(hm_dck[0][i][2]) <= 120:
+            hm_dck_b_num1[4] = hm_dck_b_num1[4] + 1
+            hm_dck_j_num1[4] = hm_dck_j_num1[4] + float(hm_dck[0][i][1])
+        if float(hm_dck[0][i][2]) > 120 and float(hm_dck[0][i][2]) <= 240:
+            hm_dck_b_num1[5] = hm_dck_b_num1[5] + 1
+            hm_dck_j_num1[5] = hm_dck_j_num1[5] + float(hm_dck[0][i][1])
+        if float(hm_dck[0][i][2]) > 240 and float(hm_dck[0][i][2]) <= 360:
+            hm_dck_b_num1[6] = hm_dck_b_num1[6] + 1
+            hm_dck_j_num1[6] = hm_dck_j_num1[6] + float(hm_dck[0][i][1])
+        if float(hm_dck[0][i][2]) > 360:
+            hm_dck_b_num1[7] = hm_dck_b_num1[7] + 1
+            hm_dck_j_num1[7] = hm_dck_j_num1[7] + float(hm_dck[0][i][1])
+
+    for i in range(len(tx_djy[0])):
+        if float(tx_djy[0][i][2]) > 0 and float(tx_djy[0][i][2]) <= 12:
+            tx_djy_b_num1[0] = tx_djy_b_num1[0] + 1
+            tx_djy_j_num1[0] = tx_djy_j_num1[0] + float(tx_djy[0][i][1])
+        if float(tx_djy[0][i][2]) > 12 and float(tx_djy[0][i][2]) <= 24:
+            tx_djy_b_num1[1] = tx_djy_b_num1[1] + 1
+            tx_djy_j_num1[1] = tx_djy_j_num1[1] + float(tx_djy[0][i][1])
+        if float(tx_djy[0][i][2]) > 24 and float(tx_djy[0][i][2]) <= 48:
+            tx_djy_b_num1[2] = tx_djy_b_num1[2] + 1
+            tx_djy_j_num1[2] = tx_djy_j_num1[2] + float(tx_djy[0][i][1])
+        if float(tx_djy[0][i][2]) > 48 and float(tx_djy[0][i][2]) <= 72:
+            tx_djy_b_num1[3] = tx_djy_b_num1[3] + 1
+            tx_djy_j_num1[3] = tx_djy_j_num1[3] + float(tx_djy[0][i][1])
+        if float(tx_djy[0][i][2]) > 72 and float(tx_djy[0][i][2]) <= 120:
+            tx_djy_b_num1[4] = tx_djy_b_num1[4] + 1
+            tx_djy_j_num1[4] = tx_djy_j_num1[4] + float(tx_djy[0][i][1])
+        if float(tx_djy[0][i][2]) > 120 and float(tx_djy[0][i][2]) <= 240:
+            tx_djy_b_num1[5] = tx_djy_b_num1[5] + 1
+            tx_djy_j_num1[5] = tx_djy_j_num1[5] + float(tx_djy[0][i][1])
+        if float(tx_djy[0][i][2]) > 240 and float(tx_djy[0][i][2]) <= 360:
+            tx_djy_b_num1[6] = tx_djy_b_num1[6] + 1
+            tx_djy_j_num1[6] = tx_djy_j_num1[6] + float(tx_djy[0][i][1])
+        if float(tx_djy[0][i][2]) > 360:
+            tx_djy_b_num1[7] = tx_djy_b_num1[7] + 1
+            tx_djy_j_num1[7] = tx_djy_j_num1[7] + float(tx_djy[0][i][1])
+    for i in range(len(tx_dfpld[0])):
+        if float(tx_dfpld[0][i][2]) > 0 and float(tx_dfpld[0][i][2]) <= 12:
+            tx_dfpld_b_num1[0] = tx_dfpld_b_num1[0] + 1
+            tx_dfpld_j_num1[0] = tx_dfpld_j_num1[0] + float(tx_dfpld[0][i][1])
+        if float(tx_dfpld[0][i][2]) > 12 and float(tx_dfpld[0][i][2]) <= 24:
+            tx_dfpld_b_num1[1] = tx_dfpld_b_num1[1] + 1
+            tx_dfpld_j_num1[1] = tx_dfpld_j_num1[1] + float(tx_dfpld[0][i][1])
+        if float(tx_dfpld[0][i][2]) > 24 and float(tx_dfpld[0][i][2]) <= 48:
+            tx_dfpld_b_num1[2] = tx_dfpld_b_num1[2] + 1
+            tx_dfpld_j_num1[2] = tx_dfpld_j_num1[2] + float(tx_dfpld[0][i][1])
+        if float(tx_dfpld[0][i][2]) > 48 and float(tx_dfpld[0][i][2]) <= 72:
+            tx_dfpld_b_num1[3] = tx_dfpld_b_num1[3] + 1
+            tx_dfpld_j_num1[3] = tx_dfpld_j_num1[3] + float(tx_dfpld[0][i][1])
+        if float(tx_dfpld[0][i][2]) > 72 and float(tx_dfpld[0][i][2]) <= 120:
+            tx_dfpld_b_num1[4] = tx_dfpld_b_num1[4] + 1
+            tx_dfpld_j_num1[4] = tx_dfpld_j_num1[4] + float(tx_dfpld[0][i][1])
+        if float(tx_dfpld[0][i][2]) > 120 and float(tx_dfpld[0][i][2]) <= 240:
+            tx_dfpld_b_num1[5] = tx_dfpld_b_num1[5] + 1
+            tx_dfpld_j_num1[5] = tx_dfpld_j_num1[5] + float(tx_dfpld[0][i][1])
+        if float(tx_dfpld[0][i][2]) > 240 and float(tx_dfpld[0][i][2]) <= 360:
+            tx_dfpld_b_num1[6] = tx_dfpld_b_num1[6] + 1
+            tx_dfpld_j_num1[6] = tx_dfpld_j_num1[6] + float(tx_dfpld[0][i][1])
+        if float(tx_dfpld[0][i][2]) > 360:
+            tx_dfpld_b_num1[7] = tx_dfpld_b_num1[7] + 1
+            tx_dfpld_j_num1[7] = tx_dfpld_j_num1[7] + float(tx_dfpld[0][i][1])
+    for i in range(len(tx_dpk[0])):
+        if float(tx_dpk[0][i][2]) > 0 and float(tx_dpk[0][i][2]) <= 12:
+            tx_dpk_b_num1[0] = tx_dpk_b_num1[0] + 1
+            tx_dpk_j_num1[0] = tx_dpk_j_num1[0] + float(tx_dpk[0][i][1])
+        if float(tx_dpk[0][i][2]) > 12 and float(tx_dpk[0][i][2]) <= 24:
+            tx_dpk_b_num1[1] = tx_dpk_b_num1[1] + 1
+            tx_dpk_j_num1[1] = tx_dpk_j_num1[1] + float(tx_dpk[0][i][1])
+        if float(tx_dpk[0][i][2]) > 24 and float(tx_dpk[0][i][2]) <= 48:
+            tx_dpk_b_num1[2] = tx_dpk_b_num1[2] + 1
+            tx_dpk_j_num1[2] = tx_dpk_j_num1[2] + float(tx_dpk[0][i][1])
+        if float(tx_dpk[0][i][2]) > 48 and float(tx_dpk[0][i][2]) <= 72:
+            tx_dpk_b_num1[3] = tx_dpk_b_num1[3] + 1
+            tx_dpk_j_num1[3] = tx_dpk_j_num1[3] + float(tx_dpk[0][i][1])
+        if float(tx_dpk[0][i][2]) > 72 and float(tx_dpk[0][i][2]) <= 120:
+            tx_dpk_b_num1[4] = tx_dpk_b_num1[4] + 1
+            tx_dpk_j_num1[4] = tx_dpk_j_num1[4] + float(tx_dpk[0][i][1])
+        if float(tx_dpk[0][i][2]) > 120 and float(tx_dpk[0][i][2]) <= 240:
+            tx_dpk_b_num1[5] = tx_dpk_b_num1[5] + 1
+            tx_dpk_j_num1[5] = tx_dpk_j_num1[5] + float(tx_dpk[0][i][1])
+        if float(tx_dpk[0][i][2]) > 240 and float(tx_dpk[0][i][2]) <= 360:
+            tx_dpk_b_num1[6] = tx_dpk_b_num1[6] + 1
+            tx_dpk_j_num1[6] = tx_dpk_j_num1[6] + float(tx_dpk[0][i][1])
+        if float(tx_dpk[0][i][2]) > 360:
+            tx_dpk_b_num1[7] = tx_dpk_b_num1[7] + 1
+            tx_dpk_j_num1[7] = tx_dpk_j_num1[7] + float(tx_dpk[0][i][1])
+
+    for i in range(len(tx_dld[0])):
+        if float(tx_dld[0][i][2]) > 0 and float(tx_dld[0][i][2]) <= 12:
+            tx_dld_b_num1[0] = tx_dld_b_num1[0] + 1
+            tx_dld_j_num1[0] = tx_dld_j_num1[0] + float(tx_dld[0][i][1])
+        if float(tx_dld[0][i][2]) > 12 and float(tx_dld[0][i][2]) <= 24:
+            tx_dld_b_num1[1] = tx_dld_b_num1[1] + 1
+            tx_dld_j_num1[1] = tx_dld_j_num1[1] + float(tx_dld[0][i][1])
+        if float(tx_dld[0][i][2]) > 24 and float(tx_dld[0][i][2]) <= 48:
+            tx_dld_b_num1[2] = tx_dld_b_num1[2] + 1
+            tx_dld_j_num1[2] = tx_dld_j_num1[2] + float(tx_dld[0][i][1])
+        if float(tx_dld[0][i][2]) > 48 and float(tx_dld[0][i][2]) <= 72:
+            tx_dld_b_num1[3] = tx_dld_b_num1[3] + 1
+            tx_dld_j_num1[3] = tx_dld_j_num1[3] + float(tx_dld[0][i][1])
+        if float(tx_dld[0][i][2]) > 72 and float(tx_dld[0][i][2]) <= 120:
+            tx_dld_b_num1[4] = tx_dld_b_num1[4] + 1
+            tx_dld_j_num1[4] = tx_dld_j_num1[4] + float(tx_dld[0][i][1])
+        if float(tx_dld[0][i][2]) > 120 and float(tx_dld[0][i][2]) <= 240:
+            tx_dld_b_num1[5] = tx_dld_b_num1[5] + 1
+            tx_dld_j_num1[5] = tx_dld_j_num1[5] + float(tx_dld[0][i][1])
+        if float(tx_dld[0][i][2]) > 240 and float(tx_dld[0][i][2]) <= 360:
+            tx_dld_b_num1[6] = tx_dld_b_num1[6] + 1
+            tx_dld_j_num1[6] = tx_dld_j_num1[6] + float(tx_dld[0][i][1])
+        if float(tx_dld[0][i][2]) > 360:
+            tx_dld_b_num1[7] = tx_dld_b_num1[7] + 1
+            tx_dld_j_num1[7] = tx_dld_j_num1[7] + float(tx_dld[0][i][1])
+
+    for i in range(len(tx_djh[0])):
+        if float(tx_djh[0][i][2]) > 0 and float(tx_djh[0][i][2]) <= 12:
+            tx_djh_b_num1[0] = tx_djh_b_num1[0] + 1
+            tx_djh_j_num1[0] = tx_djh_j_num1[0] + float(tx_djh[0][i][1])
+        if float(tx_djh[0][i][2]) > 12 and float(tx_djh[0][i][2]) <= 24:
+            tx_djh_b_num1[1] = tx_djh_b_num1[1] + 1
+            tx_djh_j_num1[1] = tx_djh_j_num1[1] + float(tx_djh[0][i][1])
+        if float(tx_djh[0][i][2]) > 24 and float(tx_djh[0][i][2]) <= 48:
+            tx_djh_b_num1[2] = tx_djh_b_num1[2] + 1
+            tx_djh_j_num1[2] = tx_djh_j_num1[2] + float(tx_djh[0][i][1])
+        if float(tx_djh[0][i][2]) > 48 and float(tx_djh[0][i][2]) <= 72:
+            tx_djh_b_num1[3] = tx_djh_b_num1[3] + 1
+            tx_djh_j_num1[3] = tx_djh_j_num1[3] + float(tx_djh[0][i][1])
+        if float(tx_djh[0][i][2]) > 72 and float(tx_djh[0][i][2]) <= 120:
+            tx_djh_b_num1[4] = tx_djh_b_num1[4] + 1
+            tx_djh_j_num1[4] = tx_djh_j_num1[4] + float(tx_djh[0][i][1])
+        if float(tx_djh[0][i][2]) > 120 and float(tx_djh[0][i][2]) <= 240:
+            tx_djh_b_num1[5] = tx_djh_b_num1[5] + 1
+            tx_djh_j_num1[5] = tx_djh_j_num1[5] + float(tx_djh[0][i][1])
+        if float(tx_djh[0][i][2]) > 240 and float(tx_djh[0][i][2]) <= 360:
+            tx_djh_b_num1[6] = tx_djh_b_num1[6] + 1
+            tx_djh_j_num1[6] = tx_djh_j_num1[6] + float(tx_djh[0][i][1])
+        if float(tx_djh[0][i][2]) > 360:
+            tx_djh_b_num1[7] = tx_djh_b_num1[7] + 1
+            tx_djh_j_num1[7] = tx_djh_j_num1[7] + float(tx_djh[0][i][1])
+
+    for i in range(len(tx_ddb[0])):
+        if float(tx_ddb[0][i][2]) > 0 and float(tx_ddb[0][i][2]) <= 12:
+            tx_ddb_b_num1[0] = tx_ddb_b_num1[0] + 1
+            tx_ddb_j_num1[0] = tx_ddb_j_num1[0] + float(tx_ddb[0][i][1])
+        if float(tx_ddb[0][i][2]) > 12 and float(tx_ddb[0][i][2]) <= 24:
+            tx_ddb_b_num1[1] = tx_ddb_b_num1[1] + 1
+            tx_ddb_j_num1[1] = tx_ddb_j_num1[1] + float(tx_ddb[0][i][1])
+        if float(tx_ddb[0][i][2]) > 24 and float(tx_ddb[0][i][2]) <= 48:
+            tx_ddb_b_num1[2] = tx_ddb_b_num1[2] + 1
+            tx_ddb_j_num1[2] = tx_ddb_j_num1[2] + float(tx_ddb[0][i][1])
+        if float(tx_ddb[0][i][2]) > 48 and float(tx_ddb[0][i][2]) <= 72:
+            tx_ddb_b_num1[3] = tx_ddb_b_num1[3] + 1
+            tx_ddb_j_num1[3] = tx_ddb_j_num1[3] + float(tx_ddb[0][i][1])
+        if float(tx_ddb[0][i][2]) > 72 and float(tx_ddb[0][i][2]) <= 120:
+            tx_ddb_b_num1[4] = tx_ddb_b_num1[4] + 1
+            tx_ddb_j_num1[4] = tx_ddb_j_num1[4] + float(tx_ddb[0][i][1])
+        if float(tx_ddb[0][i][2]) > 120 and float(tx_ddb[0][i][2]) <= 240:
+            tx_ddb_b_num1[5] = tx_ddb_b_num1[5] + 1
+            tx_ddb_j_num1[5] = tx_ddb_j_num1[5] + float(tx_ddb[0][i][1])
+        if float(tx_ddb[0][i][2]) > 240 and float(tx_ddb[0][i][2]) <= 360:
+            tx_ddb_b_num1[6] = tx_ddb_b_num1[6] + 1
+            tx_ddb_j_num1[6] = tx_ddb_j_num1[6] + float(tx_ddb[0][i][1])
+        if float(tx_ddb[0][i][2]) > 360:
+            tx_ddb_b_num1[7] = tx_ddb_b_num1[7] + 1
+            tx_ddb_j_num1[7] = tx_ddb_j_num1[7] + float(tx_ddb[0][i][1])
+
+    for i in range(len(tx_dck[0])):
+        if float(tx_dck[0][i][2]) > 0 and float(tx_dck[0][i][2]) <= 12:
+            tx_dck_b_num1[0] = tx_dck_b_num1[0] + 1
+            tx_dck_j_num1[0] = tx_dck_j_num1[0] + float(tx_dck[0][i][1])
+        if float(tx_dck[0][i][2]) > 12 and float(tx_dck[0][i][2]) <= 24:
+            tx_dck_b_num1[1] = tx_dck_b_num1[1] + 1
+            tx_dck_j_num1[1] = tx_dck_j_num1[1] + float(tx_dck[0][i][1])
+        if float(tx_dck[0][i][2]) > 24 and float(tx_dck[0][i][2]) <= 48:
+            tx_dck_b_num1[2] = tx_dck_b_num1[2] + 1
+            tx_dck_j_num1[2] = tx_dck_j_num1[2] + float(tx_dck[0][i][1])
+        if float(tx_dck[0][i][2]) > 48 and float(tx_dck[0][i][2]) <= 72:
+            tx_dck_b_num1[3] = tx_dck_b_num1[3] + 1
+            tx_dck_j_num1[3] = tx_dck_j_num1[3] + float(tx_dck[0][i][1])
+        if float(tx_dck[0][i][2]) > 72 and float(tx_dck[0][i][2]) <= 120:
+            tx_dck_b_num1[4] = tx_dck_b_num1[4] + 1
+            tx_dck_j_num1[4] = tx_dck_j_num1[4] + float(tx_dck[0][i][1])
+        if float(tx_dck[0][i][2]) > 120 and float(tx_dck[0][i][2]) <= 240:
+            tx_dck_b_num1[5] = tx_dck_b_num1[5] + 1
+            tx_dck_j_num1[5] = tx_dck_j_num1[5] + float(tx_dck[0][i][1])
+        if float(tx_dck[0][i][2]) > 240 and float(tx_dck[0][i][2]) <= 360:
+            tx_dck_b_num1[6] = tx_dck_b_num1[6] + 1
+            tx_dck_j_num1[6] = tx_dck_j_num1[6] + float(tx_dck[0][i][1])
+        if float(tx_dck[0][i][2]) > 360:
+            tx_dck_b_num1[7] = tx_dck_b_num1[7] + 1
+            tx_dck_j_num1[7] = tx_dck_j_num1[7] + float(tx_dck[0][i][1])
+
+    hm_b_fba_num_12 = np.r_[
+        hm_dpk_b_num1[0], hm_dfpld_b_num1[0], hm_dld_b_num1[0], hm_djh_b_num1[0], hm_ddb_b_num1[0], hm_dck_b_num1[0],
+        hm_djy_b_num1[0]]
+
+    hm_b_fba_num_24 = np.r_[
+        hm_dpk_b_num1[1], hm_dfpld_b_num1[1], hm_dld_b_num1[1], hm_djh_b_num1[1], hm_ddb_b_num1[1], hm_dck_b_num1[1],
+        hm_djy_b_num1[1]]
+    hm_b_fba_num_48 = np.r_[
+        hm_dpk_b_num1[2], hm_dfpld_b_num1[2], hm_dld_b_num1[2], hm_djh_b_num1[2], hm_ddb_b_num1[2], hm_dck_b_num1[2],
+        hm_djy_b_num1[2]]
+    hm_b_fba_num_72 = np.r_[
+        hm_dpk_b_num1[3], hm_dfpld_b_num1[3], hm_dld_b_num1[3], hm_djh_b_num1[3], hm_ddb_b_num1[3], hm_dck_b_num1[3],
+        hm_djy_b_num1[3]]
+    hm_b_fba_num_120 = np.r_[
+        hm_dpk_b_num1[4], hm_dfpld_b_num1[4], hm_dld_b_num1[4], hm_djh_b_num1[4], hm_ddb_b_num1[4], hm_dck_b_num1[4],
+        hm_djy_b_num1[4]]
+    hm_b_fba_num_240 = np.r_[
+        hm_dpk_b_num1[5], hm_dfpld_b_num1[5], hm_dld_b_num1[5], hm_djh_b_num1[5], hm_ddb_b_num1[5], hm_dck_b_num1[5],
+        hm_djy_b_num1[5]]
+    hm_b_fba_num_360 = np.r_[
+        hm_dpk_b_num1[6], hm_dfpld_b_num1[6], hm_dld_b_num1[6], hm_djh_b_num1[6], hm_ddb_b_num1[6], hm_dck_b_num1[6],
+        hm_djy_b_num1[6]]
+    hm_b_fba_num_361 = np.r_[
+        hm_dpk_b_num1[7], hm_dfpld_b_num1[7], hm_dld_b_num1[7], hm_djh_b_num1[7], hm_ddb_b_num1[7], hm_dck_b_num1[7],
+        hm_djy_b_num1[7]]
+    hm_j_fba_num_12 = np.r_[
+        hm_dpk_j_num1[0], hm_dfpld_j_num1[0], hm_dld_j_num1[0], hm_djh_j_num1[0], hm_ddb_j_num1[0], hm_dck_j_num1[0],
+        hm_djy_j_num1[0]]
+
+    hm_j_fba_num_24 = np.r_[
+        hm_dpk_j_num1[1], hm_dfpld_j_num1[1], hm_dld_j_num1[1], hm_djh_j_num1[1], hm_ddb_j_num1[1], hm_dck_j_num1[1],
+        hm_djy_j_num1[1]]
+    hm_j_fba_num_48 = np.r_[
+        hm_dpk_j_num1[2], hm_dfpld_j_num1[2], hm_dld_j_num1[2], hm_djh_j_num1[2], hm_ddb_j_num1[2], hm_dck_j_num1[2],
+        hm_djy_j_num1[2]]
+    hm_j_fba_num_72 = np.r_[
+        hm_dpk_j_num1[3], hm_dfpld_j_num1[3], hm_dld_j_num1[3], hm_djh_j_num1[3], hm_ddb_j_num1[3], hm_dck_j_num1[3],
+        hm_djy_j_num1[3]]
+    hm_j_fba_num_120 = np.r_[
+        hm_dpk_j_num1[4], hm_dfpld_j_num1[4], hm_dld_j_num1[4], hm_djh_j_num1[4], hm_ddb_j_num1[4], hm_dck_j_num1[4],
+        hm_djy_j_num1[4]]
+    hm_j_fba_num_240 = np.r_[
+        hm_dpk_j_num1[5], hm_dfpld_j_num1[5], hm_dld_j_num1[5], hm_djh_j_num1[5], hm_ddb_j_num1[5], hm_dck_j_num1[5],
+        hm_djy_j_num1[5]]
+    hm_j_fba_num_360 = np.r_[
+        hm_dpk_j_num1[6], hm_dfpld_j_num1[6], hm_dld_j_num1[6], hm_djh_j_num1[6], hm_ddb_j_num1[6], hm_dck_j_num1[6],
+        hm_djy_j_num1[6]]
+    hm_j_fba_num_361 = np.r_[
+        hm_dpk_j_num1[7], hm_dfpld_j_num1[7], hm_dld_j_num1[7], hm_djh_j_num1[7], hm_ddb_j_num1[7], hm_dck_j_num1[7],
+        hm_djy_j_num1[7]]
+
+    tx_b_fba_num_12 = np.r_[
+        tx_dpk_b_num1[0], tx_dfpld_b_num1[0], tx_dld_b_num1[0], tx_djh_b_num1[0], tx_ddb_b_num1[0], tx_dck_b_num1[0],
+        tx_djy_b_num1[0]]
+
+    tx_b_fba_num_24 = np.r_[
+        tx_dpk_b_num1[1], tx_dfpld_b_num1[1], tx_dld_b_num1[1], tx_djh_b_num1[1], tx_ddb_b_num1[1], tx_dck_b_num1[1],
+        tx_djy_b_num1[1]]
+    tx_b_fba_num_48 = np.r_[
+        tx_dpk_b_num1[2], tx_dfpld_b_num1[2], tx_dld_b_num1[2], tx_djh_b_num1[2], tx_ddb_b_num1[2], tx_dck_b_num1[2],
+        tx_djy_b_num1[2]]
+    tx_b_fba_num_72 = np.r_[
+        tx_dpk_b_num1[3], tx_dfpld_b_num1[3], tx_dld_b_num1[3], tx_djh_b_num1[3], tx_ddb_b_num1[3], tx_dck_b_num1[3],
+        tx_djy_b_num1[3]]
+    tx_b_fba_num_120 = np.r_[
+        tx_dpk_b_num1[4], tx_dfpld_b_num1[4], tx_dld_b_num1[4], tx_djh_b_num1[4], tx_ddb_b_num1[4], tx_dck_b_num1[4],
+        tx_djy_b_num1[4]]
+    tx_b_fba_num_240 = np.r_[
+        tx_dpk_b_num1[5], tx_dfpld_b_num1[5], tx_dld_b_num1[5], tx_djh_b_num1[5], tx_ddb_b_num1[5], tx_dck_b_num1[5],
+        tx_djy_b_num1[5]]
+    tx_b_fba_num_360 = np.r_[
+        tx_dpk_b_num1[6], tx_dfpld_b_num1[6], tx_dld_b_num1[6], tx_djh_b_num1[6], tx_ddb_b_num1[6], tx_dck_b_num1[6],
+        tx_djy_b_num1[6]]
+    tx_b_fba_num_361 = np.r_[
+        tx_dpk_b_num1[7], tx_dfpld_b_num1[7], tx_dld_b_num1[7], tx_djh_b_num1[7], tx_ddb_b_num1[7], tx_dck_b_num1[7],
+        tx_djy_b_num1[7]]
+    tx_j_fba_num_12 = np.r_[
+        tx_dpk_j_num1[0], tx_dfpld_j_num1[0], tx_dld_j_num1[0], tx_djh_j_num1[0], tx_ddb_j_num1[0], tx_dck_j_num1[0],
+        tx_djy_j_num1[0]]
+
+    tx_j_fba_num_24 = np.r_[
+        tx_dpk_j_num1[1], tx_dfpld_j_num1[1], tx_dld_j_num1[1], tx_djh_j_num1[1], tx_ddb_j_num1[1], tx_dck_j_num1[1],
+        tx_djy_j_num1[1]]
+    tx_j_fba_num_48 = np.r_[
+        tx_dpk_j_num1[2], tx_dfpld_j_num1[2], tx_dld_j_num1[2], tx_djh_j_num1[2], tx_ddb_j_num1[2], tx_dck_j_num1[2],
+        tx_djy_j_num1[2]]
+    tx_j_fba_num_72 = np.r_[
+        tx_dpk_j_num1[3], tx_dfpld_j_num1[3], tx_dld_j_num1[3], tx_djh_j_num1[3], tx_ddb_j_num1[3], tx_dck_j_num1[3],
+        tx_djy_j_num1[3]]
+    tx_j_fba_num_120 = np.r_[
+        tx_dpk_j_num1[4], tx_dfpld_j_num1[4], tx_dld_j_num1[4], tx_djh_j_num1[4], tx_ddb_j_num1[4], tx_dck_j_num1[4],
+        tx_djy_j_num1[4]]
+    tx_j_fba_num_240 = np.r_[
+        tx_dpk_j_num1[5], tx_dfpld_j_num1[5], tx_dld_j_num1[5], tx_djh_j_num1[5], tx_ddb_j_num1[5], tx_dck_j_num1[5],
+        tx_djy_j_num1[5]]
+    tx_j_fba_num_360 = np.r_[
+        tx_dpk_j_num1[6], tx_dfpld_j_num1[6], tx_dld_j_num1[6], tx_djh_j_num1[6], tx_ddb_j_num1[6], tx_dck_j_num1[6],
+        tx_djy_j_num1[6]]
+    tx_j_fba_num_361 = np.r_[
+        tx_dpk_j_num1[7], tx_dfpld_j_num1[7], tx_dld_j_num1[7], tx_djh_j_num1[7], tx_ddb_j_num1[7], tx_dck_j_num1[7],
+        tx_djy_j_num1[7]]
+
+    arrayA = np.divide(hm_b_fba_num_12, max(hm_b_fba_num_12), out=np.zeros_like(hm_b_fba_num_12, dtype=np.float64),
+                       where=max(hm_b_fba_num_12) != 0)
+    for i in range(len(hm_b_fba_num_12)):
+        hm_b_12.append("%.2f%%" % (arrayA[i] * 100))
+    if hm_b_fba_num_12[0] == 'nan%':
+        a = 0
+        for i in range(len(hm_b_fba_num_12)):
+            hm_b_fba_num_12[i] = '{:.2%}'.format(a)
+
+    arrayA = np.divide(hm_j_fba_num_12, max(hm_j_fba_num_12), out=np.zeros_like(hm_j_fba_num_12, dtype=np.float64),
+                       where=max(hm_j_fba_num_12) != 0)
+    for i in range(len(hm_j_fba_num_12)):
+        hm_j_12.append("%.2f%%" % (arrayA[i] * 100))
+    if hm_j_fba_num_12[0] == 'nan%':
+        a = 0
+        for i in range(len(hm_j_fba_num_12)):
+            hm_j_fba_num_12[i] = '{:.2%}'.format(a)
+    print(hm_j_12)
+    arrayA = np.divide(hm_b_fba_num_24, max(hm_b_fba_num_24), out=np.zeros_like(hm_b_fba_num_24, dtype=np.float64),
+                       where=max(hm_b_fba_num_24) != 0)
+    for i in range(len(hm_b_fba_num_24)):
+        hm_b_24.append("%.2f%%" % (arrayA[i] * 100))
+    if hm_b_fba_num_24[0] == 'nan%':
+        a = 0
+        for i in range(len(hm_b_fba_num_24)):
+            hm_b_fba_num_24[i] = '{:.2%}'.format(a)
+    arrayA = np.divide(hm_j_fba_num_24, max(hm_j_fba_num_24), out=np.zeros_like(hm_j_fba_num_24, dtype=np.float64),
+                       where=max(hm_j_fba_num_24) != 0)
+    for i in range(len(hm_j_fba_num_24)):
+        hm_j_24.append("%.2f%%" % (arrayA[i] * 100))
+    if hm_j_fba_num_24[0] == 'nan%':
+        a = 0
+        for i in range(len(hm_j_fba_num_24)):
+            hm_j_fba_num_24[i] = '{:.2%}'.format(a)
+    arrayA = np.divide(hm_b_fba_num_48, max(hm_b_fba_num_48), out=np.zeros_like(hm_b_fba_num_48, dtype=np.float64),
+                       where=max(hm_b_fba_num_48) != 0)
+    for i in range(len(hm_b_fba_num_48)):
+        hm_b_48.append("%.2f%%" % (arrayA[i] * 100))
+    if hm_b_fba_num_48[0] == 'nan%':
+        a = 0
+        for i in range(len(hm_b_fba_num_48)):
+            hm_b_fba_num_48[i] = '{:.2%}'.format(a)
+    arrayA = np.divide(hm_j_fba_num_48, max(hm_j_fba_num_48), out=np.zeros_like(hm_j_fba_num_48, dtype=np.float64),
+                       where=max(hm_j_fba_num_48) != 0)
+    for i in range(len(hm_j_fba_num_48)):
+        hm_j_48.append("%.2f%%" % (arrayA[i] * 100))
+    if hm_j_fba_num_48[0] == 'nan%':
+        a = 0
+        for i in range(len(hm_j_fba_num_48)):
+            hm_j_fba_num_48[i] = '{:.2%}'.format(a)
+    arrayA = np.divide(hm_b_fba_num_72, max(hm_b_fba_num_72), out=np.zeros_like(hm_b_fba_num_72, dtype=np.float64),
+                       where=max(hm_b_fba_num_72) != 0)
+    for i in range(len(hm_b_fba_num_72)):
+        hm_b_72.append("%.2f%%" % (arrayA[i] * 100))
+    if hm_b_fba_num_72[0] == 'nan%':
+        a = 0
+        for i in range(len(hm_b_fba_num_72)):
+            hm_b_fba_num_72[i] = '{:.2%}'.format(a)
+    arrayA = np.divide(hm_j_fba_num_72, max(hm_j_fba_num_72), out=np.zeros_like(hm_j_fba_num_72, dtype=np.float64),
+                       where=max(hm_j_fba_num_72) != 0)
+    for i in range(len(hm_j_fba_num_72)):
+        hm_j_72.append("%.2f%%" % (arrayA[i] * 100))
+    if hm_j_fba_num_72[0] == 'nan%':
+        a = 0
+        for i in range(len(hm_j_fba_num_72)):
+            hm_j_fba_num_72[i] = '{:.2%}'.format(a)
+    arrayA = np.divide(hm_b_fba_num_120, max(hm_b_fba_num_120), out=np.zeros_like(hm_b_fba_num_120, dtype=np.float64),
+                       where=max(hm_b_fba_num_120) != 0)
+    for i in range(len(hm_b_fba_num_120)):
+        hm_b_120.append("%.2f%%" % (arrayA[i] * 100))
+    if hm_b_fba_num_120[0] == 'nan%':
+        a = 0
+        for i in range(len(hm_b_fba_num_120)):
+            hm_b_fba_num_120[i] = '{:.2%}'.format(a)
+    arrayA = np.divide(hm_j_fba_num_120, max(hm_j_fba_num_120), out=np.zeros_like(hm_j_fba_num_120, dtype=np.float64),
+                       where=max(hm_j_fba_num_120) != 0)
+    for i in range(len(hm_j_fba_num_120)):
+        hm_j_120.append("%.2f%%" % (arrayA[i] * 100))
+    if hm_j_fba_num_120[0] == 'nan%':
+        a = 0
+        for i in range(len(hm_j_fba_num_120)):
+            hm_j_fba_num_120[i] = '{:.2%}'.format(a)
+    arrayA = np.divide(hm_b_fba_num_240, max(hm_b_fba_num_240), out=np.zeros_like(hm_b_fba_num_240, dtype=np.float64),
+                       where=max(hm_b_fba_num_240) != 0)
+    for i in range(len(hm_b_fba_num_240)):
+        hm_b_240.append("%.2f%%" % (arrayA[i] * 100))
+    if hm_b_fba_num_240[0] == 'nan%':
+        a = 0
+        for i in range(len(hm_b_fba_num_240)):
+            hm_b_fba_num_240[i] = '{:.2%}'.format(a)
+    arrayA = np.divide(hm_j_fba_num_240, max(hm_j_fba_num_240), out=np.zeros_like(hm_j_fba_num_240, dtype=np.float64),
+                       where=max(hm_j_fba_num_240) != 0)
+    for i in range(len(hm_j_fba_num_240)):
+        hm_j_240.append("%.2f%%" % (arrayA[i] * 100))
+    if hm_j_fba_num_240[0] == 'nan%':
+        a = 0
+        for i in range(len(hm_j_fba_num_240)):
+            hm_j_fba_num_240[i] = '{:.2%}'.format(a)  # print(hm_j_240)
+    arrayA = np.divide(hm_b_fba_num_360, max(hm_b_fba_num_360), out=np.zeros_like(hm_b_fba_num_360, dtype=np.float64),
+                       where=max(hm_b_fba_num_360) != 0)
+    for i in range(len(hm_b_fba_num_360)):
+        hm_b_360.append("%.2f%%" % (arrayA[i] * 100))
+    if hm_b_fba_num_360[0] == 'nan%':
+        a = 0
+        for i in range(len(hm_b_fba_num_360)):
+            hm_b_fba_num_360[i] = '{:.2%}'.format(a)
+    arrayA = np.divide(hm_j_fba_num_360, max(hm_j_fba_num_360), out=np.zeros_like(hm_j_fba_num_360, dtype=np.float64),
+                       where=max(hm_j_fba_num_360) != 0)
+    for i in range(len(hm_j_fba_num_360)):
+        hm_j_360.append("%.2f%%" % (arrayA[i] * 100))
+    if hm_j_fba_num_360[0] == 'nan%':
+        a = 0
+        for i in range(len(hm_j_fba_num_360)):
+            hm_j_fba_num_360[i] = '{:.2%}'.format(a)
+
+    arrayA = np.divide(hm_b_fba_num_361, max(hm_b_fba_num_361), out=np.zeros_like(hm_b_fba_num_361, dtype=np.float64),
+                       where=max(hm_b_fba_num_361) != 0)
+    for i in range(len(hm_b_fba_num_361)):
+        hm_b_361.append("%.2f%%" % (arrayA[i] * 100))
+    if hm_b_fba_num_361[0] == 'nan%':
+        a = 0
+        for i in range(len(hm_b_fba_num_361)):
+            hm_b_fba_num_361[i] = '{:.2%}'.format(a)
+    # print(hm_b_361)
+    arrayA = np.divide(hm_j_fba_num_361, max(hm_j_fba_num_361), out=np.zeros_like(hm_j_fba_num_361, dtype=np.float64),
+                       where=max(hm_j_fba_num_361) != 0)
+    for i in range(len(hm_j_fba_num_361)):
+        hm_j_361.append("%.2f%%" % (arrayA[i] * 100))
+    if hm_j_fba_num_361[0] == 'nan%':
+        a = 0
+        for i in range(len(hm_j_fba_num_361)):
+            hm_j_fba_num_361[i] = '{:.2%}'.format(a)
+    # print(hm_j_361)
+    arrayA = np.divide(tx_b_fba_num_12, max(tx_b_fba_num_12), out=np.zeros_like(tx_b_fba_num_12, dtype=np.float64),
+                       where=max(tx_b_fba_num_12) != 0)
+    for i in range(len(tx_b_fba_num_12)):
+        tx_b_12.append("%.2f%%" % (arrayA[i] * 100))
+    if tx_b_fba_num_12[0] == 'nan%':
+        a = 0
+        for i in range(len(tx_b_fba_num_12)):
+            tx_b_fba_num_12[i] = '{:.2%}'.format(a)
+    # print(tx_b_12)
+    arrayA = np.divide(tx_j_fba_num_12, max(tx_j_fba_num_12), out=np.zeros_like(tx_j_fba_num_12, dtype=np.float64),
+                       where=max(tx_j_fba_num_12) != 0)
+    for i in range(len(tx_j_fba_num_12)):
+        tx_j_12.append("%.2f%%" % (arrayA[i] * 100))
+    if tx_j_fba_num_12[0] == 'nan%':
+        a = 0
+        for i in range(len(tx_j_fba_num_12)):
+            tx_j_fba_num_12[i] = '{:.2%}'.format(a)
+    # print(tx_j_12)
+    arrayA = np.divide(tx_b_fba_num_24, max(tx_b_fba_num_24), out=np.zeros_like(tx_b_fba_num_24, dtype=np.float64),
+                       where=max(tx_b_fba_num_24) != 0)
+    for i in range(len(tx_b_fba_num_24)):
+        tx_b_24.append("%.2f%%" % (arrayA[i] * 100))
+    if tx_b_fba_num_24[0] == 'nan%':
+        a = 0
+        for i in range(len(tx_b_fba_num_24)):
+            tx_b_fba_num_24[i] = '{:.2%}'.format(a)
+    # print(tx_b_24)
+    arrayA = np.divide(tx_j_fba_num_24, max(tx_j_fba_num_24), out=np.zeros_like(tx_j_fba_num_24, dtype=np.float64),
+                       where=max(tx_j_fba_num_24) != 0)
+    for i in range(len(tx_j_fba_num_24)):
+        tx_j_24.append("%.2f%%" % (arrayA[i] * 100))
+    if tx_j_fba_num_24[0] == 'nan%':
+        a = 0
+        for i in range(len(tx_j_fba_num_24)):
+            tx_j_fba_num_24[i] = '{:.2%}'.format(a)
+    # print(tx_j_24)
+    arrayA = np.divide(tx_b_fba_num_48, max(tx_b_fba_num_48), out=np.zeros_like(tx_b_fba_num_48, dtype=np.float64),
+                       where=max(tx_b_fba_num_48) != 0)
+    for i in range(len(tx_b_fba_num_48)):
+        tx_b_48.append("%.2f%%" % (arrayA[i] * 100))
+    if tx_b_fba_num_48[0] == 'nan%':
+        a = 0
+        for i in range(len(tx_b_fba_num_48)):
+            tx_b_fba_num_48[i] = '{:.2%}'.format(a)
+    # print(tx_b_48)
+    arrayA = np.divide(tx_j_fba_num_48, max(tx_j_fba_num_48), out=np.zeros_like(tx_j_fba_num_48, dtype=np.float64),
+                       where=max(tx_j_fba_num_48) != 0)
+    for i in range(len(tx_j_fba_num_48)):
+        tx_j_48.append("%.2f%%" % (arrayA[i] * 100))
+    if tx_j_fba_num_48[0] == 'nan%':
+        a = 0
+        for i in range(len(tx_j_fba_num_48)):
+            tx_j_fba_num_48[i] = '{:.2%}'.format(a)
+    # print(tx_j_48)
+    arrayA = np.divide(tx_b_fba_num_72, max(tx_b_fba_num_72), out=np.zeros_like(tx_b_fba_num_72, dtype=np.float64),
+                       where=max(tx_b_fba_num_72) != 0)
+    for i in range(len(tx_b_fba_num_72)):
+        tx_b_72.append("%.2f%%" % (arrayA[i] * 100))
+    if tx_b_fba_num_72[0] == 'nan%':
+        a = 0
+        for i in range(len(tx_b_fba_num_72)):
+            tx_b_fba_num_72[i] = '{:.2%}'.format(a)
+    # print(tx_b_72)
+    arrayA = np.divide(tx_j_fba_num_72, max(tx_j_fba_num_72), out=np.zeros_like(tx_j_fba_num_72, dtype=np.float64),
+                       where=max(tx_j_fba_num_72) != 0)
+    for i in range(len(tx_j_fba_num_72)):
+        tx_j_72.append("%.2f%%" % (arrayA[i] * 100))
+    if tx_j_fba_num_72[0] == 'nan%':
+        a = 0
+        for i in range(len(tx_j_fba_num_72)):
+            tx_j_fba_num_72[i] = '{:.2%}'.format(a)
+    # print(tx_j_72)
+    arrayA = np.divide(tx_b_fba_num_120, max(tx_b_fba_num_120), out=np.zeros_like(tx_b_fba_num_120, dtype=np.float64),
+                       where=max(tx_b_fba_num_120) != 0)
+    for i in range(len(tx_b_fba_num_120)):
+        tx_b_120.append("%.2f%%" % (arrayA[i] * 100))
+    if tx_b_fba_num_120[0] == 'nan%':
+        a = 0
+        for i in range(len(tx_b_fba_num_120)):
+            tx_b_fba_num_120[i] = '{:.2%}'.format(a)
+    # print(tx_b_120)
+    arrayA = np.divide(tx_j_fba_num_120, max(tx_j_fba_num_120), out=np.zeros_like(tx_j_fba_num_120, dtype=np.float64),
+                       where=max(tx_j_fba_num_120) != 0)
+    for i in range(len(tx_j_fba_num_120)):
+        tx_j_120.append("%.2f%%" % (arrayA[i] * 100))
+    if tx_j_fba_num_120[0] == 'nan%':
+        a = 0
+        for i in range(len(tx_j_fba_num_120)):
+            tx_j_fba_num_120[i] = '{:.2%}'.format(a)
+    # print(tx_j_120)
+    arrayA = np.divide(tx_b_fba_num_240, max(tx_b_fba_num_240), out=np.zeros_like(tx_b_fba_num_240, dtype=np.float64),
+                       where=max(tx_b_fba_num_240) != 0)
+    for i in range(len(tx_b_fba_num_240)):
+        tx_b_240.append("%.2f%%" % (arrayA[i] * 100))
+    if tx_b_fba_num_240[0] == 'nan%':
+        a = 0
+        for i in range(len(tx_b_fba_num_240)):
+            tx_b_fba_num_240[i] = '{:.2%}'.format(a)
+    # print(tx_b_240)
+    arrayA = np.divide(tx_j_fba_num_240, max(tx_j_fba_num_240), out=np.zeros_like(tx_j_fba_num_240, dtype=np.float64),
+                       where=max(tx_j_fba_num_240) != 0)
+    for i in range(len(tx_j_fba_num_240)):
+        tx_j_240.append("%.2f%%" % (arrayA[i] * 100))
+    if tx_j_fba_num_240[0] == 'nan%':
+        a = 0
+        for i in range(len(tx_j_fba_num_240)):
+            tx_j_fba_num_240[i] = '{:.2%}'.format(a)
+    # print(tx_j_240)
+    arrayA = np.divide(tx_b_fba_num_360, max(tx_b_fba_num_360), out=np.zeros_like(tx_b_fba_num_360, dtype=np.float64),
+                       where=max(tx_b_fba_num_360) != 0)
+    for i in range(len(tx_b_fba_num_360)):
+        tx_b_360.append("%.2f%%" % (arrayA[i] * 100))
+    if tx_b_fba_num_360[0] == 'nan%':
+        a = 0
+        for i in range(len(tx_b_fba_num_360)):
+            tx_b_fba_num_360[i] = '{:.2%}'.format(a)
+    # print(tx_b_360)
+    arrayA = np.divide(tx_j_fba_num_360, max(tx_j_fba_num_360), out=np.zeros_like(tx_j_fba_num_360, dtype=np.float64),
+                       where=max(tx_j_fba_num_360) != 0)
+    for i in range(len(tx_j_fba_num_360)):
+        tx_j_360.append("%.2f%%" % (arrayA[i] * 100))
+    if tx_j_fba_num_360[0] == 'nan%':
+        a = 0
+        for i in range(len(tx_j_fba_num_360)):
+            tx_j_fba_num_360[i] = '{:.2%}'.format(a)
+    # print(tx_j_360)    cur.execute(sql)
+    arrayA = np.divide(tx_b_fba_num_361, max(tx_b_fba_num_361), out=np.zeros_like(tx_b_fba_num_361, dtype=np.float64),
+                       where=max(tx_b_fba_num_361) != 0)
+    for i in range(len(tx_b_fba_num_361)):
+        tx_b_361.append("%.2f%%" % (arrayA[i] * 100))
+    if tx_b_fba_num_361[0] == 'nan%':
+        a = 0
+        for i in range(len(tx_b_fba_num_361)):
+            tx_b_fba_num_361[i] = '{:.2%}'.format(a)
+    # print(tx_b_361)
+    arrayA = np.divide(tx_j_fba_num_361, max(tx_j_fba_num_361), out=np.zeros_like(tx_j_fba_num_361, dtype=np.float64),
+                       where=max(tx_j_fba_num_361) != 0)
+    for i in range(len(tx_j_fba_num_361)):
+        tx_j_361.append("%.2f%%" % (arrayA[i] * 100))
+    if tx_j_fba_num_361[0] == 'nan%':
+        a = 0
+        for i in range(len(tx_j_fba_num_361)):
+            tx_j_fba_num_361[i] = '{:.2%}'.format(a)
+    # print(tx_j_361)
+
+    cur.execute(sql)
+    see = cur.fetchall()
+
+    warehouse = []
+    type = []
+    num = []
+    time = []
+    storage = []
+    jsonData = {}
+    for data in see:
+        warehouse.append(data[0])
+        type.append(data[5])
+        num.append(data[4])
+        time.append(data[6])
+        storage.append(data[2])
+    hm_type = []
+    hm_num = []
+    hm_time = []
+    hm_storage = []
+    tx_type = []
+    tx_num = []
+    tx_time = []
+    tx_storage = []
+    for i in range(len(warehouse)):
+        if warehouse[i] == 'HM_AA':
+            hm_type.append(type[i])
+            hm_num.append(num[i])
+            hm_time.append(time[i])
+            hm_storage.append(storage[i])
+    for i in range(len(warehouse)):
+        if warehouse[i] == 'SZ_AA':
+            tx_type.append(type[i])
+            tx_num.append(num[i])
+            tx_time.append(time[i])
+            tx_storage.append(storage[i])
+
+    hm_data = np.dstack((hm_type, hm_num, hm_time, hm_storage))
+    tx_data = np.dstack((tx_type, tx_num, tx_time, tx_storage))
+
+    hm_drk_b_num = []
+    hm_drk_j_num = []
+    hm_drk_time = []
+
+    hm_dtm_b_num = []
+    hm_dtm_j_num = []
+    hm_dtm_time = []
+
+    hm_dgnzj_b_num = []
+    hm_dgnzj_j_num = []
+    hm_dgnzj_time = []
+
+    hm_dsj_b_num = []
+    hm_dsj_j_num = []
+    hm_dsj_time = []
+
+    hm_sjz_b_num = []
+    hm_sjz_j_num = []
+    hm_sjz_time = []
+
+    tx_drk_b_num = []
+    tx_drk_j_num = []
+    tx_drk_time = []
+
+    tx_dtm_b_num = []
+    tx_dtm_j_num = []
+    tx_dtm_time = []
+
+    tx_dgnzj_b_num = []
+    tx_dgnzj_j_num = []
+    tx_dgnzj_time = []
+
+    tx_dsj_b_num = []
+    tx_dsj_j_num = []
+    tx_dsj_time = []
+
+    tx_sjz_b_num = []
+    tx_sjz_j_num = []
+    tx_sjz_time = []
+
+    hm_data_shelf = np.vstack((hm_storage, hm_time, hm_type)).T
+    hm_data_shelf = hm_data_shelf[np.argsort(-hm_data_shelf[:, 1])]
+    tx_data_shelf = np.vstack((tx_storage, tx_time, tx_type)).T
+    tx_data_shelf = tx_data_shelf[np.argsort(-tx_data_shelf[:, 1])]
+
+    hm_drk_shelf = []
+    hm_drk_shelf_time = []
+    hm_dtm_shelf = []
+    hm_dtm_shelf_time = []
+    hm_dgnzj_shelf = []
+    hm_dgnzj_shelf_time = []
+    hm_dsj_shelf = []
+    hm_dsj_shelf_time = []
+    hm_sjz_shelf = []
+    hm_sjz_shelf_time = []
+
+    tx_drk_shelf = []
+    tx_drk_shelf_time = []
+    tx_dtm_shelf = []
+    tx_dtm_shelf_time = []
+    tx_dgnzj_shelf = []
+    tx_dgnzj_shelf_time = []
+    tx_dsj_shelf = []
+    tx_dsj_shelf_time = []
+    tx_sjz_shelf = []
+    tx_sjz_shelf_time = []
+    for i in range(len(hm_data_shelf)):
+        if (hm_data_shelf[i][2] == 'DRK'):
+            hm_drk_shelf.append(hm_data_shelf[i][0])
+            hm_drk_shelf_time.append(hm_data_shelf[i][1])
+    hm_drk_all = np.dstack((hm_drk_shelf, hm_drk_shelf_time))
+
+    for i in range(len(hm_data_shelf)):
+        if (hm_data_shelf[i][2] == 'DTM'):
+            hm_dtm_shelf.append(hm_data_shelf[i][0])
+            hm_dtm_shelf_time.append(hm_data_shelf[i][1])
+    hm_dtm_all = np.dstack((hm_dtm_shelf, hm_dtm_shelf_time))
+
+    for i in range(len(hm_data_shelf)):
+        if (hm_data_shelf[i][2] == 'DGNZJ'):
+            hm_dgnzj_shelf.append(hm_data_shelf[i][0])
+            hm_dgnzj_shelf_time.append(hm_data_shelf[i][1])
+    hm_dgnzj_all = np.dstack((hm_dgnzj_shelf, hm_dgnzj_shelf_time))
+
+    for i in range(len(hm_data_shelf)):
+        if (hm_data_shelf[i][2] == 'DSJ'):
+            hm_dsj_shelf.append(hm_data_shelf[i][0])
+            hm_dsj_shelf_time.append(hm_data_shelf[i][1])
+    hm_dsj_all = np.dstack((hm_dsj_shelf, hm_dsj_shelf_time))
+
+    for i in range(len(hm_data_shelf)):
+        if (hm_data_shelf[i][2] == 'SJZ'):
+            hm_sjz_shelf.append(hm_data_shelf[i][0])
+            hm_sjz_shelf_time.append(hm_data_shelf[i][1])
+    hm_sjz_all = np.dstack((hm_sjz_shelf, hm_sjz_shelf_time))
+
+    for i in range(len(tx_data_shelf)):
+        if (tx_data_shelf[i][2] == 'DRK'):
+            tx_drk_shelf.append(tx_data_shelf[i][0])
+            tx_drk_shelf_time.append(tx_data_shelf[i][1])
+    tx_drk_all = np.dstack((tx_drk_shelf, tx_drk_shelf_time))
+
+    for i in range(len(tx_data_shelf)):
+        if (tx_data_shelf[i][2] == 'DTM'):
+            tx_dtm_shelf.append(tx_data_shelf[i][0])
+            tx_dtm_shelf_time.append(tx_data_shelf[i][1])
+    tx_dtm_all = np.dstack((tx_dtm_shelf, tx_dtm_shelf_time))
+
+    for i in range(len(tx_data_shelf)):
+        if (tx_data_shelf[i][2] == 'DGNZJ'):
+            tx_dgnzj_shelf.append(tx_data_shelf[i][0])
+            tx_dgnzj_shelf_time.append(tx_data_shelf[i][1])
+    tx_dgnzj_all = np.dstack((tx_dgnzj_shelf, tx_dgnzj_shelf_time))
+
+    for i in range(len(tx_data_shelf)):
+        if (tx_data_shelf[i][2] == 'DSJ'):
+            tx_dsj_shelf.append(tx_data_shelf[i][0])
+            tx_dsj_shelf_time.append(tx_data_shelf[i][1])
+    tx_dsj_all = np.dstack((tx_dsj_shelf, tx_dsj_shelf_time))
+
+    for i in range(len(tx_data_shelf)):
+        if (tx_data_shelf[i][2] == 'SJZ'):
+            tx_sjz_shelf.append(tx_data_shelf[i][0])
+            tx_sjz_shelf_time.append(tx_data_shelf[i][1])
+    tx_sjz_all = np.dstack((tx_sjz_shelf, tx_sjz_shelf_time))
+
+    ###数组去重
+    #########################################################
+    a1 = []
+    a2 = []
+    tx_drk_shelf = []
+    tx_drk_shelf_time = []
+    for i in range(len(tx_drk_all[0])):
+        if tx_drk_all[0][i][0] not in a2:
+            a1.append(tx_drk_all[0][i])
+        a2.append(tx_drk_all[0][i][0])
+    for i in range(len(a1)):
+        tx_drk_shelf.append(a1[i][0])
+        tx_drk_shelf_time.append(a1[i][1])
+    #########################################################
+    a1 = []
+    a2 = []
+    tx_dtm_shelf = []
+    tx_dtm_shelf_time = []
+    for i in range(len(tx_dtm_all[0])):
+        if tx_dtm_all[0][i][0] not in a2:
+            a1.append(tx_dtm_all[0][i])
+        a2.append(tx_dtm_all[0][i][0])
+    for i in range(len(a1)):
+        tx_dtm_shelf.append(a1[i][0])
+        tx_dtm_shelf_time.append(a1[i][1])
+    #########################################################
+    a1 = []
+    a2 = []
+    tx_dgnzj_shelf = []
+    tx_dgnzj_shelf_time = []
+    for i in range(len(tx_dgnzj_all[0])):
+        if tx_dgnzj_all[0][i][0] not in a2:
+            a1.append(tx_dgnzj_all[0][i])
+        a2.append(tx_dgnzj_all[0][i][0])
+    for i in range(len(a1)):
+        tx_dgnzj_shelf.append(a1[i][0])
+        tx_dgnzj_shelf_time.append(a1[i][1])
+    #########################################################
+    a1 = []
+    a2 = []
+    tx_dsj_shelf = []
+    tx_dsj_shelf_time = []
+    for i in range(len(tx_dsj_all[0])):
+        if tx_dsj_all[0][i][0] not in a2:
+            a1.append(tx_dsj_all[0][i])
+        a2.append(tx_dsj_all[0][i][0])
+    for i in range(len(a1)):
+        tx_dsj_shelf.append(a1[i][0])
+        tx_dsj_shelf_time.append(a1[i][1])
+    #########################################################
+    a1 = []
+    a2 = []
+    tx_sjz_shelf = []
+    tx_sjz_shelf_time = []
+    for i in range(len(tx_sjz_all[0])):
+        if tx_sjz_all[0][i][0] not in a2:
+            a1.append(tx_sjz_all[0][i])
+        a2.append(tx_sjz_all[0][i][0])
+    for i in range(len(a1)):
+        tx_sjz_shelf.append(a1[i][0])
+        tx_sjz_shelf_time.append(a1[i][1])
+
+    tx_drk_shelf_num = np.r_[tx_drk_shelf_time[0:10]]
+    tx_dtm_shelf_num = np.r_[tx_dtm_shelf_time[0:10]]
+    tx_dgnzj_shelf_num = np.r_[tx_dgnzj_shelf_time[0:10]]
+    tx_dsj_shelf_num = np.r_[tx_dsj_shelf_time[0:10]]
+    tx_sjz_shelf_num = np.r_[tx_sjz_shelf_time[0:10]]
+    tx_drk_shelf_num1 = []
+    tx_dtm_shelf_num1 = []
+    tx_dgnzj_shelf_num1 = []
+    tx_dsj_shelf_num1 = []
+    tx_sjz_shelf_num1 = []
+
+    for i in range(len(tx_drk_shelf_num)):
+        a = tx_drk_shelf_num[i] / max(tx_drk_shelf_num)
+        tx_drk_shelf_num1.append('{:.2%}'.format(a))
+
+    for i in range(len(tx_dtm_shelf_num)):
+        a = tx_dtm_shelf_num[i] / max(tx_dtm_shelf_num)
+        tx_dtm_shelf_num1.append('{:.2%}'.format(a))
+
+    for i in range(len(tx_dgnzj_shelf_num)):
+        a = tx_dgnzj_shelf_num[i] / max(tx_dgnzj_shelf_num)
+        tx_dgnzj_shelf_num1.append('{:.2%}'.format(a))
+
+    for i in range(len(tx_dsj_shelf_num)):
+        a = tx_dsj_shelf_num[i] / max(tx_dsj_shelf_num)
+        tx_dsj_shelf_num1.append('{:.2%}'.format(a))
+
+    for i in range(len(tx_sjz_shelf_num)):
+        a = tx_sjz_shelf_num[i] / max(tx_sjz_shelf_num)
+        tx_sjz_shelf_num1.append('{:.2%}'.format(a))
+
+    a1 = []
+    a2 = []
+    hm_drk_shelf = []
+    hm_drk_shelf_time = []
+    for i in range(len(hm_drk_all[0])):
+        if hm_drk_all[0][i][0] not in a2:
+            a1.append(hm_drk_all[0][i])
+        a2.append(hm_drk_all[0][i][0])
+    for i in range(len(a1)):
+        hm_drk_shelf.append(a1[i][0])
+        hm_drk_shelf_time.append(a1[i][1])
+    #########################################################
+    a1 = []
+    a2 = []
+    hm_dtm_shelf = []
+    hm_dtm_shelf_time = []
+    for i in range(len(hm_dtm_all[0])):
+        if hm_dtm_all[0][i][0] not in a2:
+            a1.append(hm_dtm_all[0][i])
+        a2.append(hm_dtm_all[0][i][0])
+    for i in range(len(a1)):
+        hm_dtm_shelf.append(a1[i][0])
+        hm_dtm_shelf_time.append(a1[i][1])
+    #########################################################
+    a1 = []
+    a2 = []
+    hm_dgnzj_shelf = []
+    hm_dgnzj_shelf_time = []
+    for i in range(len(hm_dgnzj_all[0])):
+        if hm_dgnzj_all[0][i][0] not in a2:
+            a1.append(hm_dgnzj_all[0][i])
+        a2.append(hm_dgnzj_all[0][i][0])
+    for i in range(len(a1)):
+        hm_dgnzj_shelf.append(a1[i][0])
+        hm_dgnzj_shelf_time.append(a1[i][1])
+    #########################################################
+    a1 = []
+    a2 = []
+    hm_dsj_shelf = []
+    hm_dsj_shelf_time = []
+    for i in range(len(hm_dsj_all[0])):
+        if hm_dsj_all[0][i][0] not in a2:
+            a1.append(hm_dsj_all[0][i])
+        a2.append(hm_dsj_all[0][i][0])
+    for i in range(len(a1)):
+        hm_dsj_shelf.append(a1[i][0])
+        hm_dsj_shelf_time.append(a1[i][1])
+    #########################################################
+    a1 = []
+    a2 = []
+    hm_sjz_shelf = []
+    hm_sjz_shelf_time = []
+    for i in range(len(hm_sjz_all[0])):
+        if hm_sjz_all[0][i][0] not in a2:
+            a1.append(hm_sjz_all[0][i])
+        a2.append(hm_sjz_all[0][i][0])
+    for i in range(len(a1)):
+        hm_sjz_shelf.append(a1[i][0])
+        hm_sjz_shelf_time.append(a1[i][1])
+
+    hm_drk_shelf_num = np.r_[hm_drk_shelf_time[0:10]]
+    hm_dtm_shelf_num = np.r_[hm_dtm_shelf_time[0:10]]
+    hm_dgnzj_shelf_num = np.r_[hm_dgnzj_shelf_time[0:10]]
+    hm_dsj_shelf_num = np.r_[hm_dsj_shelf_time[0:10]]
+    hm_sjz_shelf_num = np.r_[hm_sjz_shelf_time[0:10]]
+    hm_drk_shelf_num1 = []
+    hm_dtm_shelf_num1 = []
+    hm_dgnzj_shelf_num1 = []
+    hm_dsj_shelf_num1 = []
+    hm_sjz_shelf_num1 = []
+
+    for i in range(len(hm_drk_shelf_num)):
+        a = hm_drk_shelf_num[i] / max(hm_drk_shelf_num)
+        hm_drk_shelf_num1.append('{:.2%}'.format(a))
+
+    for i in range(len(hm_dtm_shelf_num)):
+        a = hm_dtm_shelf_num[i] / max(hm_dtm_shelf_num)
+        hm_dtm_shelf_num1.append('{:.2%}'.format(a))
+
+    for i in range(len(hm_dgnzj_shelf_num)):
+        a = hm_dgnzj_shelf_num[i] / max(hm_dgnzj_shelf_num)
+        hm_dgnzj_shelf_num1.append('{:.2%}'.format(a))
+
+    for i in range(len(hm_dsj_shelf_num)):
+        a = hm_dsj_shelf_num[i] / max(hm_dsj_shelf_num)
+        hm_dsj_shelf_num1.append('{:.2%}'.format(a))
+
+    for i in range(len(hm_sjz_shelf_num)):
+        a = hm_sjz_shelf_num[i] / max(hm_sjz_shelf_num)
+        hm_sjz_shelf_num1.append('{:.2%}'.format(a))
+
+    for i in range(len(hm_time)):
+        if (hm_data[0][i][0] == 'DRK'):
+            hm_drk_b_num.append(1)
+            hm_drk_j_num.append(hm_data[0][i][1])
+            hm_drk_time.append(hm_data[0][i][2])
+    for i in range(len(hm_time)):
+        if (hm_data[0][i][0] == 'DTM'):
+            hm_dtm_b_num.append(1)
+            hm_dtm_j_num.append(hm_data[0][i][1])
+            hm_dtm_time.append(hm_data[0][i][2])
+    for i in range(len(hm_time)):
+        if (hm_data[0][i][0] == 'DGNZJ'):
+            hm_dgnzj_b_num.append(1)
+            hm_dgnzj_j_num.append(hm_data[0][i][1])
+            hm_dgnzj_time.append(hm_data[0][i][2])
+    for i in range(len(hm_time)):
+        if (hm_data[0][i][0] == 'DSJ'):
+            hm_dsj_b_num.append(1)
+            hm_dsj_j_num.append(hm_data[0][i][1])
+            hm_dsj_time.append(hm_data[0][i][2])
+    for i in range(len(hm_time)):
+        if (hm_data[0][i][0] == 'SJZ'):
+            hm_sjz_b_num.append(1)
+            hm_sjz_j_num.append(hm_data[0][i][1])
+            hm_sjz_time.append(hm_data[0][i][2])
+
+    for i in range(len(tx_time)):
+        if (tx_data[0][i][0] == 'DRK'):
+            tx_drk_b_num.append(1)
+            tx_drk_j_num.append(tx_data[0][i][1])
+            tx_drk_time.append(tx_data[0][i][2])
+    for i in range(len(tx_time)):
+        if (tx_data[0][i][0] == 'DTM'):
+            tx_dtm_b_num.append(1)
+            tx_dtm_j_num.append(tx_data[0][i][1])
+            tx_dtm_time.append(tx_data[0][i][2])
+    for i in range(len(tx_time)):
+        if (tx_data[0][i][0] == 'DGNZJ'):
+            tx_dgnzj_b_num.append(1)
+            tx_dgnzj_j_num.append(tx_data[0][i][1])
+            tx_dgnzj_time.append(tx_data[0][i][2])
+    for i in range(len(tx_time)):
+        if (tx_data[0][i][0] == 'DSJ'):
+            tx_dsj_b_num.append(1)
+            tx_dsj_j_num.append(tx_data[0][i][1])
+            tx_dsj_time.append(tx_data[0][i][2])
+    for i in range(len(tx_time)):
+        if (tx_data[0][i][0] == 'SJZ'):
+            tx_sjz_b_num.append(1)
+            tx_sjz_j_num.append(tx_data[0][i][1])
+            tx_sjz_time.append(tx_data[0][i][2])
+
+    hm_drk = np.dstack((hm_drk_b_num, hm_drk_j_num, hm_drk_time))
+    hm_dtm = np.dstack((hm_dtm_b_num, hm_dtm_j_num, hm_dtm_time))
+    hm_dgnzj = np.dstack((hm_dgnzj_b_num, hm_dgnzj_j_num, hm_dgnzj_time))
+    hm_dsj = np.dstack((hm_dsj_b_num, hm_dsj_j_num, hm_dsj_time))
+    hm_sjz = np.dstack((hm_sjz_b_num, hm_sjz_j_num, hm_sjz_time))
+
+    tx_drk = np.dstack((tx_drk_b_num, tx_drk_j_num, tx_drk_time))
+    tx_dtm = np.dstack((tx_dtm_b_num, tx_dtm_j_num, tx_dtm_time))
+    tx_dgnzj = np.dstack((tx_dgnzj_b_num, tx_dgnzj_j_num, tx_dgnzj_time))
+    tx_dsj = np.dstack((tx_dsj_b_num, tx_dsj_j_num, tx_dsj_time))
+    tx_sjz = np.dstack((tx_sjz_b_num, tx_sjz_j_num, tx_sjz_time))
+
+    hm_drk_b_num1 = [0, 0, 0, 0, 0, 0, 0, 0]
+    hm_dtm_b_num1 = [0, 0, 0, 0, 0, 0, 0, 0]
+    hm_dgnzj_b_num1 = [0, 0, 0, 0, 0, 0, 0, 0]
+    hm_dsj_b_num1 = [0, 0, 0, 0, 0, 0, 0, 0]
+    hm_sjz_b_num1 = [0, 0, 0, 0, 0, 0, 0, 0]
+
+    tx_drk_b_num1 = [0, 0, 0, 0, 0, 0, 0, 0]
+    tx_dtm_b_num1 = [0, 0, 0, 0, 0, 0, 0, 0]
+    tx_dgnzj_b_num1 = [0, 0, 0, 0, 0, 0, 0, 0]
+    tx_dsj_b_num1 = [0, 0, 0, 0, 0, 0, 0, 0]
+    tx_sjz_b_num1 = [0, 0, 0, 0, 0, 0, 0, 0]
+
+    hm_drk_j_num1 = [0, 0, 0, 0, 0, 0, 0, 0]
+    hm_dtm_j_num1 = [0, 0, 0, 0, 0, 0, 0, 0]
+    hm_dgnzj_j_num1 = [0, 0, 0, 0, 0, 0, 0, 0]
+    hm_dsj_j_num1 = [0, 0, 0, 0, 0, 0, 0, 0]
+    hm_sjz_j_num1 = [0, 0, 0, 0, 0, 0, 0, 0]
+
+    tx_drk_j_num1 = [0, 0, 0, 0, 0, 0, 0, 0]
+    tx_dtm_j_num1 = [0, 0, 0, 0, 0, 0, 0, 0]
+    tx_dgnzj_j_num1 = [0, 0, 0, 0, 0, 0, 0, 0]
+    tx_dsj_j_num1 = [0, 0, 0, 0, 0, 0, 0, 0]
+    tx_sjz_j_num1 = [0, 0, 0, 0, 0, 0, 0, 0]
+
+    for i in range(len(hm_drk[0])):
+        if float(hm_drk[0][i][2]) > 0 and float(hm_drk[0][i][2]) <= 6:
+            hm_drk_b_num1[0] = hm_drk_b_num1[0] + 1
+            hm_drk_j_num1[0] = hm_drk_j_num1[0] + hm_drk[0][i][1]
+        if float(hm_drk[0][i][2]) > 6 and float(hm_drk[0][i][2]) <= 12:
+            hm_drk_b_num1[1] = hm_drk_b_num1[1] + 1
+            hm_drk_j_num1[1] = hm_drk_j_num1[1] + hm_drk[0][i][1]
+        if float(hm_drk[0][i][2]) > 12 and float(hm_drk[0][i][2]) <= 24:
+            hm_drk_b_num1[2] = hm_drk_b_num1[2] + 1
+            hm_drk_j_num1[2] = hm_drk_j_num1[2] + hm_drk[0][i][1]
+        if float(hm_drk[0][i][2]) > 24 and float(hm_drk[0][i][2]) <= 36:
+            hm_drk_b_num1[3] = hm_drk_b_num1[3] + 1
+            hm_drk_j_num1[3] = hm_drk_j_num1[3] + hm_drk[0][i][1]
+        if float(hm_drk[0][i][2]) > 36 and float(hm_drk[0][i][2]) <= 48:
+            hm_drk_b_num1[4] = hm_drk_b_num1[4] + 1
+            hm_drk_j_num1[4] = hm_drk_j_num1[4] + hm_drk[0][i][1]
+        if float(hm_drk[0][i][2]) > 48 and float(hm_drk[0][i][2]) <= 72:
+            hm_drk_b_num1[5] = hm_drk_b_num1[5] + 1
+            hm_drk_j_num1[5] = hm_drk_j_num1[5] + hm_drk[0][i][1]
+        if float(hm_drk[0][i][2]) > 72 and float(hm_drk[0][i][2]) <= 96:
+            hm_drk_b_num1[6] = hm_drk_b_num1[6] + 1
+            hm_drk_j_num1[6] = hm_drk_j_num1[6] + hm_drk[0][i][1]
+        if float(hm_drk[0][i][2]) > 96:
+            hm_drk_b_num1[7] = hm_drk_b_num1[7] + 1
+            hm_drk_j_num1[7] = hm_drk_j_num1[7] + hm_drk[0][i][1]
+
+    for i in range(len(hm_dtm[0])):
+        if float(hm_dtm[0][i][2]) > 0 and float(hm_dtm[0][i][2]) <= 6:
+            hm_dtm_b_num1[0] = hm_dtm_b_num1[0] + 1
+            hm_dtm_j_num1[0] = hm_dtm_j_num1[0] + hm_dtm[0][i][1]
+        if float(hm_dtm[0][i][2]) > 6 and float(hm_dtm[0][i][2]) <= 12:
+            hm_dtm_b_num1[1] = hm_dtm_b_num1[1] + 1
+            hm_dtm_j_num1[1] = hm_dtm_j_num1[1] + hm_dtm[0][i][1]
+        if float(hm_dtm[0][i][2]) > 12 and float(hm_dtm[0][i][2]) <= 24:
+            hm_dtm_b_num1[2] = hm_dtm_b_num1[2] + 1
+            hm_dtm_j_num1[2] = hm_dtm_j_num1[2] + hm_dtm[0][i][1]
+        if float(hm_dtm[0][i][2]) > 24 and float(hm_dtm[0][i][2]) <= 36:
+            hm_dtm_b_num1[3] = hm_dtm_b_num1[3] + 1
+            hm_dtm_j_num1[3] = hm_dtm_j_num1[3] + hm_dtm[0][i][1]
+        if float(hm_dtm[0][i][2]) > 36 and float(hm_dtm[0][i][2]) <= 48:
+            hm_dtm_b_num1[4] = hm_dtm_b_num1[4] + 1
+            hm_dtm_j_num1[4] = hm_dtm_j_num1[4] + hm_dtm[0][i][1]
+        if float(hm_dtm[0][i][2]) > 48 and float(hm_dtm[0][i][2]) <= 72:
+            hm_dtm_b_num1[5] = hm_dtm_b_num1[5] + 1
+            hm_dtm_j_num1[5] = hm_dtm_j_num1[5] + hm_dtm[0][i][1]
+        if float(hm_dtm[0][i][2]) > 72 and float(hm_dtm[0][i][2]) <= 96:
+            hm_dtm_b_num1[6] = hm_dtm_b_num1[6] + 1
+            hm_dtm_j_num1[6] = hm_dtm_j_num1[6] + hm_dtm[0][i][1]
+        if float(hm_dtm[0][i][2]) > 96:
+            hm_dtm_b_num1[7] = hm_dtm_b_num1[7] + 1
+            hm_dtm_j_num1[7] = hm_dtm_j_num1[7] + hm_dtm[0][i][1]
+
+    for i in range(len(hm_dgnzj[0])):
+        if float(hm_dgnzj[0][i][2]) > 0 and float(hm_dgnzj[0][i][2]) <= 6:
+            hm_dgnzj_b_num1[0] = hm_dgnzj_b_num1[0] + 1
+            hm_dgnzj_j_num1[0] = hm_dgnzj_j_num1[0] + hm_dgnzj[0][i][1]
+        if float(hm_dgnzj[0][i][2]) > 6 and float(hm_dgnzj[0][i][2]) <= 12:
+            hm_dgnzj_b_num1[1] = hm_dgnzj_b_num1[1] + 1
+            hm_dgnzj_j_num1[1] = hm_dgnzj_j_num1[1] + hm_dgnzj[0][i][1]
+        if float(hm_dgnzj[0][i][2]) > 12 and float(hm_dgnzj[0][i][2]) <= 24:
+            hm_dgnzj_b_num1[2] = hm_dgnzj_b_num1[2] + 1
+            hm_dgnzj_j_num1[2] = hm_dgnzj_j_num1[2] + hm_dgnzj[0][i][1]
+        if float(hm_dgnzj[0][i][2]) > 24 and float(hm_dgnzj[0][i][2]) <= 36:
+            hm_dgnzj_b_num1[3] = hm_dgnzj_b_num1[3] + 1
+            hm_dgnzj_j_num1[3] = hm_dgnzj_j_num1[3] + hm_dgnzj[0][i][1]
+        if float(hm_dgnzj[0][i][2]) > 36 and float(hm_dgnzj[0][i][2]) <= 48:
+            hm_dgnzj_b_num1[4] = hm_dgnzj_b_num1[4] + 1
+            hm_dgnzj_j_num1[4] = hm_dgnzj_j_num1[4] + hm_dgnzj[0][i][1]
+        if float(hm_dgnzj[0][i][2]) > 48 and float(hm_dgnzj[0][i][2]) <= 72:
+            hm_dgnzj_b_num1[5] = hm_dgnzj_b_num1[5] + 1
+            hm_dgnzj_j_num1[5] = hm_dgnzj_j_num1[5] + hm_dgnzj[0][i][1]
+        if float(hm_dgnzj[0][i][2]) > 72 and float(hm_dgnzj[0][i][2]) <= 96:
+            hm_dgnzj_b_num1[6] = hm_dgnzj_b_num1[6] + 1
+            hm_dgnzj_j_num1[6] = hm_dgnzj_j_num1[6] + hm_dgnzj[0][i][1]
+        if float(hm_dgnzj[0][i][2]) > 96:
+            hm_dgnzj_b_num1[7] = hm_dgnzj_b_num1[7] + 1
+            hm_dgnzj_j_num1[7] = hm_dgnzj_j_num1[7] + hm_dgnzj[0][i][1]
+
+    for i in range(len(hm_dsj[0])):
+        if float(hm_dsj[0][i][2]) > 0 and float(hm_dsj[0][i][2]) <= 6:
+            hm_dsj_b_num1[0] = hm_dsj_b_num1[0] + 1
+            hm_dsj_j_num1[0] = hm_dsj_j_num1[0] + hm_dsj[0][i][1]
+        if float(hm_dsj[0][i][2]) > 6 and float(hm_dsj[0][i][2]) <= 12:
+            hm_dsj_b_num1[1] = hm_dsj_b_num1[1] + 1
+            hm_dsj_j_num1[1] = hm_dsj_j_num1[1] + hm_dsj[0][i][1]
+        if float(hm_dsj[0][i][2]) > 12 and float(hm_dsj[0][i][2]) <= 24:
+            hm_dsj_b_num1[2] = hm_dsj_b_num1[2] + 1
+            hm_dsj_j_num1[2] = hm_dsj_j_num1[2] + hm_dsj[0][i][1]
+        if float(hm_dsj[0][i][2]) > 24 and float(hm_dsj[0][i][2]) <= 36:
+            hm_dsj_b_num1[3] = hm_dsj_b_num1[3] + 1
+            hm_dsj_j_num1[3] = hm_dsj_j_num1[3] + hm_dsj[0][i][1]
+        if float(hm_dsj[0][i][2]) > 36 and float(hm_dsj[0][i][2]) <= 48:
+            hm_dsj_b_num1[4] = hm_dsj_b_num1[4] + 1
+            hm_dsj_j_num1[4] = hm_dsj_j_num1[4] + hm_dsj[0][i][1]
+        if float(hm_dsj[0][i][2]) > 48 and float(hm_dsj[0][i][2]) <= 72:
+            hm_dsj_b_num1[5] = hm_dsj_b_num1[5] + 1
+            hm_dsj_j_num1[5] = hm_dsj_j_num1[5] + hm_dsj[0][i][1]
+        if float(hm_dsj[0][i][2]) > 72 and float(hm_dsj[0][i][2]) <= 96:
+            hm_dsj_b_num1[6] = hm_dsj_b_num1[6] + 1
+            hm_dsj_j_num1[6] = hm_dsj_j_num1[6] + hm_dsj[0][i][1]
+        if float(hm_dsj[0][i][2]) > 96:
+            hm_dsj_b_num1[7] = hm_dsj_b_num1[7] + 1
+            hm_dsj_j_num1[7] = hm_dsj_j_num1[7] + hm_dsj[0][i][1]
+
+    for i in range(len(hm_sjz[0])):
+        if float(hm_sjz[0][i][2]) > 0 and float(hm_sjz[0][i][2]) <= 6:
+            hm_sjz_b_num1[0] = hm_sjz_b_num1[0] + 1
+            hm_sjz_j_num1[0] = hm_sjz_j_num1[0] + hm_sjz[0][i][1]
+        if float(hm_sjz[0][i][2]) > 6 and float(hm_sjz[0][i][2]) <= 12:
+            hm_sjz_b_num1[1] = hm_sjz_b_num1[1] + 1
+            hm_sjz_j_num1[1] = hm_sjz_j_num1[1] + hm_sjz[0][i][1]
+        if float(hm_sjz[0][i][2]) > 12 and float(hm_sjz[0][i][2]) <= 24:
+            hm_sjz_b_num1[2] = hm_sjz_b_num1[2] + 1
+            hm_sjz_j_num1[2] = hm_sjz_j_num1[2] + hm_sjz[0][i][1]
+        if float(hm_sjz[0][i][2]) > 24 and float(hm_sjz[0][i][2]) <= 36:
+            hm_sjz_b_num1[3] = hm_sjz_b_num1[3] + 1
+            hm_sjz_j_num1[3] = hm_sjz_j_num1[3] + hm_sjz[0][i][1]
+        if float(hm_sjz[0][i][2]) > 36 and float(hm_sjz[0][i][2]) <= 48:
+            hm_sjz_b_num1[4] = hm_sjz_b_num1[4] + 1
+            hm_sjz_j_num1[4] = hm_sjz_j_num1[4] + hm_sjz[0][i][1]
+        if float(hm_sjz[0][i][2]) > 48 and float(hm_sjz[0][i][2]) <= 72:
+            hm_sjz_b_num1[5] = hm_sjz_b_num1[5] + 1
+            hm_sjz_j_num1[5] = hm_sjz_j_num1[5] + hm_sjz[0][i][1]
+        if float(hm_sjz[0][i][2]) > 72 and float(hm_sjz[0][i][2]) <= 96:
+            hm_sjz_b_num1[6] = hm_sjz_b_num1[6] + 1
+            hm_sjz_j_num1[6] = hm_sjz_j_num1[6] + hm_sjz[0][i][1]
+        if float(hm_sjz[0][i][2]) > 96:
+            hm_sjz_b_num1[7] = hm_sjz_b_num1[7] + 1
+            hm_sjz_j_num1[7] = hm_sjz_j_num1[7] + hm_sjz[0][i][1]
+
+    for i in range(len(tx_drk[0])):
+        if float(tx_drk[0][i][2]) > 0 and float(tx_drk[0][i][2]) <= 6:
+            tx_drk_b_num1[0] = tx_drk_b_num1[0] + 1
+            tx_drk_j_num1[0] = tx_drk_j_num1[0] + tx_drk[0][i][1]
+        if float(tx_drk[0][i][2]) > 6 and float(tx_drk[0][i][2]) <= 12:
+            tx_drk_b_num1[1] = tx_drk_b_num1[1] + 1
+            tx_drk_j_num1[1] = tx_drk_j_num1[1] + tx_drk[0][i][1]
+        if float(tx_drk[0][i][2]) > 12 and float(tx_drk[0][i][2]) <= 24:
+            tx_drk_b_num1[2] = tx_drk_b_num1[2] + 1
+            tx_drk_j_num1[2] = tx_drk_j_num1[2] + tx_drk[0][i][1]
+        if float(tx_drk[0][i][2]) > 24 and float(tx_drk[0][i][2]) <= 36:
+            tx_drk_b_num1[3] = tx_drk_b_num1[3] + 1
+            tx_drk_j_num1[3] = tx_drk_j_num1[3] + tx_drk[0][i][1]
+        if float(tx_drk[0][i][2]) > 36 and float(tx_drk[0][i][2]) <= 48:
+            tx_drk_b_num1[4] = tx_drk_b_num1[4] + 1
+            tx_drk_j_num1[4] = tx_drk_j_num1[4] + tx_drk[0][i][1]
+        if float(tx_drk[0][i][2]) > 48 and float(tx_drk[0][i][2]) <= 72:
+            tx_drk_b_num1[5] = tx_drk_b_num1[5] + 1
+            tx_drk_j_num1[5] = tx_drk_j_num1[5] + tx_drk[0][i][1]
+        if float(tx_drk[0][i][2]) > 72 and float(tx_drk[0][i][2]) <= 96:
+            tx_drk_b_num1[6] = tx_drk_b_num1[6] + 1
+            tx_drk_j_num1[6] = tx_drk_j_num1[6] + tx_drk[0][i][1]
+        if float(tx_drk[0][i][2]) > 96:
+            tx_drk_b_num1[7] = tx_drk_b_num1[7] + 1
+            tx_drk_j_num1[7] = tx_drk_j_num1[7] + tx_drk[0][i][1]
+
+    for i in range(len(tx_dtm[0])):
+        if float(tx_dtm[0][i][2]) > 0 and float(tx_dtm[0][i][2]) <= 6:
+            tx_dtm_b_num1[0] = tx_dtm_b_num1[0] + 1
+            tx_dtm_j_num1[0] = tx_dtm_j_num1[0] + tx_dtm[0][i][1]
+        if float(tx_dtm[0][i][2]) > 6 and float(tx_dtm[0][i][2]) <= 12:
+            tx_dtm_b_num1[1] = tx_dtm_b_num1[1] + 1
+            tx_dtm_j_num1[1] = tx_dtm_j_num1[1] + tx_dtm[0][i][1]
+        if float(tx_dtm[0][i][2]) > 12 and float(tx_dtm[0][i][2]) <= 24:
+            tx_dtm_b_num1[2] = tx_dtm_b_num1[2] + 1
+            tx_dtm_j_num1[2] = tx_dtm_j_num1[2] + tx_dtm[0][i][1]
+        if float(tx_dtm[0][i][2]) > 24 and float(tx_dtm[0][i][2]) <= 36:
+            tx_dtm_b_num1[3] = tx_dtm_b_num1[3] + 1
+            tx_dtm_j_num1[3] = tx_dtm_j_num1[3] + tx_dtm[0][i][1]
+        if float(tx_dtm[0][i][2]) > 36 and float(tx_dtm[0][i][2]) <= 48:
+            tx_dtm_b_num1[4] = tx_dtm_b_num1[4] + 1
+            tx_dtm_j_num1[4] = tx_dtm_j_num1[4] + tx_dtm[0][i][1]
+        if float(tx_dtm[0][i][2]) > 48 and float(tx_dtm[0][i][2]) <= 72:
+            tx_dtm_b_num1[5] = tx_dtm_b_num1[5] + 1
+            tx_dtm_j_num1[5] = tx_dtm_j_num1[5] + tx_dtm[0][i][1]
+        if float(tx_dtm[0][i][2]) > 72 and float(tx_dtm[0][i][2]) <= 96:
+            tx_dtm_b_num1[6] = tx_dtm_b_num1[6] + 1
+            tx_dtm_j_num1[6] = tx_dtm_j_num1[6] + tx_dtm[0][i][1]
+        if float(tx_dtm[0][i][2]) > 96:
+            tx_dtm_b_num1[7] = tx_dtm_b_num1[7] + 1
+            tx_dtm_j_num1[7] = tx_dtm_j_num1[7] + tx_dtm[0][i][1]
+
+    for i in range(len(tx_dgnzj[0])):
+        if float(tx_dgnzj[0][i][2]) > 0 and float(tx_dgnzj[0][i][2]) <= 6:
+            tx_dgnzj_b_num1[0] = tx_dgnzj_b_num1[0] + 1
+            tx_dgnzj_j_num1[0] = tx_dgnzj_j_num1[0] + tx_dgnzj[0][i][1]
+        if float(tx_dgnzj[0][i][2]) > 6 and float(tx_dgnzj[0][i][2]) <= 12:
+            tx_dgnzj_b_num1[1] = tx_dgnzj_b_num1[1] + 1
+            tx_dgnzj_j_num1[1] = tx_dgnzj_j_num1[1] + tx_dgnzj[0][i][1]
+        if float(tx_dgnzj[0][i][2]) > 12 and float(tx_dgnzj[0][i][2]) <= 24:
+            tx_dgnzj_b_num1[2] = tx_dgnzj_b_num1[2] + 1
+            tx_dgnzj_j_num1[2] = tx_dgnzj_j_num1[2] + tx_dgnzj[0][i][1]
+        if float(tx_dgnzj[0][i][2]) > 24 and float(tx_dgnzj[0][i][2]) <= 36:
+            tx_dgnzj_b_num1[3] = tx_dgnzj_b_num1[3] + 1
+            tx_dgnzj_j_num1[3] = tx_dgnzj_j_num1[3] + tx_dgnzj[0][i][1]
+        if float(tx_dgnzj[0][i][2]) > 36 and float(tx_dgnzj[0][i][2]) <= 48:
+            tx_dgnzj_b_num1[4] = tx_dgnzj_b_num1[4] + 1
+            tx_dgnzj_j_num1[4] = tx_dgnzj_j_num1[4] + tx_dgnzj[0][i][1]
+        if float(tx_dgnzj[0][i][2]) > 48 and float(tx_dgnzj[0][i][2]) <= 72:
+            tx_dgnzj_b_num1[5] = tx_dgnzj_b_num1[5] + 1
+            tx_dgnzj_j_num1[5] = tx_dgnzj_j_num1[5] + tx_dgnzj[0][i][1]
+        if float(tx_dgnzj[0][i][2]) > 72 and float(tx_dgnzj[0][i][2]) <= 96:
+            tx_dgnzj_b_num1[6] = tx_dgnzj_b_num1[6] + 1
+            tx_dgnzj_j_num1[6] = tx_dgnzj_j_num1[6] + tx_dgnzj[0][i][1]
+        if float(tx_dgnzj[0][i][2]) > 96:
+            tx_dgnzj_b_num1[7] = tx_dgnzj_b_num1[7] + 1
+            tx_dgnzj_j_num1[7] = tx_dgnzj_j_num1[7] + tx_dgnzj[0][i][1]
+
+    for i in range(len(tx_dsj[0])):
+        if float(tx_dsj[0][i][2]) > 0 and float(tx_dsj[0][i][2]) <= 6:
+            tx_dsj_b_num1[0] = tx_dsj_b_num1[0] + 1
+            tx_dsj_j_num1[0] = tx_dsj_j_num1[0] + tx_dsj[0][i][1]
+        if float(tx_dsj[0][i][2]) > 6 and float(tx_dsj[0][i][2]) <= 12:
+            tx_dsj_b_num1[1] = tx_dsj_b_num1[1] + 1
+            tx_dsj_j_num1[1] = tx_dsj_j_num1[1] + tx_dsj[0][i][1]
+        if float(tx_dsj[0][i][2]) > 12 and float(tx_dsj[0][i][2]) <= 24:
+            tx_dsj_b_num1[2] = tx_dsj_b_num1[2] + 1
+            tx_dsj_j_num1[2] = tx_dsj_j_num1[2] + tx_dsj[0][i][1]
+        if float(tx_dsj[0][i][2]) > 24 and float(tx_dsj[0][i][2]) <= 36:
+            tx_dsj_b_num1[3] = tx_dsj_b_num1[3] + 1
+            tx_dsj_j_num1[3] = tx_dsj_j_num1[3] + tx_dsj[0][i][1]
+        if float(tx_dsj[0][i][2]) > 36 and float(tx_dsj[0][i][2]) <= 48:
+            tx_dsj_b_num1[4] = tx_dsj_b_num1[4] + 1
+            tx_dsj_j_num1[4] = tx_dsj_j_num1[4] + tx_dsj[0][i][1]
+        if float(tx_dsj[0][i][2]) > 48 and float(tx_dsj[0][i][2]) <= 72:
+            tx_dsj_b_num1[5] = tx_dsj_b_num1[5] + 1
+            tx_dsj_j_num1[5] = tx_dsj_j_num1[5] + tx_dsj[0][i][1]
+        if float(tx_dsj[0][i][2]) > 72 and float(tx_dsj[0][i][2]) <= 96:
+            tx_dsj_b_num1[6] = tx_dsj_b_num1[6] + 1
+            tx_dsj_j_num1[6] = tx_dsj_j_num1[6] + tx_dsj[0][i][1]
+        if float(tx_dsj[0][i][2]) > 96:
+            tx_dsj_b_num1[7] = tx_dsj_b_num1[7] + 1
+            tx_dsj_j_num1[7] = tx_dsj_j_num1[7] + tx_dsj[0][i][1]
+
+    for i in range(len(tx_sjz[0])):
+        if float(tx_sjz[0][i][2]) > 0 and float(tx_sjz[0][i][2]) <= 6:
+            tx_sjz_b_num1[0] = tx_sjz_b_num1[0] + 1
+            tx_sjz_j_num1[0] = tx_sjz_j_num1[0] + tx_sjz[0][i][1]
+        if float(tx_sjz[0][i][2]) > 6 and float(tx_sjz[0][i][2]) <= 12:
+            tx_sjz_b_num1[1] = tx_sjz_b_num1[1] + 1
+            tx_sjz_j_num1[1] = tx_sjz_j_num1[1] + tx_sjz[0][i][1]
+        if float(tx_sjz[0][i][2]) > 12 and float(tx_sjz[0][i][2]) <= 24:
+            tx_sjz_b_num1[2] = tx_sjz_b_num1[2] + 1
+            tx_sjz_j_num1[2] = tx_sjz_j_num1[2] + tx_sjz[0][i][1]
+        if float(tx_sjz[0][i][2]) > 24 and float(tx_sjz[0][i][2]) <= 36:
+            tx_sjz_b_num1[3] = tx_sjz_b_num1[3] + 1
+            tx_sjz_j_num1[3] = tx_sjz_j_num1[3] + tx_sjz[0][i][1]
+        if float(tx_sjz[0][i][2]) > 36 and float(tx_sjz[0][i][2]) <= 48:
+            tx_sjz_b_num1[4] = tx_sjz_b_num1[4] + 1
+            tx_sjz_j_num1[4] = tx_sjz_j_num1[4] + tx_sjz[0][i][1]
+        if float(tx_sjz[0][i][2]) > 48 and float(tx_sjz[0][i][2]) <= 72:
+            tx_sjz_b_num1[5] = tx_sjz_b_num1[5] + 1
+            tx_sjz_j_num1[5] = tx_sjz_j_num1[5] + tx_sjz[0][i][1]
+        if float(tx_sjz[0][i][2]) > 72 and float(tx_sjz[0][i][2]) <= 96:
+            tx_sjz_b_num1[6] = tx_sjz_b_num1[6] + 1
+            tx_sjz_j_num1[6] = tx_sjz_j_num1[6] + tx_sjz[0][i][1]
+        if float(tx_sjz[0][i][2]) > 96:
+            tx_sjz_b_num1[7] = tx_sjz_b_num1[7] + 1
+            tx_sjz_j_num1[7] = tx_sjz_j_num1[7] + tx_sjz[0][i][1]
+
+    hm_b_num_6 = np.r_[
+        hm_drk_b_num1[0], hm_dtm_b_num1[0], hm_dgnzj_b_num1[0], hm_dsj_b_num1[0], hm_sjz_b_num1[0]]
+    hm_b_num_12 = np.r_[
+        hm_drk_b_num1[1], hm_dtm_b_num1[1], hm_dgnzj_b_num1[1], hm_dsj_b_num1[1], hm_sjz_b_num1[1]]
+    hm_b_num_24 = np.r_[
+        hm_drk_b_num1[2], hm_dtm_b_num1[2], hm_dgnzj_b_num1[2], hm_dsj_b_num1[2], hm_sjz_b_num1[2]]
+    hm_b_num_36 = np.r_[
+        hm_drk_b_num1[3], hm_dtm_b_num1[3], hm_dgnzj_b_num1[3], hm_dsj_b_num1[3], hm_sjz_b_num1[3]]
+    hm_b_num_48 = np.r_[
+        hm_drk_b_num1[4], hm_dtm_b_num1[4], hm_dgnzj_b_num1[4], hm_dsj_b_num1[4], hm_sjz_b_num1[4]]
+    hm_b_num_72 = np.r_[
+        hm_drk_b_num1[5], hm_dtm_b_num1[5], hm_dgnzj_b_num1[5], hm_dsj_b_num1[5], hm_sjz_b_num1[5]]
+    hm_b_num_96 = np.r_[
+        hm_drk_b_num1[6], hm_dtm_b_num1[6], hm_dgnzj_b_num1[6], hm_dsj_b_num1[6], hm_sjz_b_num1[6]]
+    hm_b_num_96_ = np.r_[
+        hm_drk_b_num1[7], hm_dtm_b_num1[7], hm_dgnzj_b_num1[7], hm_dsj_b_num1[7], hm_sjz_b_num1[7]]
+    hm_j_num_6 = np.r_[
+        hm_drk_j_num1[0], hm_dtm_j_num1[0], hm_dgnzj_j_num1[0], hm_dsj_j_num1[0], hm_sjz_j_num1[0]]
+    hm_j_num_12 = np.r_[
+        hm_drk_j_num1[1], hm_dtm_j_num1[1], hm_dgnzj_j_num1[1], hm_dsj_j_num1[1], hm_sjz_j_num1[1]]
+    hm_j_num_24 = np.r_[
+        hm_drk_j_num1[2], hm_dtm_j_num1[2], hm_dgnzj_j_num1[2], hm_dsj_j_num1[2], hm_sjz_j_num1[2]]
+    hm_j_num_36 = np.r_[
+        hm_drk_j_num1[3], hm_dtm_j_num1[3], hm_dgnzj_j_num1[3], hm_dsj_j_num1[3], hm_sjz_j_num1[3]]
+    hm_j_num_48 = np.r_[
+        hm_drk_j_num1[4], hm_dtm_j_num1[4], hm_dgnzj_j_num1[4], hm_dsj_j_num1[4], hm_sjz_j_num1[4]]
+    hm_j_num_72 = np.r_[
+        hm_drk_j_num1[5], hm_dtm_j_num1[5], hm_dgnzj_j_num1[5], hm_dsj_j_num1[5], hm_sjz_j_num1[5]]
+    hm_j_num_96 = np.r_[
+        hm_drk_j_num1[6], hm_dtm_j_num1[6], hm_dgnzj_j_num1[6], hm_dsj_j_num1[6], hm_sjz_j_num1[6]]
+    hm_j_num_96_ = np.r_[
+        hm_drk_j_num1[7], hm_dtm_j_num1[7], hm_dgnzj_j_num1[7], hm_dsj_j_num1[7], hm_sjz_j_num1[7]]
+    tx_b_num_6 = np.r_[
+        tx_drk_b_num1[0], tx_dtm_b_num1[0], tx_dgnzj_b_num1[0], tx_dsj_b_num1[0], tx_sjz_b_num1[0]]
+    tx_b_num_12 = np.r_[
+        tx_drk_b_num1[1], tx_dtm_b_num1[1], tx_dgnzj_b_num1[1], tx_dsj_b_num1[1], tx_sjz_b_num1[1]]
+    tx_b_num_24 = np.r_[
+        tx_drk_b_num1[2], tx_dtm_b_num1[2], tx_dgnzj_b_num1[2], tx_dsj_b_num1[2], tx_sjz_b_num1[2]]
+    tx_b_num_36 = np.r_[
+        tx_drk_b_num1[3], tx_dtm_b_num1[3], tx_dgnzj_b_num1[3], tx_dsj_b_num1[3], tx_sjz_b_num1[3]]
+    tx_b_num_48 = np.r_[
+        tx_drk_b_num1[4], tx_dtm_b_num1[4], tx_dgnzj_b_num1[4], tx_dsj_b_num1[4], tx_sjz_b_num1[4]]
+    tx_b_num_72 = np.r_[
+        tx_drk_b_num1[5], tx_dtm_b_num1[5], tx_dgnzj_b_num1[5], tx_dsj_b_num1[5], tx_sjz_b_num1[5]]
+    tx_b_num_96 = np.r_[
+        tx_drk_b_num1[6], tx_dtm_b_num1[6], tx_dgnzj_b_num1[6], tx_dsj_b_num1[6], tx_sjz_b_num1[6]]
+    tx_b_num_96_ = np.r_[
+        tx_drk_b_num1[7], tx_dtm_b_num1[7], tx_dgnzj_b_num1[7], tx_dsj_b_num1[7], tx_sjz_b_num1[7]]
+    tx_j_num_6 = np.r_[
+        tx_drk_j_num1[0], tx_dtm_j_num1[0], tx_dgnzj_j_num1[0], tx_dsj_j_num1[0], tx_sjz_j_num1[0]]
+    tx_j_num_12 = np.r_[
+        tx_drk_j_num1[1], tx_dtm_j_num1[1], tx_dgnzj_j_num1[1], tx_dsj_j_num1[1], tx_sjz_j_num1[1]]
+    tx_j_num_24 = np.r_[
+        tx_drk_j_num1[2], tx_dtm_j_num1[2], tx_dgnzj_j_num1[2], tx_dsj_j_num1[2], tx_sjz_j_num1[2]]
+    tx_j_num_36 = np.r_[
+        tx_drk_j_num1[3], tx_dtm_j_num1[3], tx_dgnzj_j_num1[3], tx_dsj_j_num1[3], tx_sjz_j_num1[3]]
+    tx_j_num_48 = np.r_[
+        tx_drk_j_num1[4], tx_dtm_j_num1[4], tx_dgnzj_j_num1[4], tx_dsj_j_num1[4], tx_sjz_j_num1[4]]
+    tx_j_num_72 = np.r_[
+        tx_drk_j_num1[5], tx_dtm_j_num1[5], tx_dgnzj_j_num1[5], tx_dsj_j_num1[5], tx_sjz_j_num1[5]]
+    tx_j_num_96 = np.r_[
+        tx_drk_j_num1[6], tx_dtm_j_num1[6], tx_dgnzj_j_num1[6], tx_dsj_j_num1[6], tx_sjz_j_num1[6]]
+    tx_j_num_96_ = np.r_[
+        tx_drk_j_num1[7], tx_dtm_j_num1[7], tx_dgnzj_j_num1[7], tx_dsj_j_num1[7], tx_sjz_j_num1[7]]
+
+    hm_b_p_6 = []
+    hm_b_p_12 = []
+    hm_b_p_24 = []
+    hm_b_p_36 = []
+    hm_b_p_48 = []
+    hm_b_p_72 = []
+    hm_b_p_96 = []
+    hm_b_p_96_ = []
+
+    hm_j_p_6 = []
+    hm_j_p_12 = []
+    hm_j_p_24 = []
+    hm_j_p_36 = []
+    hm_j_p_48 = []
+    hm_j_p_72 = []
+    hm_j_p_96 = []
+    hm_j_p_96_ = []
+
+    tx_b_p_6 = []
+    tx_b_p_12 = []
+    tx_b_p_24 = []
+    tx_b_p_36 = []
+    tx_b_p_48 = []
+    tx_b_p_72 = []
+    tx_b_p_96 = []
+    tx_b_p_96_ = []
+
+    tx_j_p_6 = []
+    tx_j_p_12 = []
+    tx_j_p_24 = []
+    tx_j_p_36 = []
+    tx_j_p_48 = []
+    tx_j_p_72 = []
+    tx_j_p_96 = []
+    tx_j_p_96_ = []
+
+    arrayA = np.divide(hm_b_num_6, max(hm_b_num_6), out=np.zeros_like(hm_b_num_6, dtype=np.float64), casting="unsafe",
+                       where=max(hm_b_num_6) != 0)
+    for i in range(len(hm_b_num_6)):
+        hm_b_p_6.append("%.2f%%" % (arrayA[i] * 100))
+    if hm_b_p_6[0] == 'nan%':
+        a = 0
+        for i in range(len(hm_b_p_6)):
+            hm_b_p_6[i] = '{:.2%}'.format(a)
+
+    arrayA = np.divide(hm_b_num_12, max(hm_b_num_12), out=np.zeros_like(hm_b_num_12, dtype=np.float64),
+                       casting="unsafe", where=max(hm_b_num_12) != 0)
+    for i in range(len(hm_b_num_12)):
+        hm_b_p_12.append("%.2f%%" % (arrayA[i] * 100))
+    if hm_b_p_12[0] == 'nan%':
+        a = 0
+        for i in range(len(hm_b_p_12)):
+            hm_b_p_12[i] = '{:.2%}'.format(a)
+
+    arrayA = np.divide(hm_b_num_24, max(hm_b_num_24), out=np.zeros_like(hm_b_num_24, dtype=np.float64),
+                       casting="unsafe", where=max(hm_b_num_24) != 0)
+    for i in range(len(hm_b_num_24)):
+        hm_b_p_24.append("%.2f%%" % (arrayA[i] * 100))
+    if hm_b_p_24[0] == 'nan%':
+        a = 0
+        for i in range(len(hm_b_p_24)):
+            hm_b_p_24[i] = '{:.2%}'.format(a)
+    arrayA = np.divide(hm_b_num_36, max(hm_b_num_36), out=np.zeros_like(hm_b_num_36, dtype=np.float64),
+                       casting="unsafe", where=max(hm_b_num_36) != 0)
+    for i in range(len(hm_b_num_36)):
+        hm_b_p_36.append("%.2f%%" % (arrayA[i] * 100))
+    if hm_b_p_36[0] == 'nan%':
+        a = 0
+        for i in range(len(hm_b_p_36)):
+            hm_b_p_36[i] = '{:.2%}'.format(a)
+    arrayA = np.divide(hm_b_num_48, max(hm_b_num_48), out=np.zeros_like(hm_b_num_48, dtype=np.float64),
+                       casting="unsafe", where=max(hm_b_num_48) != 0)
+    for i in range(len(hm_b_num_48)):
+        hm_b_p_48.append("%.2f%%" % (arrayA[i] * 100))
+    if hm_b_p_48[0] == 'nan%':
+        a = 0
+        for i in range(len(hm_b_p_48)):
+            hm_b_p_48[i] = '{:.2%}'.format(a)
+    arrayA = np.divide(hm_b_num_72, max(hm_b_num_72), out=np.zeros_like(hm_b_num_72, dtype=np.float64),
+                       casting="unsafe", where=max(hm_b_num_72) != 0)
+    for i in range(len(hm_b_num_72)):
+        hm_b_p_72.append("%.2f%%" % (arrayA[i] * 100))
+    if hm_b_p_72[0] == 'nan%':
+        a = 0
+        for i in range(len(hm_b_p_72)):
+            hm_b_p_72[i] = '{:.2%}'.format(a)
+    arrayA = np.divide(hm_b_num_96, max(hm_b_num_96), out=np.zeros_like(hm_b_num_96, dtype=np.float64),
+                       casting="unsafe", where=max(hm_b_num_96) != 0)
+    for i in range(len(hm_b_num_96)):
+        hm_b_p_96.append("%.2f%%" % (arrayA[i] * 100))
+    if hm_b_p_96[0] == 'nan%':
+        a = 0
+        for i in range(len(hm_b_p_96)):
+            hm_b_p_96[i] = '{:.2%}'.format(a)
+    arrayA = np.divide(hm_b_num_96_, max(hm_b_num_96_), out=np.zeros_like(hm_b_num_96_, dtype=np.float64),
+                       casting="unsafe", where=max(hm_b_num_96_) != 0)
+    for i in range(len(hm_b_num_96_)):
+        hm_b_p_96_.append("%.2f%%" % (arrayA[i] * 100))
+    if hm_b_p_96_[0] == 'nan%':
+        a = 0
+        for i in range(len(hm_b_p_96_)):
+            hm_b_p_96_[i] = '{:.2%}'.format(a)
+    arrayA = np.divide(hm_j_num_6, max(hm_j_num_6), out=np.zeros_like(hm_j_num_6, dtype=np.float64),
+                       casting="unsafe", where=max(hm_j_num_6) != 0)
+    for i in range(len(hm_j_num_6)):
+        hm_j_p_6.append("%.2f%%" % (arrayA[i] * 100))
+    if hm_j_p_6[0] == 'nan%':
+        a = 0
+        for i in range(len(hm_j_p_6)):
+            hm_j_p_6[i] = '{:.2%}'.format(a)
+
+    arrayA = np.divide(hm_j_num_12, max(hm_j_num_12), out=np.zeros_like(hm_j_num_12, dtype=np.float64),
+                       casting="unsafe", where=max(hm_j_num_12) != 0)
+    for i in range(len(hm_j_num_12)):
+        hm_j_p_12.append("%.2f%%" % (arrayA[i] * 100))
+    if hm_j_p_12[0] == 'nan%':
+        a = 0
+        for i in range(len(hm_j_p_12)):
+            hm_j_p_12[i] = '{:.2%}'.format(a)
+
+    arrayA = np.divide(hm_j_num_24, max(hm_j_num_24), out=np.zeros_like(hm_j_num_24, dtype=np.float64),
+                       casting="unsafe", where=max(hm_j_num_24) != 0)
+    for i in range(len(hm_j_num_24)):
+        hm_j_p_24.append("%.2f%%" % (arrayA[i] * 100))
+    if hm_j_p_24[0] == 'nan%':
+        a = 0
+        for i in range(len(hm_j_p_24)):
+            hm_j_p_24[i] = '{:.2%}'.format(a)
+    arrayA = np.divide(hm_j_num_36, max(hm_j_num_36), out=np.zeros_like(hm_j_num_36, dtype=np.float64),
+                       casting="unsafe", where=max(hm_j_num_36) != 0)
+    for i in range(len(hm_j_num_36)):
+        hm_j_p_36.append("%.2f%%" % (arrayA[i] * 100))
+    if hm_j_p_36[0] == 'nan%':
+        a = 0
+        for i in range(len(hm_j_p_36)):
+            hm_j_p_36[i] = '{:.2%}'.format(a)
+    arrayA = np.divide(hm_j_num_48, max(hm_j_num_48), out=np.zeros_like(hm_j_num_48, dtype=np.float64),
+                       casting="unsafe", where=max(hm_j_num_48) != 0)
+    for i in range(len(hm_j_num_48)):
+        hm_j_p_48.append("%.2f%%" % (arrayA[i] * 100))
+    if hm_j_p_48[0] == 'nan%':
+        a = 0
+        for i in range(len(hm_j_p_48)):
+            hm_j_p_48[i] = '{:.2%}'.format(a)
+    arrayA = np.divide(hm_j_num_72, max(hm_j_num_72), out=np.zeros_like(hm_j_num_72, dtype=np.float64),
+                       casting="unsafe", where=max(hm_j_num_72) != 0)
+    for i in range(len(hm_j_num_72)):
+        hm_j_p_72.append("%.2f%%" % (arrayA[i] * 100))
+    if hm_j_p_72[0] == 'nan%':
+        a = 0
+        for i in range(len(hm_j_p_72)):
+            hm_j_p_72[i] = '{:.2%}'.format(a)
+    arrayA = np.divide(hm_j_num_96, max(hm_j_num_96), out=np.zeros_like(hm_j_num_96, dtype=np.float64),
+                       casting="unsafe", where=max(hm_j_num_96) != 0)
+    for i in range(len(hm_j_num_96)):
+        hm_j_p_96.append("%.2f%%" % (arrayA[i] * 100))
+    if hm_j_p_96[0] == 'nan%':
+        a = 0
+        for i in range(len(hm_j_p_96)):
+            hm_j_p_96[i] = '{:.2%}'.format(a)
+    arrayA = np.divide(hm_j_num_96_, max(hm_j_num_96_), out=np.zeros_like(hm_j_num_96_, dtype=np.float64),
+                       casting="unsafe", where=max(hm_j_num_96_) != 0)
+    for i in range(len(hm_j_num_96_)):
+        hm_j_p_96_.append("%.2f%%" % (arrayA[i] * 100))
+    if hm_j_p_96_[0] == 'nan%':
+        a = 0
+        for i in range(len(hm_j_p_96_)):
+            hm_j_p_96_[i] = '{:.2%}'.format(a)
+
+    arrayA = np.divide(tx_b_num_6, max(tx_b_num_6), out=np.zeros_like(tx_b_num_6, dtype=np.float64), casting="unsafe",
+                       where=max(tx_b_num_6) != 0)
+    for i in range(len(tx_b_num_6)):
+        tx_b_p_6.append("%.2f%%" % (arrayA[i] * 100))
+    if tx_b_p_6[0] == 'nan%':
+        a = 0
+        for i in range(len(tx_b_p_6)):
+            tx_b_p_6[i] = '{:.2%}'.format(a)
+
+    arrayA = np.divide(tx_b_num_12, max(tx_b_num_12), out=np.zeros_like(tx_b_num_12, dtype=np.float64),
+                       casting="unsafe", where=max(tx_b_num_12) != 0)
+    for i in range(len(tx_b_num_12)):
+        tx_b_p_12.append("%.2f%%" % (arrayA[i] * 100))
+    if tx_b_p_12[0] == 'nan%':
+        a = 0
+        for i in range(len(tx_b_p_12)):
+            tx_b_p_12[i] = '{:.2%}'.format(a)
+
+    arrayA = np.divide(tx_b_num_24, max(tx_b_num_24), out=np.zeros_like(tx_b_num_24, dtype=np.float64),
+                       casting="unsafe", where=max(tx_b_num_24) != 0)
+    for i in range(len(tx_b_num_24)):
+        tx_b_p_24.append("%.2f%%" % (arrayA[i] * 100))
+    if tx_b_p_24[0] == 'nan%':
+        a = 0
+        for i in range(len(tx_b_p_24)):
+            tx_b_p_24[i] = '{:.2%}'.format(a)
+    arrayA = np.divide(tx_b_num_36, max(tx_b_num_36), out=np.zeros_like(tx_b_num_36, dtype=np.float64),
+                       casting="unsafe", where=max(tx_b_num_36) != 0)
+    for i in range(len(tx_b_num_36)):
+        tx_b_p_36.append("%.2f%%" % (arrayA[i] * 100))
+    if tx_b_p_36[0] == 'nan%':
+        a = 0
+        for i in range(len(tx_b_p_36)):
+            tx_b_p_36[i] = '{:.2%}'.format(a)
+    arrayA = np.divide(tx_b_num_48, max(tx_b_num_48), out=np.zeros_like(tx_b_num_48, dtype=np.float64),
+                       casting="unsafe", where=max(tx_b_num_48) != 0)
+    for i in range(len(tx_b_num_48)):
+        tx_b_p_48.append("%.2f%%" % (arrayA[i] * 100))
+    if tx_b_p_48[0] == 'nan%':
+        a = 0
+        for i in range(len(tx_b_p_48)):
+            tx_b_p_48[i] = '{:.2%}'.format(a)
+    arrayA = np.divide(tx_b_num_72, max(tx_b_num_72), out=np.zeros_like(tx_b_num_72, dtype=np.float64),
+                       casting="unsafe", where=max(tx_b_num_72) != 0)
+    for i in range(len(tx_b_num_72)):
+        tx_b_p_72.append("%.2f%%" % (arrayA[i] * 100))
+    if tx_b_p_72[0] == 'nan%':
+        a = 0
+        for i in range(len(tx_b_p_72)):
+            tx_b_p_72[i] = '{:.2%}'.format(a)
+    arrayA = np.divide(tx_b_num_96, max(tx_b_num_96), out=np.zeros_like(tx_b_num_96, dtype=np.float64),
+                       casting="unsafe", where=max(tx_b_num_96) != 0)
+    for i in range(len(tx_b_num_96)):
+        tx_b_p_96.append("%.2f%%" % (arrayA[i] * 100))
+    if tx_b_p_96[0] == 'nan%':
+        a = 0
+        for i in range(len(tx_b_p_96)):
+            tx_b_p_96[i] = '{:.2%}'.format(a)
+    arrayA = np.divide(tx_b_num_96_, max(tx_b_num_96_), out=np.zeros_like(tx_b_num_96_, dtype=np.float64),
+                       casting="unsafe", where=max(tx_b_num_96_) != 0)
+    for i in range(len(tx_b_num_96_)):
+        tx_b_p_96_.append("%.2f%%" % (arrayA[i] * 100))
+    if tx_b_p_96_[0] == 'nan%':
+        a = 0
+        for i in range(len(tx_b_p_96_)):
+            tx_b_p_96_[i] = '{:.2%}'.format(a)
+    arrayA = np.divide(tx_j_num_6, max(tx_j_num_6), out=np.zeros_like(tx_j_num_6, dtype=np.float64),
+                       casting="unsafe", where=max(tx_j_num_6) != 0)
+    for i in range(len(tx_j_num_6)):
+        tx_j_p_6.append("%.2f%%" % (arrayA[i] * 100))
+    if tx_j_p_6[0] == 'nan%':
+        a = 0
+        for i in range(len(tx_j_p_6)):
+            tx_j_p_6[i] = '{:.2%}'.format(a)
+
+    arrayA = np.divide(tx_j_num_12, max(tx_j_num_12), out=np.zeros_like(tx_j_num_12, dtype=np.float64),
+                       casting="unsafe", where=max(tx_j_num_12) != 0)
+    for i in range(len(tx_j_num_12)):
+        tx_j_p_12.append("%.2f%%" % (arrayA[i] * 100))
+    if tx_j_p_12[0] == 'nan%':
+        a = 0
+        for i in range(len(tx_j_p_12)):
+            tx_j_p_12[i] = '{:.2%}'.format(a)
+
+    arrayA = np.divide(tx_j_num_24, max(tx_j_num_24), out=np.zeros_like(tx_j_num_24, dtype=np.float64),
+                       casting="unsafe", where=max(tx_j_num_24) != 0)
+    for i in range(len(tx_j_num_24)):
+        tx_j_p_24.append("%.2f%%" % (arrayA[i] * 100))
+    if tx_j_p_24[0] == 'nan%':
+        a = 0
+        for i in range(len(tx_j_p_24)):
+            tx_j_p_24[i] = '{:.2%}'.format(a)
+    arrayA = np.divide(tx_j_num_36, max(tx_j_num_36), out=np.zeros_like(tx_j_num_36, dtype=np.float64),
+                       casting="unsafe", where=max(tx_j_num_36) != 0)
+    for i in range(len(tx_j_num_36)):
+        tx_j_p_36.append("%.2f%%" % (arrayA[i] * 100))
+    if tx_j_p_36[0] == 'nan%':
+        a = 0
+        for i in range(len(tx_j_p_36)):
+            tx_j_p_36[i] = '{:.2%}'.format(a)
+    arrayA = np.divide(tx_j_num_48, max(tx_j_num_48), out=np.zeros_like(tx_j_num_48, dtype=np.float64),
+                       casting="unsafe", where=max(tx_j_num_48) != 0)
+    for i in range(len(tx_j_num_48)):
+        tx_j_p_48.append("%.2f%%" % (arrayA[i] * 100))
+    if tx_j_p_48[0] == 'nan%':
+        a = 0
+        for i in range(len(tx_j_p_48)):
+            tx_j_p_48[i] = '{:.2%}'.format(a)
+    arrayA = np.divide(tx_j_num_72, max(tx_j_num_72), out=np.zeros_like(tx_j_num_72, dtype=np.float64),
+                       casting="unsafe", where=max(tx_j_num_72) != 0)
+    for i in range(len(tx_j_num_72)):
+        tx_j_p_72.append("%.2f%%" % (arrayA[i] * 100))
+    if tx_j_p_72[0] == 'nan%':
+        a = 0
+        for i in range(len(tx_j_p_72)):
+            tx_j_p_72[i] = '{:.2%}'.format(a)
+    arrayA = np.divide(tx_j_num_96, max(tx_j_num_96), out=np.zeros_like(tx_j_num_96, dtype=np.float64),
+                       casting="unsafe", where=max(tx_j_num_96) != 0)
+    for i in range(len(tx_j_num_96)):
+        tx_j_p_96.append("%.2f%%" % (arrayA[i] * 100))
+    if tx_j_p_96[0] == 'nan%':
+        a = 0
+        for i in range(len(tx_j_p_96)):
+            tx_j_p_96[i] = '{:.2%}'.format(a)
+    arrayA = np.divide(tx_j_num_96_, max(tx_j_num_96_), out=np.zeros_like(tx_j_num_96_, dtype=np.float64),
+                       casting="unsafe", where=max(tx_j_num_96_) != 0)
+    for i in range(len(tx_j_num_96_)):
+        tx_j_p_96_.append("%.2f%%" % (arrayA[i] * 100))
+    if tx_j_p_96_[0] == 'nan%':
+        a = 0
+        for i in range(len(tx_j_p_96_)):
+            tx_j_p_96_[i] = '{:.2%}'.format(a)
+
+    jsonData['tx_xb_b_2'] = tx_xb_b_2
+    jsonData['tx_xb_b_4'] = tx_xb_b_4
+    jsonData['tx_xb_b_6'] = tx_xb_b_6
+    jsonData['tx_xb_b_8'] = tx_xb_b_8
+    jsonData['tx_xb_b_10'] = tx_xb_b_10
+    jsonData['tx_xb_b_12'] = tx_xb_b_12
+    jsonData['tx_xb_b_24'] = tx_xb_b_24
+    jsonData['tx_xb_b_24_'] = tx_xb_b_24_
+    jsonData['hm_xb_b_2'] = hm_xb_b_2
+    jsonData['hm_xb_b_4'] = hm_xb_b_4
+    jsonData['hm_xb_b_6'] = hm_xb_b_6
+    jsonData['hm_xb_b_8'] = hm_xb_b_8
+    jsonData['hm_xb_b_10'] = hm_xb_b_10
+    jsonData['hm_xb_b_12'] = hm_xb_b_12
+    jsonData['hm_xb_b_24'] = hm_xb_b_24
+    jsonData['hm_xb_b_24_'] = hm_xb_b_24_
+    print(hm_xb_b_10)
+
+    print(hm_xb_b_10)
+    print(hm_xb_b_12)
+    print(hm_xb_b_24)
+    print(hm_xb_b_24_)
+
+    jsonData['hm_j_12'] = hm_j_12
+    jsonData['hm_j_24'] = hm_j_24
+    jsonData['hm_j_48'] = hm_j_48
+    jsonData['hm_j_72'] = hm_j_72
+    jsonData['hm_j_120'] = hm_j_120
+    jsonData['hm_j_240'] = hm_j_240
+    jsonData['hm_j_360'] = hm_j_360
+    jsonData['hm_j_361'] = hm_j_361
+    jsonData['tx_j_12'] = tx_j_12
+    jsonData['tx_j_24'] = tx_j_24
+    jsonData['tx_j_48'] = tx_j_48
+    jsonData['tx_j_72'] = tx_j_72
+    jsonData['tx_j_120'] = tx_j_120
+    jsonData['tx_j_240'] = tx_j_240
+    jsonData['tx_j_360'] = tx_j_360
+    jsonData['tx_j_361'] = tx_j_361
+    jsonData['hm_b_12'] = hm_b_12
+    jsonData['hm_b_24'] = hm_b_24
+    jsonData['hm_b_48'] = hm_b_48
+    jsonData['hm_b_72'] = hm_b_72
+    jsonData['hm_b_120'] = hm_b_120
+    jsonData['hm_b_240'] = hm_b_240
+    jsonData['hm_b_360'] = hm_b_360
+    jsonData['hm_b_361'] = hm_b_361
+    jsonData['tx_b_12'] = tx_b_12
+    jsonData['tx_b_24'] = tx_b_24
+    jsonData['tx_b_48'] = tx_b_48
+    jsonData['tx_b_72'] = tx_b_72
+    jsonData['tx_b_120'] = tx_b_120
+    jsonData['tx_b_240'] = tx_b_240
+    jsonData['tx_b_360'] = tx_b_360
+    jsonData['tx_b_361'] = tx_b_361
+    jsonData['hm_b_xb_num_2'] = hm_b_xb_num_2.tolist()
+    jsonData['hm_b_xb_num_4'] = hm_b_xb_num_4.tolist()
+    jsonData['hm_b_xb_num_6'] = hm_b_xb_num_6.tolist()
+    jsonData['hm_b_xb_num_8'] = hm_b_xb_num_8.tolist()
+    jsonData['hm_b_xb_num_10'] = hm_b_xb_num_10.tolist()
+    jsonData['hm_b_xb_num_12'] = hm_b_xb_num_12.tolist()
+    jsonData['hm_b_xb_num_24'] = hm_b_xb_num_24.tolist()
+    jsonData['hm_b_xb_num_24_'] = hm_b_xb_num_24_.tolist()
+    jsonData['tx_b_xb_num_2'] = tx_b_xb_num_2.tolist()
+    jsonData['tx_b_xb_num_4'] = tx_b_xb_num_4.tolist()
+    jsonData['tx_b_xb_num_6'] = tx_b_xb_num_6.tolist()
+    jsonData['tx_b_xb_num_8'] = tx_b_xb_num_8.tolist()
+    jsonData['tx_b_xb_num_10'] = tx_b_xb_num_10.tolist()
+    jsonData['tx_b_xb_num_12'] = tx_b_xb_num_12.tolist()
+    jsonData['tx_b_xb_num_24'] = tx_b_xb_num_24.tolist()
+    jsonData['tx_b_xb_num_24_'] = tx_b_xb_num_24_.tolist()
+    jsonData['hm_b_fba_num_12'] = hm_b_fba_num_12.tolist()
+    jsonData['hm_b_fba_num_24'] = hm_b_fba_num_24.tolist()
+    jsonData['hm_b_fba_num_48'] = hm_b_fba_num_48.tolist()
+    jsonData['hm_b_fba_num_72'] = hm_b_fba_num_72.tolist()
+    jsonData['hm_b_fba_num_120'] = hm_b_fba_num_120.tolist()
+    jsonData['hm_b_fba_num_240'] = hm_b_fba_num_240.tolist()
+    jsonData['hm_b_fba_num_360'] = hm_b_fba_num_360.tolist()
+    jsonData['hm_b_fba_num_361'] = hm_b_fba_num_361.tolist()
+    jsonData['tx_b_fba_num_12'] = tx_b_fba_num_12.tolist()
+    jsonData['tx_b_fba_num_24'] = tx_b_fba_num_24.tolist()
+    jsonData['tx_b_fba_num_48'] = tx_b_fba_num_48.tolist()
+    jsonData['tx_b_fba_num_72'] = tx_b_fba_num_72.tolist()
+    jsonData['tx_b_fba_num_120'] = tx_b_fba_num_120.tolist()
+    jsonData['tx_b_fba_num_240'] = tx_b_fba_num_240.tolist()
+    jsonData['tx_b_fba_num_360'] = tx_b_fba_num_360.tolist()
+    jsonData['tx_b_fba_num_361'] = tx_b_fba_num_361.tolist()
+    jsonData['hm_j_fba_num_12'] = hm_j_fba_num_12.tolist()
+    jsonData['hm_j_fba_num_24'] = hm_j_fba_num_24.tolist()
+    jsonData['hm_j_fba_num_48'] = hm_j_fba_num_48.tolist()
+    jsonData['hm_j_fba_num_72'] = hm_j_fba_num_72.tolist()
+    jsonData['hm_j_fba_num_120'] = hm_j_fba_num_120.tolist()
+    jsonData['hm_j_fba_num_240'] = hm_j_fba_num_240.tolist()
+    jsonData['hm_j_fba_num_360'] = hm_j_fba_num_360.tolist()
+    jsonData['hm_j_fba_num_361'] = hm_j_fba_num_361.tolist()
+    jsonData['tx_j_fba_num_12'] = tx_j_fba_num_12.tolist()
+    jsonData['tx_j_fba_num_24'] = tx_j_fba_num_24.tolist()
+    jsonData['tx_j_fba_num_48'] = tx_j_fba_num_48.tolist()
+    jsonData['tx_j_fba_num_72'] = tx_j_fba_num_72.tolist()
+    jsonData['tx_j_fba_num_120'] = tx_j_fba_num_120.tolist()
+    jsonData['tx_j_fba_num_240'] = tx_j_fba_num_240.tolist()
+    jsonData['tx_j_fba_num_360'] = tx_j_fba_num_360.tolist()
+    jsonData['tx_j_fba_num_361'] = tx_j_fba_num_361.tolist()
+
+    jsonData['hm_drk_b_num1'] = hm_drk_b_num1
+    jsonData['hm_drk_j_num1'] = hm_drk_j_num1
+
+    jsonData['hm_dtm_b_num1'] = hm_dtm_b_num1
+    jsonData['hm_dtm_j_num1'] = hm_dtm_j_num1
+
+    jsonData['hm_dgnzj_b_num1'] = hm_dgnzj_b_num1
+    jsonData['hm_dgnzj_j_num1'] = hm_dgnzj_j_num1
+
+    jsonData['hm_dsj_b_num1'] = hm_dsj_b_num1
+    jsonData['hm_dsj_j_num1'] = hm_dsj_j_num1
+
+    jsonData['hm_sjz_b_num1'] = hm_sjz_b_num1
+    jsonData['hm_sjz_j_num1'] = hm_sjz_j_num1
+
+    jsonData['tx_drk_b_num1'] = tx_drk_b_num1
+    jsonData['tx_drk_j_num1'] = tx_drk_j_num1
+
+    jsonData['tx_dtm_b_num1'] = tx_dtm_b_num1
+    jsonData['tx_dtm_j_num1'] = tx_dtm_j_num1
+
+    jsonData['tx_dgnzj_b_num1'] = tx_dgnzj_b_num1
+    jsonData['tx_dgnzj_j_num1'] = tx_dgnzj_j_num1
+
+    jsonData['tx_dsj_b_num1'] = tx_dsj_b_num1
+    jsonData['tx_dsj_j_num1'] = tx_dsj_j_num1
+
+    jsonData['tx_sjz_b_num1'] = tx_sjz_b_num1
+    jsonData['tx_sjz_j_num1'] = tx_sjz_j_num1
+
+    jsonData['hm_b_p_6'] = hm_b_p_6
+    jsonData['hm_b_p_12'] = hm_b_p_12
+    jsonData['hm_b_p_24'] = hm_b_p_24
+    jsonData['hm_b_p_36'] = hm_b_p_36
+    jsonData['hm_b_p_48'] = hm_b_p_48
+    jsonData['hm_b_p_72'] = hm_b_p_72
+    jsonData['hm_b_p_96'] = hm_b_p_96
+    jsonData['hm_b_p_96_'] = hm_b_p_96_
+
+    jsonData['hm_j_p_6'] = hm_j_p_6
+    jsonData['hm_j_p_12'] = hm_j_p_12
+    jsonData['hm_j_p_24'] = hm_j_p_24
+    jsonData['hm_j_p_36'] = hm_j_p_36
+    jsonData['hm_j_p_48'] = hm_j_p_48
+    jsonData['hm_j_p_72'] = hm_j_p_72
+    jsonData['hm_j_p_96'] = hm_j_p_96
+    jsonData['hm_j_p_96_'] = hm_j_p_96_
+
+    jsonData['tx_b_p_6'] = tx_b_p_6
+    jsonData['tx_b_p_12'] = tx_b_p_12
+    jsonData['tx_b_p_24'] = tx_b_p_24
+    jsonData['tx_b_p_36'] = tx_b_p_36
+    jsonData['tx_b_p_48'] = tx_b_p_48
+    jsonData['tx_b_p_72'] = tx_b_p_72
+    jsonData['tx_b_p_96'] = tx_b_p_96
+    jsonData['tx_b_p_96_'] = tx_b_p_96_
+
+    jsonData['tx_j_p_6'] = tx_j_p_6
+    jsonData['tx_j_p_12'] = tx_j_p_12
+    jsonData['tx_j_p_24'] = tx_j_p_24
+    jsonData['tx_j_p_36'] = tx_j_p_36
+    jsonData['tx_j_p_48'] = tx_j_p_48
+    jsonData['tx_j_p_72'] = tx_j_p_72
+    jsonData['tx_j_p_96'] = tx_j_p_96
+    jsonData['tx_j_p_96_'] = tx_j_p_96_
+
+    jsonData['tx_drk_shelf'] = tx_drk_shelf
+    jsonData['tx_dtm_shelf'] = tx_dtm_shelf
+    jsonData['tx_dgnzj_shelf'] = tx_dgnzj_shelf
+    jsonData['tx_dsj_shelf'] = tx_dsj_shelf
+    jsonData['tx_sjz_shelf'] = tx_sjz_shelf
+
+    jsonData['hm_drk_shelf'] = hm_drk_shelf
+
+    jsonData['hm_dtm_shelf'] = hm_dtm_shelf
+    jsonData['hm_dgnzj_shelf'] = hm_dgnzj_shelf
+    jsonData['hm_dsj_shelf'] = hm_dsj_shelf
+    jsonData['hm_sjz_shelf'] = hm_sjz_shelf
+    jsonData['tx_drk_shelf_time'] = tx_drk_shelf_time
+    jsonData['tx_dtm_shelf_time'] = tx_dtm_shelf_time
+    jsonData['tx_dgnzj_shelf_time'] = tx_dgnzj_shelf_time
+    jsonData['tx_dsj_shelf_time'] = tx_dsj_shelf_time
+    jsonData['tx_sjz_shelf_time'] = tx_sjz_shelf_time
+
+    jsonData['hm_drk_shelf_time'] = hm_drk_shelf_time
+    jsonData['hm_dtm_shelf_time'] = hm_dtm_shelf_time
+    jsonData['hm_dgnzj_shelf_time'] = hm_dgnzj_shelf_time
+    jsonData['hm_dsj_shelf_time'] = hm_dsj_shelf_time
+    jsonData['hm_sjz_shelf_time'] = hm_sjz_shelf_time
+
+    jsonData['tx_drk_shelf_num1'] = tx_drk_shelf_num1
+    jsonData['tx_dtm_shelf_num1'] = tx_dtm_shelf_num1
+    jsonData['tx_dgnzj_shelf_num1'] = tx_dgnzj_shelf_num1
+    jsonData['tx_dsj_shelf_num1'] = tx_dsj_shelf_num1
+    jsonData['tx_sjz_shelf_num1'] = tx_sjz_shelf_num1
+    jsonData['hm_drk_shelf_num1'] = hm_drk_shelf_num1
+    jsonData['hm_dtm_shelf_num1'] = hm_dtm_shelf_num1
+    jsonData['hm_dgnzj_shelf_num1'] = hm_dgnzj_shelf_num1
+    jsonData['hm_dsj_shelf_num1'] = hm_dsj_shelf_num1
+    jsonData['hm_sjz_shelf_num1'] = hm_sjz_shelf_num1
+
+    j = json.dumps(jsonData, cls=DecimalEncoder)
+    cur.close()
+    return (j)
+
+@app.route('/daily4',methods=['POST'])
+def xiaoneng():
+    con = pymysql.connect(host='192.168.86.79', user='wanjunsheng', passwd='df2932141LFDF', db='warehouse',
+                          port=3307, charset='utf8')
+    cur = con.cursor()
+    sql='SELECT  DATE_FORMAT(now(),"%Y-%m-%d")date,	a.warehouse_code,	a.group_w,	ifnull( round( avg( a.act_num ), 0 ), 0 ) act_num,	ifnull( round( avg( a.act_hour ), 2 ), 0 ) act_hour,	ifnull( round( avg( b.num ), 2 ), 0 ) act_work_num,	ifnull( round( avg( a.temp_num ), 0 ), 0 ) temp_num,	ifnull( round( avg( a.temp_hour ), 2 ), 0 ) temp_hour,	ifnull( round( avg( c.num ), 2 ), 0 ) temp_work_num,	round(ifnull( round( avg( b.num ), 2 ), 0 ) / ifnull( round( avg( a.act_num ), 2 ), 0 ),2) act_ef,	round(ifnull( round( avg( c.num ), 2 ), 0 ) / ifnull( round( avg( a.temp_num ), 2 ), 0 ),2) temp_ef FROM	(SELECT	a.warehouse_code,	a.date,CASE		WHEN a.`group` = "working" THEN	"receive" ELSE a.`group` 	END group_w,	sum( a.act_num ) act_num,	a.act_hour + a.sup_hour `act_hour`,	a.temp_num,	a.temp_hour FROM	(	SELECT		a.warehouse_code,		a.`group`,		a.date,		a.actual_work AS act_num,		a.group_leader + a.receive_hour + a.instock_hour + a.return_deal + a.allocate_instock + a.working_hour + a.all_quality + a.instock_putaway + a.return_putaway + a.problem_putaway + a.pick_hour + a.move_hour + a.inventory_hour + a.check_hour + a.second_pick + a.pack_hour + a.channel_pick + a.scan_weigh + a.delivery_hour + a.fba_change + a.fba_pack + a.fba_delivery + a.iqc_hour + a.confirm_exception + a.instock_exception + a.warehouse_exception + a.order_exception + a.transit_receive + a.transit_pack + a.transit_send + a.transit_manage + a.other_hour AS act_hour,		a.temporary_people AS temp_num,		a.temporary_hour AS temp_hour,		ifnull( b.`hour`, 0 ) sup_hour,		a.temporary_hour + a.group_leader + a.receive_hour + a.instock_hour + a.return_deal + a.allocate_instock + a.working_hour + a.all_quality + a.instock_putaway + a.return_putaway + a.problem_putaway + a.pick_hour + a.move_hour + a.inventory_hour + a.check_hour + a.second_pick + a.pack_hour + a.channel_pick + a.scan_weigh + a.delivery_hour + a.fba_change + a.fba_pack + a.fba_delivery + a.iqc_hour + a.confirm_exception + a.instock_exception + a.warehouse_exception + a.order_exception + a.transit_receive + a.transit_pack + a.transit_send + a.transit_manage + a.other_hour AS total_hour 	FROM		yb_daily_report a		LEFT JOIN (		SELECT			date,			warehouse_code,			`group`,			sum( `hour` ) AS `hour` 		FROM			(			SELECT				date,				JSON_UNQUOTE ( JSON_EXTRACT ( support_out, "$[0].warehouse" ) ) AS warehouse_code,				JSON_UNQUOTE ( JSON_EXTRACT ( support_out, "$[0].group" ) ) AS `group`,				JSON_UNQUOTE ( JSON_EXTRACT ( support_out, "$[0].hour" ) ) AS `hour` 			FROM				yb_daily_report 			WHERE				support_out IS NOT NULL UNION			SELECT				date,				JSON_UNQUOTE ( JSON_EXTRACT ( support_out, "$[1].warehouse" ) ) AS warehouse_code,				JSON_UNQUOTE ( JSON_EXTRACT ( support_out, "$[1].group" ) ) AS `group`,				JSON_UNQUOTE ( JSON_EXTRACT ( support_out, "$[1].hour" ) ) AS `hour` 			FROM				yb_daily_report 			WHERE				support_out IS NOT NULL UNION			SELECT				date,				JSON_UNQUOTE ( JSON_EXTRACT ( support_out, "$[2].warehouse" ) ) AS warehouse_code,				JSON_UNQUOTE ( JSON_EXTRACT ( support_out, "$[2].group" ) ) AS `group`,				JSON_UNQUOTE ( JSON_EXTRACT ( support_out, "$[2].hour" ) ) AS `hour` 			FROM				yb_daily_report 			WHERE				support_out IS NOT NULL UNION			SELECT				date,				JSON_UNQUOTE ( JSON_EXTRACT ( support_out, "$[3].warehouse" ) ) AS warehouse_code,				JSON_UNQUOTE ( JSON_EXTRACT ( support_out, "$[3].group" ) ) AS `group`,				JSON_UNQUOTE ( JSON_EXTRACT ( support_out, "$[3].hour" ) ) AS `hour` 			FROM				yb_daily_report 			WHERE				support_out IS NOT NULL UNION			SELECT				date,				JSON_UNQUOTE ( JSON_EXTRACT ( support_out, "$[4].warehouse" ) ) AS warehouse_code,				JSON_UNQUOTE ( JSON_EXTRACT ( support_out, "$[4].group" ) ) AS `group`,				JSON_UNQUOTE ( JSON_EXTRACT ( support_out, "$[4].hour" ) ) AS `hour` 			FROM				yb_daily_report 			WHERE				support_out IS NOT NULL UNION			SELECT				date,				JSON_UNQUOTE ( JSON_EXTRACT ( support_out, "$[5].warehouse" ) ) AS warehouse_code,				JSON_UNQUOTE ( JSON_EXTRACT ( support_out, "$[5].group" ) ) AS `group`,				JSON_UNQUOTE ( JSON_EXTRACT ( support_out, "$[5].hour" ) ) AS `hour` 			FROM				yb_daily_report 			WHERE				support_out IS NOT NULL UNION			SELECT				date,				JSON_UNQUOTE ( JSON_EXTRACT ( support_out, "$[6].warehouse" ) ) AS warehouse_code,				JSON_UNQUOTE ( JSON_EXTRACT ( support_out, "$[6].group" ) ) AS `group`,				JSON_UNQUOTE ( JSON_EXTRACT ( support_out, "$[6].hour" ) ) AS `hour` 			FROM				yb_daily_report 			WHERE				support_out IS NOT NULL UNION			SELECT				date,				JSON_UNQUOTE ( JSON_EXTRACT ( support_out, "$[7].warehouse" ) ) AS warehouse_code,				JSON_UNQUOTE ( JSON_EXTRACT ( support_out, "$[7].group" ) ) AS `group`,				JSON_UNQUOTE ( JSON_EXTRACT ( support_out, "$[7].hour" ) ) AS `hour` 			FROM				yb_daily_report 			WHERE				support_out IS NOT NULL 			) a 		WHERE			a.warehouse_code IS NOT NULL 		GROUP BY			date,			warehouse_code,			`group` 		) b ON a.date = b.date 		AND a.warehouse_code = b.warehouse_code 		AND a.`group` = b.`group` 	WHERE		TO_DAYS( NOW( ) ) - TO_DAYS( a.date ) <= 31 		AND TO_DAYS( NOW( ) ) - TO_DAYS( a.date ) NOT IN ( 0, 1 ) 		AND a.`group` IN ( "fba_change", "fba_pack", "receive", "working", "putaway", "pick" ) 	GROUP BY		a.warehouse_code,		`group`,		a.date 	) a GROUP BY	a.warehouse_code,	group_w,	a.date 	) a	LEFT JOIN (		SELECT		warehouse_code AS warehouse,		"receive" group_w,		DATE_FORMAT( quality_time, "%Y-%m-%d" ) date,		sum( box_number ) num 	FROM		ueb_express_receipt 	WHERE		TO_DAYS( NOW( ) ) - TO_DAYS( quality_time ) <= 31 		AND TO_DAYS( NOW( ) ) - TO_DAYS( quality_time ) NOT IN ( 0, 1 ) 		AND quality_time IS NOT NULL 		AND warehouse_code IN ( "HM_AA", "SZ_AA" ) 		AND (			add_username NOT LIKE "L%" 			OR add_username NOT LIKE "RK%" 			OR add_username NOT LIKE "DB%" 			OR add_username NOT LIKE "R%" 			OR add_username NOT LIKE "TX%" 			OR add_username NOT LIKE "FB%" 								) 	GROUP BY		warehouse_code,		date UNION	SELECT	CASE					WHEN			warehouse_code = "AFN" THEN				"HM_AA" ELSE warehouse_code 			END AS `warehouse`,			"putaway" AS group_w,			add_time date,			round(				(					IFNULL( sum( JSON_UNQUOTE ( JSON_EXTRACT ( work_parme_num, "$.instock.instock.piece_total" ) ) ), 0 ) + IFNULL( sum( JSON_UNQUOTE ( JSON_EXTRACT ( work_parme_num, "$.instock.return_instock.piece_total" ) ) ), 0 ) + IFNULL( sum( JSON_UNQUOTE ( JSON_EXTRACT ( work_parme_num, "$.instock.move_instock.piece_total" ) ) ), 0 ) + IFNULL( sum( JSON_UNQUOTE ( JSON_EXTRACT ( work_parme_num, "$.instock.instock_sku_allot.piece_total" ) ) ), 0 ) + IFNULL( sum( JSON_UNQUOTE ( JSON_EXTRACT ( work_parme_num, "$.instock.question_instock.piece_total" ) ) ), 0 ) 				),				2 			) AS `num` 		FROM			`ueb_work_num_log_history` 		WHERE			add_time NOT IN ( "num", "user_name", "warehouse_code" ) 			AND warehouse_code NOT IN ( "CX", "shzz", "AFN" ) 			AND (				user_name NOT LIKE "L%" 				OR user_name NOT LIKE "RK%" 				OR user_name NOT LIKE "DB%" 				OR user_name NOT LIKE "R%" 				OR user_name NOT LIKE "TX%" 				OR user_name NOT LIKE "FB%" 			) 			AND TO_DAYS( NOW( ) ) - TO_DAYS( add_time ) <= 31 			AND TO_DAYS( NOW( ) ) - TO_DAYS( add_time ) NOT IN ( 0, 1 ) 		GROUP BY			`warehouse`,			add_time UNION		SELECT		CASE							WHEN				warehouse_code = "AFN" THEN					"HM_AA" ELSE warehouse_code 				END AS `warehouse`,				"pick" AS group_w,				add_time,				round(					(						IFNULL( sum( JSON_UNQUOTE ( JSON_EXTRACT ( work_parme_num, "$.pick.pick_single.piece_total" ) ) ), 0 ) + IFNULL( sum( JSON_UNQUOTE ( JSON_EXTRACT ( work_parme_num, "$.pick.pick_order.piece_total" ) ) ), 0 ) + IFNULL( sum( JSON_UNQUOTE ( JSON_EXTRACT ( work_parme_num, "$.pick.pick_multi.piece_total" ) ) ), 0 ) + IFNULL( sum( JSON_UNQUOTE ( JSON_EXTRACT ( work_parme_num, "$.pick.pick_sku_bao.piece_total" ) ) ), 0 ) + IFNULL( sum( JSON_UNQUOTE ( JSON_EXTRACT ( work_parme_num, "$.pick.pick_move.piece_total" ) ) ), 0 ) + IFNULL( sum( JSON_UNQUOTE ( JSON_EXTRACT ( work_parme_num, "$.pick.pick_single_more.piece_total" ) ) ), 0 ) 					),					2 				) AS `num` 			FROM				`ueb_work_num_log_history` 			WHERE				add_time NOT IN ( "num", "user_name", "warehouse_code" ) 				AND warehouse_code NOT IN ( "CX", "shzz", "AFN" ) 				AND (					user_name NOT LIKE "L%" 					OR user_name NOT LIKE "RK%" 					OR user_name NOT LIKE "DB%" 					OR user_name NOT LIKE "R%" 					OR user_name NOT LIKE "TX%" 					OR user_name NOT LIKE "FB%" 				) 				AND TO_DAYS( NOW( ) ) - TO_DAYS( add_time ) <= 31 				AND TO_DAYS( NOW( ) ) - TO_DAYS( add_time ) NOT IN ( 0, 1 ) 			GROUP BY				add_time,				`warehouse` UNION			SELECT			CASE									WHEN					warehouse_code = "AFN" THEN						"HM_AA" ELSE warehouse_code 					END AS `warehouse`,					"fba_pack" AS group_w,					add_time,					round( IFNULL( sum( JSON_UNQUOTE ( JSON_EXTRACT ( work_parme_num, "$.FBA.FBA.piece_total" ) ) ), 0 ), 2 ) AS `num` 				FROM					`ueb_work_num_log_history` 				WHERE					add_time NOT IN ( "num", "user_name", "warehouse_code" ) 					AND warehouse_code NOT IN ( "CX", "shzz", "AFN" ) 					AND (						user_name NOT LIKE "L%" 						OR user_name NOT LIKE "RK%" 						OR user_name NOT LIKE "DB%" 						OR user_name NOT LIKE "R%" 						OR user_name NOT LIKE "TX%" 						OR user_name NOT LIKE "FB%" 					) 					AND TO_DAYS( NOW( ) ) - TO_DAYS( add_time ) <= 31 					AND TO_DAYS( NOW( ) ) - TO_DAYS( add_time ) NOT IN ( 0, 1 ) 				GROUP BY					add_time,					`warehouse` UNION				SELECT				CASE											WHEN						warehouse_code = "AFN" THEN							"HM_AA" ELSE warehouse_code 						END AS `warehouse`,						"fba_change" AS group_w,						add_time,						round(							(								IFNULL( sum( JSON_UNQUOTE ( JSON_EXTRACT ( work_parme_num, "$.FBAPostCode.singlebatch_print_label.piece_total" ) ) ), 0 ) + IFNULL( sum( JSON_UNQUOTE ( JSON_EXTRACT ( work_parme_num, "$.FBAPostCode.singlebatch_print_label_FBC.piece_total" ) ) ), 0 ) + IFNULL( sum( JSON_UNQUOTE ( JSON_EXTRACT ( work_parme_num, "$.FBAPostCode.singlebatch_print_label_FBW.piece_total" ) ) ), 0 ) 							),							2 						) AS `num` 					FROM						`ueb_work_num_log_history` 					WHERE						add_time NOT IN ( "num", "user_name", "warehouse_code" ) 						AND warehouse_code NOT IN ( "CX", "shzz", "AFN" ) 						AND (							user_name NOT LIKE "L%" 							OR user_name NOT LIKE "RK%" 							OR user_name NOT LIKE "DB%" 							OR user_name NOT LIKE "R%" 							OR user_name NOT LIKE "TX%" 							OR user_name NOT LIKE "FB%" 						) 						AND TO_DAYS( NOW( ) ) - TO_DAYS( add_time ) <= 31 						AND TO_DAYS( NOW( ) ) - TO_DAYS( add_time ) NOT IN ( 0, 1 ) 					GROUP BY						add_time,						`warehouse` 					) b ON a.warehouse_code = b.warehouse 					AND a.group_w = b.group_w 					AND a.date = b.date					LEFT JOIN (					SELECT						warehouse_code AS warehouse,						"receive" group_w,						DATE_FORMAT( quality_time, "%Y-%m-%d" ) date,						sum( box_number ) num 					FROM						ueb_express_receipt 					WHERE						TO_DAYS( NOW( ) ) - TO_DAYS( quality_time ) <= 31 						AND TO_DAYS( NOW( ) ) - TO_DAYS( quality_time ) NOT IN ( 0, 1 ) 						AND quality_time IS NOT NULL 						AND warehouse_code IN ( "HM_AA", "SZ_AA" ) 						AND ( add_username LIKE "L%" OR add_username LIKE "RK%" OR add_username LIKE "DB%" OR add_username LIKE "R%" OR add_username LIKE "TX%" OR add_username LIKE "FB%" ) 					GROUP BY						warehouse_code,						date UNION					SELECT					CASE													WHEN							warehouse_code = "AFN" THEN								"HM_AA" ELSE warehouse_code 							END AS `warehouse`,							"putaway" AS group_w,							add_time date,							round(								(									IFNULL( sum( JSON_UNQUOTE ( JSON_EXTRACT ( work_parme_num, "$.instock.instock.piece_total" ) ) ), 0 ) + IFNULL( sum( JSON_UNQUOTE ( JSON_EXTRACT ( work_parme_num, "$.instock.return_instock.piece_total" ) ) ), 0 ) + IFNULL( sum( JSON_UNQUOTE ( JSON_EXTRACT ( work_parme_num, "$.instock.move_instock.piece_total" ) ) ), 0 ) + IFNULL( sum( JSON_UNQUOTE ( JSON_EXTRACT ( work_parme_num, "$.instock.instock_sku_allot.piece_total" ) ) ), 0 ) + IFNULL( sum( JSON_UNQUOTE ( JSON_EXTRACT ( work_parme_num, "$.instock.question_instock.piece_total" ) ) ), 0 ) 								),								2 							) AS `num` 						FROM							`ueb_work_num_log_history` 						WHERE							add_time NOT IN ( "num", "user_name", "warehouse_code" ) 							AND warehouse_code NOT IN ( "CX", "shzz", "AFN" ) 							AND ( user_name LIKE "L%" OR user_name LIKE "RK%" OR user_name LIKE "DB%" OR user_name LIKE "R%" OR user_name LIKE "TX%" OR user_name LIKE "FB%" ) 							AND TO_DAYS( NOW( ) ) - TO_DAYS( add_time ) <= 31 							AND TO_DAYS( NOW( ) ) - TO_DAYS( add_time ) NOT IN ( 0, 1 ) 						GROUP BY							`warehouse`,							add_time UNION						SELECT						CASE															WHEN								warehouse_code = "AFN" THEN									"HM_AA" ELSE warehouse_code 								END AS `warehouse`,								"pick" AS group_w,								add_time,								round(									(										IFNULL( sum( JSON_UNQUOTE ( JSON_EXTRACT ( work_parme_num, "$.pick.pick_single.piece_total" ) ) ), 0 ) + IFNULL( sum( JSON_UNQUOTE ( JSON_EXTRACT ( work_parme_num, "$.pick.pick_order.piece_total" ) ) ), 0 ) + IFNULL( sum( JSON_UNQUOTE ( JSON_EXTRACT ( work_parme_num, "$.pick.pick_multi.piece_total" ) ) ), 0 ) + IFNULL( sum( JSON_UNQUOTE ( JSON_EXTRACT ( work_parme_num, "$.pick.pick_sku_bao.piece_total" ) ) ), 0 ) + IFNULL( sum( JSON_UNQUOTE ( JSON_EXTRACT ( work_parme_num, "$.pick.pick_move.piece_total" ) ) ), 0 ) + IFNULL( sum( JSON_UNQUOTE ( JSON_EXTRACT ( work_parme_num, "$.pick.pick_single_more.piece_total" ) ) ), 0 ) 									),									2 								) AS `num` 							FROM								`ueb_work_num_log_history` 							WHERE								add_time NOT IN ( "num", "user_name", "warehouse_code" ) 								AND warehouse_code NOT IN ( "CX", "shzz", "AFN" ) 								AND ( user_name LIKE "L%" OR user_name LIKE "RK%" OR user_name LIKE "DB%" OR user_name LIKE "R%" OR user_name LIKE "TX%" OR user_name LIKE "FB%" ) 								AND TO_DAYS( NOW( ) ) - TO_DAYS( add_time ) <= 31 								AND TO_DAYS( NOW( ) ) - TO_DAYS( add_time ) NOT IN ( 0, 1 ) 							GROUP BY								add_time,								`warehouse` UNION							SELECT							CASE																	WHEN									warehouse_code = "AFN" THEN										"HM_AA" ELSE warehouse_code 									END AS `warehouse`,									"fba_pack" AS group_w,									add_time,									round( IFNULL( sum( JSON_UNQUOTE ( JSON_EXTRACT ( work_parme_num, "$.FBA.FBA.piece_total" ) ) ), 0 ), 2 ) AS `num` 								FROM									`ueb_work_num_log_history` 								WHERE									add_time NOT IN ( "num", "user_name", "warehouse_code" ) 									AND warehouse_code NOT IN ( "CX", "shzz", "AFN" ) 									AND ( user_name LIKE "L%" OR user_name LIKE "RK%" OR user_name LIKE "DB%" OR user_name LIKE "R%" OR user_name LIKE "TX%" OR user_name LIKE "FB%" ) 									AND TO_DAYS( NOW( ) ) - TO_DAYS( add_time ) <= 31 									AND TO_DAYS( NOW( ) ) - TO_DAYS( add_time ) NOT IN ( 0, 1 ) 								GROUP BY									add_time,									`warehouse` UNION								SELECT								CASE																			WHEN										warehouse_code = "AFN" THEN											"HM_AA" ELSE warehouse_code 										END AS `warehouse`,										"fba_change" AS group_w,										add_time,										round(											(												IFNULL( sum( JSON_UNQUOTE ( JSON_EXTRACT ( work_parme_num, "$.FBAPostCode.singlebatch_print_label.piece_total" ) ) ), 0 ) + IFNULL( sum( JSON_UNQUOTE ( JSON_EXTRACT ( work_parme_num, "$.FBAPostCode.singlebatch_print_label_FBC.piece_total" ) ) ), 0 ) + IFNULL( sum( JSON_UNQUOTE ( JSON_EXTRACT ( work_parme_num, "$.FBAPostCode.singlebatch_print_label_FBW.piece_total" ) ) ), 0 ) 											),											2 										) AS `num` 									FROM										`ueb_work_num_log_history` 									WHERE										add_time NOT IN ( "num", "user_name", "warehouse_code" ) 										AND warehouse_code NOT IN ( "CX", "shzz", "AFN" ) 										AND ( user_name LIKE "L%" OR user_name LIKE "RK%" OR user_name LIKE "DB%" OR user_name LIKE "R%" OR user_name LIKE "TX%" OR user_name LIKE "FB%" ) 										AND TO_DAYS( NOW( ) ) - TO_DAYS( add_time ) <= 31 										AND TO_DAYS( NOW( ) ) - TO_DAYS( add_time ) NOT IN ( 0, 1 ) 									GROUP BY										add_time,										`warehouse` 									) c ON a.warehouse_code = c.warehouse 									AND a.group_w = c.group_w 									AND a.date = c.date 								GROUP BY								a.warehouse_code,a.group_w'
+    sql2=''
+    cur.execute(sql)
+    see = cur.fetchall()
+    act_1 = []
+    act_2 = []
+    act_3 = []
+    act_4 = []
+    temp_1 = []
+    temp_2 = []
+    temp_3 = []
+    temp_4 = []
+    jsonData = {}
+    for data in see:
+        act_1.append(data[3])
+        act_2.append(data[4])
+        act_3.append(data[5])
+        act_4.append(data[9])
+        temp_1.append(data[6])
+        temp_2.append(data[7])
+        temp_3.append(data[8])
+        temp_4.append(data[10])
+
+    jsonData['act_4'] = act_4
+    print(act_4)
     j = json.dumps(jsonData, cls=DecimalEncoder)
     cur.close()
     return (j)
